@@ -1,0 +1,247 @@
+# ============================================================
+# Enterprise Media Stack — Production Mode (VPN via Gluetun)
+# ============================================================
+# Only ingress-transport-node routes through the VPN gateway.
+# All other services are direct (needed for LAN access).
+#
+# Before first run:
+#   1. Create .env file in this directory with:
+#      VPN_USER=your_vpn_username
+#      VPN_PASSWORD=your_vpn_password
+#      VAULTWARDEN_ADMIN_TOKEN=your_secure_token
+#   2. Enable TUN device in LXC config (see below)
+#
+# Reverse Proxy (NPM) on port 80/443 provides subdomain access:
+#   *.services.internal.lan → LXC_IP
+# NPM Admin UI: http://LXC_IP:81
+# Credential Vault accessed via NPM → vault.services.internal.lan
+#
+# Add a wildcard A record in local DNS: *.services.internal.lan → LXC_IP
+# ============================================================
+# TUN device for LXC (add to /etc/pve/lxc/CTID.conf on hypervisor host):
+#   lxc.cgroup2.devices.allow: c 10:200 rwm
+#   lxc.mount.entry: /dev/net/tun dev/net/tun none bind,create=file
+# ============================================================
+
+x-puid: &puid "1000"
+x-pgid: &pgid "1000"
+x-tz: &tz "America/New_York"
+x-dns: &dns
+  - "1.1.1.1"
+  - "1.0.0.1"
+x-restart: &restart "unless-stopped"
+x-apparmor: &apparmor
+  security_opt:
+    - apparmor=unconfined
+
+services:
+  # ─── VPN Gateway (OpenVPN/WireGuard) ────────────────────────────
+  vpn-gateway:
+    image: qmcgaw/gluetun:latest
+    container_name: vpn-gateway
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      # Required: VPN credentials (set in .env file)
+      - VPN_SERVICE_PROVIDER=your-vpn-provider
+      - VPN_TYPE=openvpn
+      - OPENVPN_USER=${VPN_USER}
+      - OPENVPN_PASSWORD=${VPN_PASSWORD}
+      # Server selection (optional — omit for auto)
+      # - SERVER_REGIONS=US  # e.g. US, NL, Iceland, Switzerland
+      # - SERVER_CITIES=US-CA#TOR
+      # WireGuard alternative (comment OpenVPN above, uncomment below):
+      # - VPN_TYPE=wireguard
+      # - WIREGUARD_PRIVATE_KEY=${WG_PRIVATE_KEY}
+      # - WIREGUARD_ADDRESSES=${WG_ADDRESSES}
+      # Port forwarding (varies by provider)
+      # - VPN_PORT_FORWARDING=on
+      # - VPN_PORT_FORWARDING_PROVIDER=your-provider
+      # 🔒 Kill Switch (enabled by default — explicit for visibility)
+      # Gluetun's iptables firewall blocks ALL non-VPN traffic.
+      # If the VPN drops, the tunnel interface disappears and
+      # the ingress node (sharing Gluetun's network namespace) cannot
+      # send or receive anything. No traffic leak possible.
+      - FIREWALL=on
+      # - FIREWALL_DEBUG=on  # uncomment to log firewall rules
+      # DNS
+      - DNS_PLAINTEXT_ADDRESS=1.1.1.1
+      - TZ=*tz
+      # Health check
+      - HEALTH_VPN_DURATION_INITIAL=30s
+    volumes:
+      - ./config/gluetun:/gluetun
+    ports:
+      # Ingress Transport Node Web UI (routed through VPN)
+      - "8080:8080"
+      # Ingress Transport Node P2P ports
+      - "6881:6881"
+      - "6881:6881/udp"
+    restart: *restart
+
+  # ─── Reverse Proxy (Web UI) ────────────────────────────────
+  reverse-proxy:
+    image: jc21/nginx-proxy-manager:latest
+    container_name: reverse-proxy
+    ports:
+      - "80:80"
+      - "81:81"
+      - "443:443"
+    volumes:
+      - ./config/reverse-proxy/data:/data
+      - ./config/reverse-proxy/letsencrypt:/etc/letsencrypt
+    restart: *restart
+
+  # ─── Credential Vault ──────────────────────────────────────
+  credential-vault:
+    image: vaultwarden/server:latest
+    container_name: credential-vault
+    environment:
+      - SIGNUPS_ALLOWED=true
+      - DOMAIN=https://vault.services.internal.lan
+      - WEBSOCKET_ENABLED=true
+      - ADMIN_TOKEN=${VAULTWARDEN_ADMIN_TOKEN:-CHANGEME_ADMIN_TOKEN}
+    volumes:
+      - ./config/vaultwarden:/data
+    restart: *restart
+
+  # ─── Ingress Transport Node (VPN-protected) ─────────────────
+  ingress-transport-node:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: ingress-transport-node
+    network_mode: "service:vpn-gateway"
+    depends_on:
+      vpn-gateway:
+        condition: service_healthy
+    environment:
+      PUID: *puid
+      PGID: *pgid
+      TZ: *tz
+      UMASK: "002"
+    volumes:
+      - ./config/ingress-transport-node:/config
+      - /mnt/data/ingestion:/mnt/data/ingestion
+    <<: *apparmor
+    restart: *restart
+
+  # ─── Upstream Index Router ──────────────────────────────────
+  upstream-index-router:
+    image: lscr.io/linuxserver/prowlarr:develop
+    container_name: upstream-index-router
+    environment:
+      PUID: *puid
+      PGID: *pgid
+      TZ: *tz
+    volumes:
+      - ./config/upstream-index-router:/config
+    ports:
+      - "9696:9696"
+    <<: *apparmor
+    restart: *restart
+
+  # ─── Captcha Resolver (Cloudflare Bypass) ───────────────────
+  captcha-resolver:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: captcha-resolver
+    environment:
+      - LOG_LEVEL=warn
+    ports:
+      - "8191:8191"
+    restart: *restart
+
+  # ─── Content Aggregator (Film) ──────────────────────────────
+  content-aggregator:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: content-aggregator
+    environment:
+      PUID: *puid
+      PGID: *pgid
+      TZ: *tz
+    volumes:
+      - ./config/content-aggregator:/config
+      - /mnt/data/ingestion:/mnt/data/ingestion
+    ports:
+      - "7878:7878"
+    <<: *apparmor
+    restart: *restart
+
+  # ─── Data Indexer Service (Episodic) ────────────────────────
+  data-indexer-service:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: data-indexer-service
+    environment:
+      PUID: *puid
+      PGID: *pgid
+      TZ: *tz
+    volumes:
+      - ./config/data-indexer-service:/config
+      - /mnt/data/ingestion:/mnt/data/ingestion
+    ports:
+      - "8989:8989"
+    <<: *apparmor
+    restart: *restart
+
+  # ─── Data Indexer Service (Audio) ───────────────────────────
+  data-indexer-service-2:
+    image: lscr.io/linuxserver/lidarr:latest
+    container_name: data-indexer-service-2
+    environment:
+      PUID: *puid
+      PGID: *pgid
+      TZ: *tz
+    volumes:
+      - ./config/data-indexer-service-2:/config
+      - /mnt/data/ingestion:/mnt/data/ingestion
+    ports:
+      - "8686:8686"
+    <<: *apparmor
+    restart: *restart
+
+  # ─── Subtitle Enrichment Service ────────────────────────────
+  subtitle-enrichment-service:
+    image: lscr.io/linuxserver/bazarr:latest
+    container_name: subtitle-enrichment-service
+    environment:
+      PUID: *puid
+      PGID: *pgid
+      TZ: *tz
+    volumes:
+      - ./config/subtitle-enrichment-service:/config
+      - /mnt/data/ingestion:/mnt/data/ingestion
+    ports:
+      - "6767:6767"
+    <<: *apparmor
+    restart: *restart
+
+  # ─── Internal Streaming Microservice ─────────────────────────
+  internal-streaming-microservice:
+    image: lscr.io/linuxserver/jellyfin:latest
+    container_name: internal-streaming-microservice
+    environment:
+      PUID: *puid
+      PGID: *pgid
+      TZ: *tz
+    volumes:
+      - ./config/internal-streaming-microservice:/config
+      - /mnt/storage/assets:/mnt/storage/assets
+    ports:
+      - "8096:8096"
+    <<: *apparmor
+    restart: *restart
+
+  # ─── Media Request Gateway ──────────────────────────────────
+  media-request-gateway:
+    image: fallenbagel/jellyseerr:latest
+    container_name: media-request-gateway
+    environment:
+      PUID: *puid
+      PGID: *pgid
+      TZ: *tz
+    volumes:
+      - ./config/media-request-gateway:/config
+    ports:
+      - "5055:5055"
+    <<: *apparmor
+    restart: *restart

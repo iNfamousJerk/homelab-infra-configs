@@ -1,0 +1,116 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 30s
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['alertmanager:9093']
+
+rule_files:
+  - /etc/prometheus/homelab_alerts.yml
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # ─── Node Exporters (System Metrics) ─────────────────────
+  - job_name: 'node_pve'
+    static_configs:
+      - targets: ['10.2.7.64:9100']
+
+  - job_name: 'node_containers'
+    static_configs:
+      - targets:
+          - '10.2.7.107:9100'
+          - '10.2.7.44:9100'
+          - '10.2.7.77:9100'
+          - '10.2.7.105:9100'
+          - '10.2.7.99:9100'
+          - '10.2.7.110:9100'
+          - '10.2.7.108:9100'
+          - '10.2.7.2:9100'
+          - '10.2.7.109:9100'
+
+  # ─── Docker Metrics ──────────────────────────────────────
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['10.2.7.108:8080']
+
+  # ─── Service & Infrastructure Probes ────────────────────
+  - job_name: 'pihole'
+    static_configs:
+      - targets: ['10.2.7.108:9617']
+
+  - job_name: 'nut'
+    static_configs:
+      - targets: ['10.2.7.108:9999']
+
+  # HTTP probes — web UIs that accept plain HTTP
+  - job_name: 'blackbox_http'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+          # CT 101 — Photo Vault
+          - http://10.2.7.44:2283
+          # CT 102 — Network Alerting
+          - http://10.2.7.77
+          # CT 107 — DNS Filter
+          - http://10.2.7.2
+          # CT 106 — Monitoring Dashboard
+          - http://10.2.7.108:3000
+          # CT 104 — Office Stack
+          - http://10.2.7.99:8083
+          - http://10.2.7.99:5006
+          - http://10.2.7.99:8010
+          # CT 108 — Media Stack
+          - http://10.2.7.109:8096
+          - http://10.2.7.109:7878
+          - http://10.2.7.109:8989
+          - http://10.2.7.109:8686
+          - http://10.2.7.109:9696
+          - http://10.2.7.109:6767
+          - http://10.2.7.109:5055
+          - http://10.2.7.109:8080
+          - http://10.2.7.109:81
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+  # TCP probes — services behind SSL or non-HTTP protocols
+  - job_name: 'blackbox_tcp'
+    metrics_path: /probe
+    params:
+      module: [tcp_connect]
+    static_configs:
+      - targets:
+          # CT 104 — Credential Vault
+          - 10.2.7.99:8082
+          # CT 100 — Management Agent
+          - 10.2.7.107:22
+          - 10.2.7.107:8642
+          # CT 108 — Reverse Proxy
+          - 10.2.7.109:80
+          # CT 105 — Security Monitoring
+          - 10.2.7.110:443
+          - 10.2.7.110:55000
+          - 10.2.7.110:9200
+          # PVE / PBS (Hypervisor)
+          - 10.2.7.64:8006
+          - 10.2.7.64:22
+          # Pi-hole DNS
+          - 10.2.7.2:53
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115

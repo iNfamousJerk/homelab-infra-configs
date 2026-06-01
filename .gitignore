@@ -1,0 +1,64 @@
+# ──────────────────────────────────────────────
+# SECURITY: Never commit secrets to this repo
+# ──────────────────────────────────────────────
+
+# Environment & Secrets
+.env
+.env.*
+*.env
+.env.local
+.env.production
+.env.development
+
+# API keys, tokens, credentials
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+*.cert
+*.crt
+*.p7b
+*.jks
+
+# SSH config
+.ssh/
+authorized_keys
+known_hosts
+
+# Infrastructure secrets
+docker-compose.override.yml
+docker-compose.secrets.yml
+vaultwarden.env
+*.htpasswd
+
+# OS / IDE droppings
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+*.sublime-*
+
+# Build artifacts
+node_modules/
+vendor/
+__pycache__/
+*.pyc
+*.pyo
+
+# Temporary files
+/tmp/
+temp/
+*.log
+*.bak
+*.old
+
+# Git history
+.git/
+
+# Local runtime config directories (contain container IDs, passwords, etc.)
+config/

@@ -1,0 +1,150 @@
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - 9090:9090
+    volumes:
+      - prometheus_data:/prometheus
+      - /opt/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - /opt/monitoring/homelab_alerts.yml:/etc/prometheus/homelab_alerts.yml:ro
+    restart: unless-stopped
+    security_opt:
+      - apparmor:unconfined
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    ports:
+      - 8080:8080
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    devices:
+      - /dev/kmsg
+    privileged: true
+    restart: unless-stopped
+
+  blackbox-exporter:
+    image: prom/blackbox-exporter:latest
+    container_name: blackbox-exporter
+    ports:
+      - 9115:9115
+    command:
+      - '--config.file=/config/blackbox.yml'
+    volumes:
+      - /opt/monitoring/blackbox.yml:/config/blackbox.yml:ro
+    restart: unless-stopped
+    security_opt:
+      - apparmor:unconfined
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - 3000:3000
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - /opt/monitoring/provisioning/:/etc/grafana/provisioning/:ro
+      - /opt/monitoring/dashboards/:/var/lib/grafana/dashboards:ro
+    restart: unless-stopped
+    security_opt:
+      - apparmor:unconfined
+
+  pihole-exporter:
+    image: ekofr/pihole-exporter:latest
+    container_name: pihole-exporter
+    ports:
+      - 9617:9617
+    environment:
+      - PIHOLE_HOSTNAME=10.2.7.2
+      - PIHOLE_PASSWORD=${PIHOLE_PASSWORD}
+      - PIHOLE_PROTOCOL=http
+      - PIHOLE_PORT=80
+    restart: unless-stopped
+    security_opt:
+      - apparmor:unconfined
+
+  nut-exporter:
+    image: python:3-alpine
+    container_name: nut-exporter
+    ports:
+      - 9999:9999
+    environment:
+      - NUT_HOST=10.2.7.64
+      - NUT_PORT=3493
+      - NUT_USER=monitor
+      - NUT_PASSWORD=${NUT_PASSWORD}
+    volumes:
+      - /opt/monitoring/nut_exporter.py:/app/exporter.py:ro
+    command: python /app/exporter.py
+    restart: unless-stopped
+    security_opt:
+      - apparmor:unconfined
+
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: alertmanager
+    ports:
+      - 9093:9093
+    volumes:
+      - /opt/monitoring/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    restart: unless-stopped
+    security_opt:
+      - apparmor:unconfined
+
+  webhook:
+    image: python:3-alpine
+    container_name: webhook
+    ports:
+      - 5000:5000
+    volumes:
+      - /opt/monitoring/webhook/receiver.py:/app/receiver.py:ro
+    command: python -u /app/receiver.py
+    restart: unless-stopped
+    security_opt:
+      - apparmor:unconfined
+
+  uptime-kuma:
+    image: louislam/uptime-kuma:latest
+    container_name: uptime-kuma
+    security_opt:
+      - apparmor:unconfined
+    ports:
+      - 3001:3001
+    volumes:
+      - uptime_kuma_data:/app/data
+    restart: unless-stopped
+
+  gitea:
+    image: gitea/gitea:latest
+    container_name: gitea
+    security_opt:
+      - apparmor:unconfined
+    ports:
+      - 3002:3000
+      - 2222:22
+    volumes:
+      - gitea_data:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+      - GITEA__server__DOMAIN=gitea.home.lan
+      - GITEA__server__HTTP_PORT=3000
+      - GITEA__server__ROOT_URL=http://gitea.home.lan
+      - GITEA__server__SSH_PORT=2222
+    restart: unless-stopped
+
+volumes:
+  gitea_data:
+  uptime_kuma_data:
+  prometheus_data:
+  grafana_data:
+  vaultwarden_data:

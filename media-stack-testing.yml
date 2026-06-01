@@ -1,0 +1,190 @@
+# ============================================================
+# Enterprise Media Stack — Testing Mode (No VPN)
+# ============================================================
+# When you add a VPN later, insert the vpn-gateway service
+# and set ingress-transport-node network_mode: "service:vpn-gateway"
+#
+# Reverse Proxy (NPM) on port 80/443 provides subdomain access:
+#   *.services.internal.lan → LXC_IP
+# NPM Admin UI: http://LXC_IP:81  (login: admin@example.com / changeme)
+# Credential Vault accessed via NPM → vault.services.internal.lan
+#
+# Add a wildcard A record in local DNS: *.services.internal.lan → LXC_IP
+# ============================================================
+
+x-puid: &puid "1000"
+x-pgid: &pgid "1000"
+x-tz: &tz "America/New_York"
+x-dns: &dns
+  - "1.1.1.1"
+  - "1.0.0.1"
+x-restart: &restart "unless-stopped"
+x-apparmor: &apparmor
+  security_opt:
+    - apparmor=unconfined
+
+services:
+  # ─── Reverse Proxy (Web UI) ────────────────────────────────
+  reverse-proxy:
+    image: jc21/nginx-proxy-manager:latest
+    container_name: reverse-proxy
+    ports:
+      - "80:80"
+      - "81:81"
+      - "443:443"
+    volumes:
+      - ./config/reverse-proxy/data:/data
+      - ./config/reverse-proxy/letsencrypt:/etc/letsencrypt
+    restart: *restart
+
+  # ─── Credential Vault ──────────────────────────────────────
+  credential-vault:
+    image: vaultwarden/server:latest
+    container_name: credential-vault
+    environment:
+      - SIGNUPS_ALLOWED=true
+      - DOMAIN=https://vault.services.internal.lan
+      - WEBSOCKET_ENABLED=true
+      - ADMIN_TOKEN=${VAULTWARDEN_ADMIN_TOKEN:-CHANGEME_ADMIN_TOKEN}
+    volumes:
+      - ./config/vaultwarden:/data
+    restart: *restart
+
+  # ─── Ingress Transport Node ────────────────────────────────
+  ingress-transport-node:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: ingress-transport-node
+    environment:
+      - PUID=*puid
+      - PGID=*pgid
+      - TZ=*tz
+      - UMASK=002
+    volumes:
+      - ./config/ingress-transport-node:/config
+      - /mnt/data/ingestion:/mnt/data/ingestion
+    ports:
+      - "8080:8080"
+      - "6881:6881"
+      - "6881:6881/udp"
+    <<: *apparmor
+    restart: *restart
+
+  # ─── Upstream Index Router ──────────────────────────────────
+  upstream-index-router:
+    image: lscr.io/linuxserver/prowlarr:develop
+    container_name: upstream-index-router
+    environment:
+      - PUID=*puid
+      - PGID=*pgid
+      - TZ=*tz
+    volumes:
+      - ./config/upstream-index-router:/config
+    ports:
+      - "9696:9696"
+    <<: *apparmor
+    restart: *restart
+
+  # ─── Captcha Resolver (Cloudflare Bypass) ───────────────────
+  captcha-resolver:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: captcha-resolver
+    environment:
+      - LOG_LEVEL=warn
+    ports:
+      - "8191:8191"
+    restart: *restart
+
+  # ─── Content Aggregator (Film) ──────────────────────────────
+  content-aggregator:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: content-aggregator
+    environment:
+      - PUID=*puid
+      - PGID=*pgid
+      - TZ=*tz
+    volumes:
+      - ./config/content-aggregator:/config
+      - /mnt/data/ingestion:/mnt/data/ingestion
+    ports:
+      - "7878:7878"
+    <<: *apparmor
+    restart: *restart
+
+  # ─── Data Indexer Service (Episodic) ────────────────────────
+  data-indexer-service:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: data-indexer-service
+    environment:
+      - PUID=*puid
+      - PGID=*pgid
+      - TZ=*tz
+    volumes:
+      - ./config/data-indexer-service:/config
+      - /mnt/data/ingestion:/mnt/data/ingestion
+    ports:
+      - "8989:8989"
+    <<: *apparmor
+    restart: *restart
+
+  # ─── Data Indexer Service (Audio) ───────────────────────────
+  data-indexer-service-2:
+    image: lscr.io/linuxserver/lidarr:latest
+    container_name: data-indexer-service-2
+    environment:
+      - PUID=*puid
+      - PGID=*pgid
+      - TZ=*tz
+    volumes:
+      - ./config/data-indexer-service-2:/config
+      - /mnt/data/ingestion:/mnt/data/ingestion
+    ports:
+      - "8686:8686"
+    <<: *apparmor
+    restart: *restart
+
+  # ─── Subtitle Enrichment Service ────────────────────────────
+  subtitle-enrichment-service:
+    image: lscr.io/linuxserver/bazarr:latest
+    container_name: subtitle-enrichment-service
+    environment:
+      - PUID=*puid
+      - PGID=*pgid
+      - TZ=*tz
+    volumes:
+      - ./config/subtitle-enrichment-service:/config
+      - /mnt/data/ingestion:/mnt/data/ingestion
+    ports:
+      - "6767:6767"
+    <<: *apparmor
+    restart: *restart
+
+  # ─── Internal Streaming Microservice ─────────────────────────
+  internal-streaming-microservice:
+    image: lscr.io/linuxserver/jellyfin:latest
+    container_name: internal-streaming-microservice
+    environment:
+      - PUID=*puid
+      - PGID=*pgid
+      - TZ=*tz
+    volumes:
+      - ./config/internal-streaming-microservice:/config
+      - /mnt/storage/assets:/mnt/storage/assets
+    ports:
+      - "8096:8096"
+    <<: *apparmor
+    restart: *restart
+
+  # ─── Media Request Gateway ──────────────────────────────────
+  media-request-gateway:
+    image: fallenbagel/jellyseerr:latest
+    container_name: media-request-gateway
+    environment:
+      - PUID=*puid
+      - PGID=*pgid
+      - TZ=*tz
+    volumes:
+      - ./config/media-request-gateway:/config
+    ports:
+      - "5055:5055"
+    <<: *apparmor
+    restart: *restart

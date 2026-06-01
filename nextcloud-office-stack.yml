@@ -1,0 +1,56 @@
+# Office Services Stack — Credential Vault, Grammar Check, Budget, Document Server
+# Proxy via Reverse Proxy (NPM)
+
+services:
+  # ─── Credential Vault ──────────────────────────────────────
+  credential-vault:
+    image: vaultwarden/server:latest
+    container_name: credential-vault
+    environment:
+      - SIGNUPS_ALLOWED=false
+      - DOMAIN=https://vault.services.internal.lan
+      - WEBSOCKET_ENABLED=true
+      - ADMIN_TOKEN=${VAULTWARDEN_ADMIN_TOKEN}
+    volumes:
+      - ./vaultwarden/data:/data
+    ports:
+      - "8082:80"
+    restart: unless-stopped
+
+  # ─── Document Server (Nextcloud Integration) ────────────────
+  document-server:
+    image: onlyoffice/documentserver:latest
+    container_name: document-server
+    environment:
+      - JWT_ENABLED=true
+      - JWT_SECRET=${ONLYOFFICE_JWT_SECRET}
+    volumes:
+      - ./onlyoffice/logs:/var/log/onlyoffice
+      - ./onlyoffice/data:/var/www/onlyoffice/Data
+      - ./onlyoffice/lib:/var/lib/onlyoffice
+      - ./onlyoffice/db:/var/lib/postgresql
+    ports:
+      - "8083:80"
+    restart: unless-stopped
+
+  # ─── Grammar Check API ─────────────────────────────────────
+  languagetool:
+    image: erikvl87/languagetool:latest
+    container_name: languagetool
+    volumes:
+      - ./languagetool:/ngrams
+    ports:
+      - "8010:8010"
+    environment:
+      - langtool_languageModel=/ngrams
+    restart: unless-stopped
+
+  # ─── Budget Tracker ────────────────────────────────────────
+  budget-tracker:
+    image: actualbudget/actual-server:latest
+    container_name: budget-tracker
+    volumes:
+      - ./actual:/data
+    ports:
+      - "5006:5006"
+    restart: unless-stopped

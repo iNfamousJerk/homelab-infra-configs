@@ -1,0 +1,439 @@
+# ==============================================================================
+# Automated Data Ingestion Pipeline & Local CDN Architecture
+# ==============================================================================
+# Enterprise-abstracted container orchestration for asynchronous file transfer,
+# metadata enrichment, and local content delivery infrastructure.
+#
+# Security boundaries:
+#   egress_network   —  Secure outbound gateway + P2P transfer node
+#                       (isolated WAN segment, no direct access to services)
+#   service_network  —  All processing, indexing, enrichment, and delivery
+#                       services (internal-only, no external ingress)
+#   ingress_network  —  Reverse proxy and credential vault
+#                       (DMZ segment, only exposed ports)
+#
+# Prerequisites:
+#   1. Copy .env.example → .env  and populate all variables
+#   2. Ensure TUN device is available on the host for VPN gateway:
+#      Linux:  modprobe tun
+#      LXC:    lxc.cgroup2.devices.allow: c 10:200 rwm
+#              lxc.mount.entry: /dev/net/tun dev/net/tun none bind,create=file
+# ==============================================================================
+
+# ─── YAML Anchors ────────────────────────────────────────────────────────────
+x-puid:      &puid       "${PUID:-1000}"
+x-pgid:      &pgid       "${PGID:-1000}"
+x-tz:        &tz         "${TZ:-America/New_York}"
+x-restart:   &restart    "${RESTART_POLICY:-unless-stopped}"
+x-apparmor:  &apparmor
+  security_opt:
+    - "apparmor=unconfined"
+
+# ─── Networks ─────────────────────────────────────────────────────────────────
+networks:
+  egress_network:
+    name: "${COMPOSE_PROJECT_NAME:-data-pipeline}_egress"
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: "dp-egr"
+    ipam:
+      config:
+        - subnet: "${EGRESS_SUBNET:-172.20.0.0/24}"
+          gateway: "${EGRESS_GATEWAY:-172.20.0.1}"
+    # Only the VPN gateway and P2P node have external internet access.
+    # All other services are firewalled at the Docker bridge level.
+    internal: false
+
+  service_network:
+    name: "${COMPOSE_PROJECT_NAME:-data-pipeline}_service"
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: "dp-svc"
+    ipam:
+      config:
+        - subnet: "${SERVICE_SUBNET:-172.20.1.0/24}"
+          gateway: "${SERVICE_GATEWAY:-172.20.1.1}"
+    # Internal only — no external WAN access. All inter-service communication
+    # occurs within this isolated bridge.
+    internal: true
+
+  ingress_network:
+    name: "${COMPOSE_PROJECT_NAME:-data-pipeline}_ingress"
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: "dp-ing"
+    ipam:
+      config:
+        - subnet: "${INGRESS_SUBNET:-172.20.2.0/24}"
+          gateway: "${INGRESS_GATEWAY:-172.20.2.1}"
+    # DMZ segment — only the reverse proxy and credential vault live here.
+    internal: false
+
+# ─── Volumes ──────────────────────────────────────────────────────────────────
+volumes:
+  staging_data:
+    name: "${COMPOSE_PROJECT_NAME:-data-pipeline}_staging"
+    driver: local
+    driver_opts:
+      type: none
+      device: "${STAGING_PATH:-/mnt/data/pipeline/staging}"
+      o: bind
+
+  curated_data:
+    name: "${COMPOSE_PROJECT_NAME:-data-pipeline}_curated"
+    driver: local
+    driver_opts:
+      type: none
+      device: "${CURATED_PATH:-/mnt/data/pipeline/curated}"
+      o: bind
+
+  catalog_data:
+    name: "${COMPOSE_PROJECT_NAME:-data-pipeline}_catalog"
+    driver: local
+    driver_opts:
+      type: none
+      device: "${CATALOG_PATH:-/mnt/data/pipeline/catalog}"
+      o: bind
+
+  # Container-local persistent stores
+  gateway_config:
+  p2p_config:
+  index_router_config:
+  ingestion_engine_config:
+  enrichment_config:
+  cdn_config:
+  orchestrator_config:
+  circuit_breaker_config:
+  ingress_controller_data:
+  ingress_controller_ssl:
+  credential_vault_data:
+
+# ─── Services ─────────────────────────────────────────────────────────────────
+services:
+
+  # =============================================================================
+  # SECURE EGRESS GATEWAY — Encrypted outbound tunnel
+  # =============================================================================
+  # Provides a dedicated, firewalled network namespace for all WAN-bound
+  # traffic. All egress from the P2P transfer node is routed through this
+  # gateway. On VPN tunnel failure, the iptables kill switch (FIREWALL=on)
+  # drops all non-tunnel traffic — zero leakage.
+  #
+  # OPTIONAL: Comment this entire block if no VPN tunnel is required.
+  # The P2P transfer node will use direct egress instead.
+  # =============================================================================
+  secure-egress-gateway:
+    image: "${VPN_GATEWAY_IMAGE:-qmcgaw/gluetun:latest}"
+    container_name: "${COMPOSE_PROJECT_NAME:-data-pipeline}-egress-gateway"
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - "${TUN_DEVICE:-/dev/net/tun}:/dev/net/tun"
+    environment:
+      # --- Provider Configuration ---
+      - VPN_SERVICE_PROVIDER=${VPN_SERVICE_PROVIDER}
+      - VPN_TYPE=${VPN_TYPE:-openvpn}
+      - OPENVPN_USER=${VPN_USER}
+      - OPENVPN_PASSWORD=${VPN_PASSWORD}
+      # --- Server Selection (optional overrides) ---
+      # - SERVER_REGIONS=${VPN_SERVER_REGIONS:-US}
+      # - SERVER_CITIES=${VPN_SERVER_CITIES}
+      # --- WireGuard alternative ---
+      # - VPN_TYPE=wireguard
+      # - WIREGUARD_PRIVATE_KEY=${WG_PRIVATE_KEY}
+      # - WIREGUARD_ADDRESSES=${WG_ADDRESSES}
+      # --- Kill Switch ---
+      - FIREWALL=${VPN_FIREWALL:-on}
+      # - FIREWALL_DEBUG=${VPN_FIREWALL_DEBUG:-off}
+      # --- DNS ---
+      - DNS_PLAINTEXT_ADDRESS=${DNS_PRIMARY:-1.1.1.1}
+      - TZ=*tz
+      # --- Health Check ---
+      - HEALTH_VPN_DURATION_INITIAL=${VPN_HEALTH_INITIAL:-30s}
+    volumes:
+      - gateway_config:/gluetun
+    ports:
+      # P2P Transfer Node Web UI (routed through VPN for administrative access)
+      - "${P2P_UI_PORT:-8080}:8080"
+      # P2P Transfer Node peer ports
+      - "${P2P_PEER_PORT:-6881}:6881"
+      - "${P2P_PEER_PORT:-6881}:6881/udp"
+    networks:
+      egress_network:
+        aliases:
+          - egress-gateway
+    restart: *restart
+
+  # =============================================================================
+  # P2P TRANSFER NODE — Asynchronous file ingestion
+  # =============================================================================
+  # Shares the egress gateway's network namespace for all WAN-bound transfers.
+  # Writes inbound payloads to the staging volume for downstream processing.
+  # =============================================================================
+  p2p-transfer-node:
+    image: "${P2P_IMAGE:-lscr.io/linuxserver/qbittorrent:latest}"
+    container_name: "${COMPOSE_PROJECT_NAME:-data-pipeline}-p2p-transfer"
+    network_mode: "service:secure-egress-gateway"
+    depends_on:
+      secure-egress-gateway:
+        condition: service_healthy
+    environment:
+      PUID: *puid
+      PGID: *pgid
+      TZ: *tz
+      UMASK: "${UMASK:-002}"
+    volumes:
+      - p2p_config:/config
+      - staging_data:/mnt/data/staging:rw
+    <<: *apparmor
+    restart: *restart
+
+  # =============================================================================
+  # API INDEX ROUTER — Federated metadata index aggregation
+  # =============================================================================
+  # Centralized index management for upstream data sources. Routes discovery
+  # queries to configured index endpoints and normalizes results for downstream
+  # ingestion engines.
+  # =============================================================================
+  api-index-router:
+    image: "${INDEX_ROUTER_IMAGE:-lscr.io/linuxserver/prowlarr:develop}"
+    container_name: "${COMPOSE_PROJECT_NAME:-data-pipeline}-index-router"
+    environment:
+      PUID: *puid
+      PGID: *pgid
+      TZ: *tz
+    volumes:
+      - index_router_config:/config
+    networks:
+      service_network:
+        aliases:
+          - index-router
+    ports:
+      - "${INDEX_ROUTER_PORT:-9696}:9696"
+    <<: *apparmor
+    restart: *restart
+
+  # =============================================================================
+  # API CIRCUIT BREAKER — Challenge resolution proxy
+  # =============================================================================
+  # Intercepts and resolves automated challenge gates (Cloudflare, etc.)
+  # encountered during index queries and metadata enrichment. Acts as a
+  # transparent HTTP/S proxy for upstream index router calls.
+  # =============================================================================
+  api-circuit-breaker:
+    image: "${CIRCUIT_BREAKER_IMAGE:-ghcr.io/flaresolverr/flaresolverr:latest}"
+    container_name: "${COMPOSE_PROJECT_NAME:-data-pipeline}-circuit-breaker"
+    environment:
+      - LOG_LEVEL=${CIRCUIT_BREAKER_LOG_LEVEL:-warn}
+    networks:
+      service_network:
+        aliases:
+          - circuit-breaker
+    ports:
+      - "${CIRCUIT_BREAKER_PORT:-8191}:8191"
+    restart: *restart
+
+  # =============================================================================
+  # DATA INGESTION ENGINE — Cinematic content lifecycle management
+  # =============================================================================
+  # Monitors the staging volume for inbound payloads matching defined filter
+  # criteria, applies organizational rules, and promotes qualified assets to
+  # the curated volume for catalog ingestion.
+  # =============================================================================
+  data-ingestion-engine:
+    image: "${INGESTION_ENGINE_IMAGE:-lscr.io/linuxserver/radarr:latest}"
+    container_name: "${COMPOSE_PROJECT_NAME:-data-pipeline}-ingestion-engine"
+    environment:
+      PUID: *puid
+      PGID: *pgid
+      TZ: *tz
+    volumes:
+      - ingestion_engine_config:/config
+      - staging_data:/mnt/data/staging:ro
+      - curated_data:/mnt/data/curated:rw
+    networks:
+      service_network:
+        aliases:
+          - ingestion-engine
+    ports:
+      - "${INGESTION_ENGINE_PORT:-7878}:7878"
+    <<: *apparmor
+    restart: *restart
+
+  # =============================================================================
+  # DATA INGESTION ENGINE — Episodic content lifecycle management
+  # =============================================================================
+  # Secondary ingestion engine specialized for episodic content. Shares the
+  # same staging and curated volumes as the primary engine but maintains an
+  # independent rule set and metadata index.
+  # =============================================================================
+  data-ingestion-engine-episodic:
+    image: "${INGESTION_ENGINE_EPISODIC_IMAGE:-lscr.io/linuxserver/sonarr:latest}"
+    container_name: "${COMPOSE_PROJECT_NAME:-data-pipeline}-ingestion-engine-episodic"
+    environment:
+      PUID: *puid
+      PGID: *pgid
+      TZ: *tz
+    volumes:
+      - ${INGESTION_ENGINE_EPISODIC_CONFIG_DIR:-ingestion-engine-episodic_config}:/config
+      - staging_data:/mnt/data/staging:ro
+      - curated_data:/mnt/data/curated:rw
+    networks:
+      service_network:
+        aliases:
+          - ingestion-engine-episodic
+    ports:
+      - "${INGESTION_ENGINE_EPISODIC_PORT:-8989}:8989"
+    <<: *apparmor
+    restart: *restart
+
+  # =============================================================================
+  # DATA INGESTION ENGINE — Audio content lifecycle management
+  # =============================================================================
+  # Tertiary ingestion engine for audio payloads. Operates independently
+  # with its own metadata taxonomy and curation rules.
+  # =============================================================================
+  data-ingestion-engine-audio:
+    image: "${INGESTION_ENGINE_AUDIO_IMAGE:-lscr.io/linuxserver/lidarr:latest}"
+    container_name: "${COMPOSE_PROJECT_NAME:-data-pipeline}-ingestion-engine-audio"
+    environment:
+      PUID: *puid
+      PGID: *pgid
+      TZ: *tz
+    volumes:
+      - ${INGESTION_ENGINE_AUDIO_CONFIG_DIR:-ingestion-engine-audio_config}:/config
+      - staging_data:/mnt/data/staging:ro
+      - curated_data:/mnt/data/curated:rw
+    networks:
+      service_network:
+        aliases:
+          - ingestion-engine-audio
+    ports:
+      - "${INGESTION_ENGINE_AUDIO_PORT:-8686}:8686"
+    <<: *apparmor
+    restart: *restart
+
+  # =============================================================================
+  # METADATA ENRICHMENT SERVICE — Subtitle / closed-caption acquisition
+  # =============================================================================
+  # Automatically discovers and retrieves metadata enrichment assets (subtitles,
+  # closed captions, localized language tracks) for assets in the curated volume.
+  # =============================================================================
+  metadata-enrichment-service:
+    image: "${ENRICHMENT_IMAGE:-lscr.io/linuxserver/bazarr:latest}"
+    container_name: "${COMPOSE_PROJECT_NAME:-data-pipeline}-metadata-enrichment"
+    environment:
+      PUID: *puid
+      PGID: *pgid
+      TZ: *tz
+    volumes:
+      - enrichment_config:/config
+      - curated_data:/mnt/data/curated:ro
+      - catalog_data:/mnt/data/catalog:ro
+    networks:
+      service_network:
+        aliases:
+          - metadata-enrichment
+    ports:
+      - "${ENRICHMENT_PORT:-6767}:6767"
+    <<: *apparmor
+    restart: *restart
+
+  # =============================================================================
+  # LOCAL CDN SERVICE — Internal streaming delivery
+  # =============================================================================
+  # Serves curated and cataloged assets to authenticated consumers on the
+  # local network. Supports adaptive bitrate streaming, transcoding profiles,
+  # and per-client access controls. No external DNS exposure.
+  # =============================================================================
+  local-cdn-service:
+    image: "${CDN_IMAGE:-lscr.io/linuxserver/jellyfin:latest}"
+    container_name: "${COMPOSE_PROJECT_NAME:-data-pipeline}-local-cdn"
+    environment:
+      PUID: *puid
+      PGID: *pgid
+      TZ: *tz
+    volumes:
+      - cdn_config:/config
+      - curated_data:/mnt/data/curated:ro
+      - catalog_data:/mnt/data/catalog:ro
+      - ${TRANSCODE_CACHE:-/mnt/data/pipeline/transcode}:/mnt/data/transcode:rw
+    networks:
+      service_network:
+        aliases:
+          - local-cdn
+    ports:
+      - "${CDN_PORT:-8096}:8096"
+    <<: *apparmor
+    restart: *restart
+
+  # =============================================================================
+  # CONTENT REQUEST ORCHESTRATOR — Submission and approval workflow
+  # =============================================================================
+  # Provides an end-user interface for submitting content requests, which
+  # are routed to the appropriate ingestion engine for fulfillment. Includes
+  # approval gates, quota management, and notification workflows.
+  # =============================================================================
+  content-request-orchestrator:
+    image: "${ORCHESTRATOR_IMAGE:-fallenbagel/jellyseerr:latest}"
+    container_name: "${COMPOSE_PROJECT_NAME:-data-pipeline}-request-orchestrator"
+    environment:
+      PUID: *puid
+      PGID: *pgid
+      TZ: *tz
+    volumes:
+      - orchestrator_config:/config
+    networks:
+      service_network:
+        aliases:
+          - request-orchestrator
+    ports:
+      - "${ORCHESTRATOR_PORT:-5055}:5055"
+    <<: *apparmor
+    restart: *restart
+
+  # =============================================================================
+  # INGRESS CONTROLLER — Reverse proxy / TLS termination
+  # =============================================================================
+  # Terminates TLS, provides subdomain-based routing to all web UIs, and
+  # enforces access control policies. All external HTTP/S traffic enters
+  # through this single ingress point.
+  # =============================================================================
+  ingress-controller:
+    image: "${INGRESS_IMAGE:-jc21/nginx-proxy-manager:latest}"
+    container_name: "${COMPOSE_PROJECT_NAME:-data-pipeline}-ingress"
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+      - "${INGRESS_ADMIN_PORT:-81}:81"
+    volumes:
+      - ingress_controller_data:/data
+      - ingress_controller_ssl:/etc/letsencrypt
+    networks:
+      service_network: {}
+    restart: *restart
+
+  # =============================================================================
+  # CREDENTIAL VAULT — Secrets management
+  # =============================================================================
+  # Self-hosted credential store for API tokens, application passwords,
+  # and infrastructure secrets. All services reference vault-managed
+  # credentials rather than hardcoded values.
+  # =============================================================================
+  credential-vault:
+    image: "${VAULT_IMAGE:-vaultwarden/server:latest}"
+    container_name: "${COMPOSE_PROJECT_NAME:-data-pipeline}-credential-vault"
+    environment:
+      - SIGNUPS_ALLOWED=${VAULT_SIGNUPS_ALLOWED:-false}
+      - DOMAIN=${VAULT_DOMAIN:-https://vault.internal.lan}
+      - WEBSOCKET_ENABLED=${VAULT_WEBSOCKET:-true}
+      - ADMIN_TOKEN=${VAULT_ADMIN_TOKEN}
+    volumes:
+      - credential_vault_data:/data
+    networks:
+      service_network:
+        aliases:
+          - credential-vault
+    ports:
+      - "${VAULT_PORT:-8082}:80"
+    restart: *restart

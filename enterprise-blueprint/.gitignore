@@ -1,0 +1,90 @@
+# ──────────────────────────────────────────────
+# SECURITY: Never commit secrets to this repository
+# ──────────────────────────────────────────────
+
+# Environment & Runtime Secrets
+.env
+.env.*
+*.env
+.env.local
+.env.production
+.env.development
+*.env.example
+
+# TLS / SSL / Identity Material
+*.pem
+*.key
+*.p12
+*.pfx
+*.cert
+*.crt
+*.p7b
+*.jks
+id_rsa*
+id_ed25519*
+*.pub
+
+# SSH Configuration
+.ssh/
+authorized_keys
+known_hosts
+
+# Secrets Overrides
+docker-compose.override.yml
+docker-compose.secrets.yml
+*.htpasswd
+vaultwarden.env
+
+# Local Runtime Data (container state, databases, cached metadata)
+config/
+data/
+runtime/
+state/
+
+# Source Credential Files
+CREDENTIALS.md
+CREDENTIALS-*.md
+credential*.md
+*credential*
+
+# OS & IDE Artifacts
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+*.sublime-*
+
+# Build Artifacts & Dependencies
+node_modules/
+vendor/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# Logs
+*.log
+*.out
+logs/
+
+# Temporary & Cache Files
+/tmp/
+temp/
+*.bak
+*.old
+*.orig
+.cache/
+tmp/
+
+# Git Internals
+.git/
+.gitattributes
+.gitmodules
+
+# Docker State
+.docker/

@@ -2,7 +2,7 @@
 # SECURITY: Never commit secrets to this repo
 # ──────────────────────────────────────────────
 
-# Environment & Secrets
+# Environment & Runtime Secrets
 .env
 .env.*
 *.env

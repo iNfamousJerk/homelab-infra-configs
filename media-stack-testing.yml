@@ -175,16 +175,16 @@ services:
     restart: *restart
 
   # ─── Media Request Gateway ──────────────────────────────────
-  media-request-gateway:
-    image: fallenbagel/jellyseerr:latest
-    container_name: media-request-gateway
+  requestrr:
+    image: darkalfx/requestrr:latest
+    container_name: requestrr
     environment:
       - PUID=*puid
       - PGID=*pgid
       - TZ=*tz
     volumes:
-      - ./config/media-request-gateway:/config
+      - ./config/requestrr:/root/config
     ports:
-      - "5055:5055"
+      - "4545:4545"
     <<: *apparmor
     restart: *restart

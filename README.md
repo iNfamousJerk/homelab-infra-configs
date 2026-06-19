@@ -8,7 +8,7 @@ This repository contains sanitized Docker Compose, monitoring, and reverse proxy
 
 | Layer | Services | Purpose |
 |-------|----------|---------|
-| **Hypervisor** | Proxmox VE + PBS | LXC container hosting & ZFS backups |
+| **Hypervisor** | Proxmox VE (×2 nodes) + PBS | Dual-node LXC container hosting, ZFS-backed backups |
 | **Monitoring** | Prometheus, Grafana, cAdvisor, Blackbox, Uptime Kuma | Metrics, alerting, dashboards |
 | **Gateway/Firewall** | OPNsense | VLAN routing, firewall, DHCP |
 | **DNS Filter** | Pi-hole | Network-wide ad blocking, local DNS |
@@ -75,7 +75,8 @@ docker compose -f media-stack.yml up -d                 # Media stack (prod)
 ├── .env.example                    # Environment variable template
 ├── CREDENTIALS-TEMPLATE.md         # Credential tracking template (NEVER commit real creds)
 └── scripts/
-    └── pre-commit-secret-scan.py   # Pre-commit hook for secret detection
+    ├── pre-commit-secret-scan.py   # Pre-commit hook for secret detection
+    └── check-pve-pbs-updates.sh    # Multi-node health check (PVE×2 + PBS)
 ```
 
 ## Security

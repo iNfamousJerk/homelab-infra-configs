@@ -1,24 +1,24 @@
 # ============================================================
-# Enterprise Media Stack — Production Mode (VPN via Gluetun)
+# Pirate Media Stack — Production Mode (ProtonVPN via Gluetun)
 # ============================================================
-# Only ingress-transport-node routes through the VPN gateway.
+# Only qBittorrent routes through Gluetun VPN.
 # All other services are direct (needed for LAN access).
 #
 # Before first run:
 #   1. Create .env file in this directory with:
-#      VPN_USER=your_vpn_username
-#      VPN_PASSWORD=your_vpn_password
+#      VPN_USER=your_protonvpn_username
+#      VPN_PASSWORD=your_protonvpn_password
 #      VAULTWARDEN_ADMIN_TOKEN=your_secure_token
 #   2. Enable TUN device in LXC config (see below)
 #
-# Reverse Proxy (NPM) on port 80/443 provides subdomain access:
-#   *.services.internal.lan → LXC_IP
+# Nginx Proxy Manager on port 80/443 provides subdomain access:
+#   *.pirate.lan → LXC_IP
 # NPM Admin UI: http://LXC_IP:81
-# Credential Vault accessed via NPM → vault.services.internal.lan
+# Vaultwarden accessed via NPM -> vaultwarden.pirate.lan
 #
-# Add a wildcard A record in local DNS: *.services.internal.lan → LXC_IP
+# Add a wildcard A record in Pi-hole: *.pirate.lan → LXC_IP
 # ============================================================
-# TUN device for LXC (add to /etc/pve/lxc/CTID.conf on hypervisor host):
+# TUN device for LXC (add to /etc/pve/lxc/CTID.conf on PVE host):
 #   lxc.cgroup2.devices.allow: c 10:200 rwm
 #   lxc.mount.entry: /dev/net/tun dev/net/tun none bind,create=file
 # ============================================================
@@ -35,17 +35,17 @@ x-apparmor: &apparmor
     - apparmor=unconfined
 
 services:
-  # ─── VPN Gateway (OpenVPN/WireGuard) ────────────────────────────
-  vpn-gateway:
+  # ─── VPN Gateway (ProtonVPN via OpenVPN) ────────────────────
+  gluetun:
     image: qmcgaw/gluetun:latest
-    container_name: vpn-gateway
+    container_name: gluetun
     cap_add:
       - NET_ADMIN
     devices:
       - /dev/net/tun:/dev/net/tun
     environment:
       # Required: VPN credentials (set in .env file)
-      - VPN_SERVICE_PROVIDER=your-vpn-provider
+      - VPN_SERVICE_PROVIDER=protonvpn
       - VPN_TYPE=openvpn
       - OPENVPN_USER=${VPN_USER}
       - OPENVPN_PASSWORD=${VPN_PASSWORD}
@@ -56,13 +56,13 @@ services:
       # - VPN_TYPE=wireguard
       # - WIREGUARD_PRIVATE_KEY=${WG_PRIVATE_KEY}
       # - WIREGUARD_ADDRESSES=${WG_ADDRESSES}
-      # Port forwarding (varies by provider)
+      # Port forwarding (ProtonVPN — only on P2P servers)
       # - VPN_PORT_FORWARDING=on
-      # - VPN_PORT_FORWARDING_PROVIDER=your-provider
+      # - VPN_PORT_FORWARDING_PROVIDER=protonvpn
       # 🔒 Kill Switch (enabled by default — explicit for visibility)
       # Gluetun's iptables firewall blocks ALL non-VPN traffic.
       # If the VPN drops, the tunnel interface disappears and
-      # the ingress node (sharing Gluetun's network namespace) cannot
+      # qBittorrent (sharing Gluetun's network namespace) cannot
       # send or receive anything. No traffic leak possible.
       - FIREWALL=on
       # - FIREWALL_DEBUG=on  # uncomment to log firewall rules
@@ -74,174 +74,231 @@ services:
     volumes:
       - ./config/gluetun:/gluetun
     ports:
-      # Ingress Transport Node Web UI (routed through VPN)
+      # qBittorrent Web UI (routed through VPN)
       - "8080:8080"
-      # Ingress Transport Node P2P ports
+      # qBittorrent P2P ports
       - "6881:6881"
       - "6881:6881/udp"
     restart: *restart
 
   # ─── Reverse Proxy (Web UI) ────────────────────────────────
-  reverse-proxy:
+  npm:
     image: jc21/nginx-proxy-manager:latest
-    container_name: reverse-proxy
+    container_name: npm
     ports:
       - "80:80"
       - "81:81"
       - "443:443"
     volumes:
-      - ./config/reverse-proxy/data:/data
-      - ./config/reverse-proxy/letsencrypt:/etc/letsencrypt
+      - ./config/npm/data:/data
+      - ./config/npm/letsencrypt:/etc/letsencrypt
     restart: *restart
 
-  # ─── Credential Vault ──────────────────────────────────────
-  credential-vault:
+  # ─── Password Manager ──────────────────────────────────────
+  vaultwarden:
     image: vaultwarden/server:latest
-    container_name: credential-vault
+    container_name: vaultwarden
     environment:
       - SIGNUPS_ALLOWED=true
-      - DOMAIN=https://vault.services.internal.lan
+      - DOMAIN=https://vaultwarden.pirate.lan
       - WEBSOCKET_ENABLED=true
       - ADMIN_TOKEN=${VAULTWARDEN_ADMIN_TOKEN:-CHANGEME_ADMIN_TOKEN}
     volumes:
       - ./config/vaultwarden:/data
     restart: *restart
 
-  # ─── Ingress Transport Node (VPN-protected) ─────────────────
-  ingress-transport-node:
+  # ─── Torrent Client (VPN-protected) ─────────────────────────
+  qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:latest
-    container_name: ingress-transport-node
-    network_mode: "service:vpn-gateway"
+    container_name: qbittorrent
+    network_mode: "service:gluetun"
     depends_on:
-      vpn-gateway:
+      gluetun:
         condition: service_healthy
     environment:
       PUID: *puid
       PGID: *pgid
       TZ: *tz
       UMASK: "002"
+      WEBUI_PASSWORD: adminadmin
     volumes:
-      - ./config/ingress-transport-node:/config
-      - /mnt/data/ingestion:/mnt/data/ingestion
+      - ./config/qbittorrent:/config
+      - /data:/data
     <<: *apparmor
     restart: *restart
 
-  # ─── Upstream Index Router ──────────────────────────────────
-  upstream-index-router:
+  # ─── Indexer Aggregator ────────────────────────────────────
+  prowlarr:
     image: lscr.io/linuxserver/prowlarr:develop
-    container_name: upstream-index-router
+    container_name: prowlarr
     environment:
       PUID: *puid
       PGID: *pgid
       TZ: *tz
     volumes:
-      - ./config/upstream-index-router:/config
+      - ./config/prowlarr:/config
     ports:
       - "9696:9696"
     <<: *apparmor
     restart: *restart
 
-  # ─── Captcha Resolver (Cloudflare Bypass) ───────────────────
-  captcha-resolver:
+  # ─── Cloudflare Bypass ─────────────────────────────────────
+  flaresolverr:
     image: ghcr.io/flaresolverr/flaresolverr:latest
-    container_name: captcha-resolver
+    container_name: flaresolverr
     environment:
       - LOG_LEVEL=warn
     ports:
       - "8191:8191"
     restart: *restart
 
-  # ─── Content Aggregator (Film) ──────────────────────────────
-  content-aggregator:
+  # ─── Movie Automation ──────────────────────────────────────
+  radarr:
     image: lscr.io/linuxserver/radarr:latest
-    container_name: content-aggregator
+    container_name: radarr
     environment:
       PUID: *puid
       PGID: *pgid
       TZ: *tz
     volumes:
-      - ./config/content-aggregator:/config
-      - /mnt/data/ingestion:/mnt/data/ingestion
+      - ./config/radarr:/config
+      - /data:/data
     ports:
       - "7878:7878"
     <<: *apparmor
     restart: *restart
 
-  # ─── Data Indexer Service (Episodic) ────────────────────────
-  data-indexer-service:
+  # ─── TV Show Automation ────────────────────────────────────
+  sonarr:
     image: lscr.io/linuxserver/sonarr:latest
-    container_name: data-indexer-service
+    container_name: sonarr
     environment:
       PUID: *puid
       PGID: *pgid
       TZ: *tz
     volumes:
-      - ./config/data-indexer-service:/config
-      - /mnt/data/ingestion:/mnt/data/ingestion
+      - ./config/sonarr:/config
+      - /data:/data
     ports:
       - "8989:8989"
     <<: *apparmor
     restart: *restart
 
-  # ─── Data Indexer Service (Audio) ───────────────────────────
-  data-indexer-service-2:
+  # ─── Music Automation ──────────────────────────────────────
+  lidarr:
     image: lscr.io/linuxserver/lidarr:latest
-    container_name: data-indexer-service-2
+    container_name: lidarr
     environment:
       PUID: *puid
       PGID: *pgid
       TZ: *tz
     volumes:
-      - ./config/data-indexer-service-2:/config
-      - /mnt/data/ingestion:/mnt/data/ingestion
+      - ./config/lidarr:/config
+      - /data:/data
     ports:
       - "8686:8686"
     <<: *apparmor
     restart: *restart
 
-  # ─── Subtitle Enrichment Service ────────────────────────────
-  subtitle-enrichment-service:
+  # ─── Subtitles ─────────────────────────────────────────────
+  bazarr:
     image: lscr.io/linuxserver/bazarr:latest
-    container_name: subtitle-enrichment-service
+    container_name: bazarr
     environment:
       PUID: *puid
       PGID: *pgid
       TZ: *tz
     volumes:
-      - ./config/subtitle-enrichment-service:/config
-      - /mnt/data/ingestion:/mnt/data/ingestion
+      - ./config/bazarr:/config
+      - /data:/data
     ports:
       - "6767:6767"
     <<: *apparmor
     restart: *restart
 
-  # ─── Internal Streaming Microservice ─────────────────────────
-  internal-streaming-microservice:
+  # ─── Media Server ──────────────────────────────────────────
+  jellyfin:
     image: lscr.io/linuxserver/jellyfin:latest
-    container_name: internal-streaming-microservice
+    container_name: jellyfin
     environment:
       PUID: *puid
       PGID: *pgid
       TZ: *tz
     volumes:
-      - ./config/internal-streaming-microservice:/config
-      - /mnt/storage/assets:/mnt/storage/assets
+      - ./config/jellyfin:/config
+      - /data/media:/data/media
+      - /data/torrents:/data/torrents
+    devices:
+      - /dev/dri:/dev/dri
+    group_add:
+      - "44"
+      - "104"
     ports:
       - "8096:8096"
     <<: *apparmor
     restart: *restart
 
-  # ─── Media Request Gateway ──────────────────────────────────
+  # ─── Media Requests ────────────────────────────────────────
+  jellyseerr:
+    image: fallenbagel/jellyseerr:latest
+    container_name: jellyseerr
+    environment:
+      PUID: *puid
+      PGID: *pgid
+      TZ: *tz
+    volumes:
+      - ./config/jellyseerr:/config
+    ports:
+      - "5055:5055"
+    <<: *apparmor
+    restart: *restart
+
+
+  # ─── Media Requests ────────────────────────────────────────
   requestrr:
     image: darkalfx/requestrr:latest
     container_name: requestrr
     environment:
       PUID: *puid
       PGID: *pgid
-      TZ: "America/Los_Angeles"
+      TZ: America/Los_Angeles
     volumes:
       - ./config/requestrr:/root/config
     ports:
-      - "4545:4545"
+      - 4545:4545
+    <<: *apparmor
+    restart: *restart
+  # ─── Book Automation ───────────────────────────────────────
+  readarr:
+    image: linuxserver/readarr:amd64-develop-version-0.4.18.2805
+    container_name: readarr
+    environment:
+      PUID: *puid
+      PGID: *pgid
+      TZ: *tz
+    volumes:
+      - ./config/readarr:/config
+      - /data:/data
+    ports:
+      - 8787:8787
+    <<: *apparmor
+    restart: *restart
+
+  # ─── Audiobook & eBook Server ──────────────────────────────
+  audiobookshelf:
+    image: ghcr.io/advplyr/audiobookshelf:latest
+    container_name: audiobookshelf
+    environment:
+      PUID: *puid
+      PGID: *pgid
+      TZ: *tz
+    volumes:
+      - ./config/audiobookshelf/config:/config
+      - ./config/audiobookshelf/metadata:/metadata
+      - /data/media/books:/audiobooks
+      - /data/media/books:/ebooks
+      - /data/torrents/books:/torrents
+    ports:
+      - 13378:80
     <<: *apparmor
     restart: *restart

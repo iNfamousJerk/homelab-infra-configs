@@ -18,12 +18,13 @@ scrape_configs:
   # ─── Node Exporters (System Metrics) ─────────────────────
   - job_name: 'node_pve'
     static_configs:
-      - targets: ['10.2.7.x:9100']
+      - targets:
+          - '10.2.7.x:9100'
+          - '10.2.7.x:9100'
 
   - job_name: 'node_containers'
     static_configs:
       - targets:
-          - '10.2.7.x:9100'
           - '10.2.7.x:9100'
           - '10.2.7.x:9100'
           - '10.2.7.x:9100'
@@ -54,19 +55,15 @@ scrape_configs:
       module: [http_2xx]
     static_configs:
       - targets:
-          # CT 101 — Photo Vault
+          # CT 111 — Immich
           - http://10.2.7.x:2283
-          # CT 102 — Network Alerting
+          # CT 102 — PiAlert
           - http://10.2.7.x
-          # CT 107 — DNS Filter
+          # CT 107 — Pi-hole
           - http://10.2.7.x
-          # CT 106 — Monitoring Dashboard
+          # CT 106 — Grafana
           - http://10.2.7.x:3000
-          # CT 104 — Office Stack
-          - http://10.2.7.x:8083
-          - http://10.2.7.x:5006
-          - http://10.2.7.x:8010
-          # CT 108 — Media Stack
+          # CT 110 — Media Stack on PVE2
           - http://10.2.7.x:8096
           - http://10.2.7.x:7878
           - http://10.2.7.x:8989
@@ -76,6 +73,10 @@ scrape_configs:
           - http://10.2.7.x:5055
           - http://10.2.7.x:8080
           - http://10.2.7.x:81
+          - http://10.2.7.x:8787
+          - http://10.2.7.x:13378
+          # PVE2
+          - http://10.2.7.x:8006
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target
@@ -91,19 +92,27 @@ scrape_configs:
       module: [tcp_connect]
     static_configs:
       - targets:
-          # CT 104 — Credential Vault
-          - 10.2.7.x:8082
-          # CT 100 — Management Agent
+          # CT 100 — Hermes Agent
           - 10.2.7.x:22
           - 10.2.7.x:8642
-          # CT 108 — Reverse Proxy
+          # CT 110 — NPM
           - 10.2.7.x:80
-          # CT 105 — Security Monitoring
+          # CT 105 — Wazuh
           - 10.2.7.x:443
           - 10.2.7.x:55000
           - 10.2.7.x:9200
-          # PVE / PBS (Hypervisor)
+          # PVE1 / PBS
           - 10.2.7.x:8006
+          - 10.2.7.x:22
+          # PVE2 / PBS
+          - 10.2.7.x:8006
+          - 10.2.7.x:22
+          - 10.2.7.x:8007
+          # CT 111 — Immich SSH
+          - 10.2.7.x:22
+          # CT 112 — Nextcloud SSH
+          - 10.2.7.x:22
+          # CT 110 — Media stack SSH
           - 10.2.7.x:22
           # Pi-hole DNS
           - 10.2.7.x:53

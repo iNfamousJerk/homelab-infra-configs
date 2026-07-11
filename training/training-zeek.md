@@ -1,0 +1,199 @@
+# Zeek Network IDS Beginner's Manual — Anthony's Homelab
+
+*Tailored to your actual setup.*
+
+---
+
+## Section 1: What It Is
+
+**Zeek is a silent network observer that watches all the traffic flowing through your switch and writes down what it sees.**
+
+Think of it like a courtroom stenographer for your network. Zeek doesn't stop or block anything — it just listens. Every connection, every DNS lookup, every HTTP request, every TLS handshake gets logged to a file. If something bad happens later (a breach, a weird device phoning home), you can search Zeek's logs to find exactly what happened.
+
+In Anthony's homelab, Zeek runs on **CT101** on **PVE2**, with IP `10.x.x.xxx`. It's hooked into a **port mirror (SPAN)** on a **TP-Link TL-SG108E** switch, configured as:
+
+> **Port 2 → Port 3 mirror**
+> Every packet that arrives on Port 2 is copied to Port 3, which is where Zeek's network interface is plugged in.
+
+This means Zeek sees *everything* passing through that switch port without ever being "in the way" — it's completely passive. If Zeek goes down, your internet still works. If Zeek crashes, nothing breaks except your visibility.
+
+Zeek feeds its logs into **Wazuh** (agent 018 on the Wazuh manager), so you can search Zeek data right from the Wazuh dashboard too.
+
+> ⚠️ **Key distinction:** Zeek is NOT an IPS/blocker. It's a logger. It doesn't stop attacks — it records evidence. Pair it with Wazuh rules to get alerts when suspicious patterns appear.
+
+---
+
+## Section 2: Getting In
+
+**Zeek has no web dashboard.** It's purely command-line.
+
+SSH into the Zeek container:
+
+```bash
+ssh root@10.x.x.xxx
+# or from PVE2 host:
+# lxc-attach CT101
+```
+
+Once inside, your main commands are:
+
+```bash
+# Check if Zeek is running
+systemctl status zeek
+
+# See Zeek's current log directory
+ls /var/log/zeek/current/
+
+# Tail live logs as they're written
+tail -f /var/log/zeek/current/conn.log
+```
+
+---
+
+## Section 3: The Dashboard / What You See
+
+Since there's no UI, your "dashboard" is the log files themselves. Every new connection gets a line written within seconds.
+
+Your main log directory is `/var/log/zeek/current/`. Here's what you'll find:
+
+### Core Log Files
+
+| Log File | What It Contains |
+|---|---|
+| `conn.log` | EVERY TCP/UDP/ICMP connection — source/dest IPs, ports, bytes, duration |
+| `dns.log` | All DNS queries and responses |
+| `http.log` | HTTP requests (method, URI, user-agent, status code) |
+| `ssl.log` | TLS handshakes — certificate info, ciphers, SNI hostnames |
+| `notice.log` | Zeek's built-in alerts — scanning, brute-force attempts, unusual traffic |
+| `dhcp.log` | DHCP leases (useful for identifying unknown devices) |
+| `dhcpv6.log` | IPv6 DHCP events |
+| `ntp.log` | NTP time sync queries |
+| `ftp.log` | FTP sessions (if any on your net) |
+| `files.log` | SHA1 hashes of files transferred over HTTP/SMB |
+| `weird.log` | Malformed packets, protocol violations |
+
+---
+
+## Section 4: How to Read / Use It
+
+### Reading `conn.log` — The Most Important File
+
+```bash
+tail -20 /var/log/zeek/current/conn.log
+```
+
+Each line is tab-separated. Key fields (from left to right):
+
+| Field | Example | Meaning |
+|---|---|---|
+| `ts` | 1719543000.123456 | Unix timestamp of connection start |
+| `uid` | C1a2b3c4d5e6f | Unique connection ID |
+| `id.orig_h` | 10.x.x.xxx | Source IP (who started it) |
+| `id.orig_p` | 54321 | Source port |
+| `id.resp_h` | 142.250.80.46 | Destination IP (who they talked to) |
+| `id.resp_p` | 443 | Destination port |
+| `proto` | tcp | Protocol |
+| `service` | ssl | Application-layer protocol detected |
+| `duration` | 12.345 | How long the connection lasted (seconds) |
+| `orig_bytes` | 1024 | Bytes sent by the originator |
+| `resp_bytes` | 4096 | Bytes sent by the responder |
+| `conn_state` | SHR | Connection state (see below) |
+
+**Connection states to know:**
+- `S0` — Connection attempt seen, no reply (possible scan)
+- `SHR` — Connection closed cleanly by both sides
+- `RSTR` — Connection reset by responder (connection refused)
+- `REJ` — TCP SYN rejected (port closed)
+- `SF` — Normal established + clean close (ideal)
+
+### Reading `dns.log`
+
+Shows every DNS query. Useful for finding:
+- Devices talking to unknown domains (maybe malware)
+- DNS tunneling (very long subdomains)
+- Failed DNS lookups (possible DNS misconfiguration)
+
+### Reading `http.log`
+
+Every HTTP request. Fields: method, host, URI, user-agent, status code, response body length. Great for spotting:
+- Old devices making HTTP (unencrypted) requests
+- Curious user-agents downloading things
+
+### Reading `ssl.log`
+
+Every TLS handshake. Key field: `server_name` — this is the SNI (Server Name Indication), which reveals the hostname even if traffic is encrypted. If a device talks to `evil-malware.example.com`, you'll see it here even though the content is encrypted.
+
+### Reading `notice.log`
+
+Zeek's own alerts. These are generated by Zeek's analysis scripts. Examples:
+- `Scan::Port_Scan` — one IP scanned many ports
+- `SSL::Invalid_OCSP` — invalid certificate
+- `Weird::Activity` — something odd but not explicitly malicious
+
+---
+
+## Section 5: Beginner Routine
+
+**Daily:**
+1. Zeek runs silently — no daily check needed unless you're troubleshooting
+2. If Wazuh dashboard shows Zeek-related alerts, peek at the relevant log
+
+**Weekly (5 minutes):**
+1. SSH into CT101
+2. Run: `zeekctl status` — shows which workers are running
+3. Check disk: `df -h /var/log/zeek/` — if logs are filling the disk, set up log rotation
+
+**Investigating an alert (when Wazuh fires on Zeek data):**
+1. Note the timestamp and source/destination IPs
+2. On CT101: `cat /var/log/zeek/current/conn.log | grep <source-IP>` to find all connections from that IP
+3. Cross-reference: `cat /var/log/zeek/current/dns.log | grep <source-IP>` — what domains did they query?
+4. If HTTP: `cat /var/log/zeek/current/http.log | grep <source-IP>`
+5. If TLS: `cat /var/log/zeek/current/ssl.log | grep <source-IP>` — what SNI hostnames?
+
+**Monthly:**
+1. Archive old logs: `cd /var/log/zeek && tar czf zeek-logs-$(date +%Y%m).tar.gz current/`
+2. Check Zeek version: `zeekctl --version` — upgrade if behind
+3. Review `notice.log` for patterns you should turn into Wazuh rules
+
+---
+
+## Section 6: Quick Reference Card
+
+| Item | Value |
+|---|---|
+| **Host** | CT101 on PVE2 |
+| **IP** | 10.x.x.xxx |
+| **Access** | SSH or `lxc-attach CT101` |
+| **Web UI** | None — CLI only |
+| **Log directory** | `/var/log/zeek/current/` |
+| **Service command** | `zeekctl status | start | stop | restart` |
+| **Watch traffic** | `tail -f /var/log/zeek/current/conn.log` |
+| **Wazuh agent ID** | 018 |
+| **Switch mirror** | TL-SG108E: Port 2 → Port 3 |
+| **Log rotation** | `/etc/logrotate.d/zeek` (check if configured) |
+
+### Useful one-liners
+
+```bash
+# Top talkers by connection count
+cut -f3 /var/log/zeek/current/conn.log | sort | uniq -c | sort -rn | head -10
+
+# Connections to external IPs (not 10.x.x.x)
+grep -v "10\." /var/log/zeek/current/conn.log
+
+# Failed connection attempts
+grep "REJ" /var/log/zeek/current/conn.log
+
+# DNS queries to .ru or .cn (potential threat hunting)
+grep -E "\.ru|\.cn" /var/log/zeek/current/dns.log
+```
+
+**When things go wrong:**
+- *Zeek won't start* → Check `/var/log/zeek/current/reporter.log` for errors
+- *No logs* → Is the SPAN port actually cabled? Check switch config
+- *Disk full* → `logrotate -f /etc/logrotate.d/zeek` to force rotation
+- *Can't SSH* → Check PVE2 is up, or use `lxc-attach` from Proxmox shell
+
+---
+
+*Generated for Anthony's homelab.*

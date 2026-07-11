@@ -9,6 +9,8 @@ services:
       - /opt/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - /opt/monitoring/homelab_alerts.yml:/etc/prometheus/homelab_alerts.yml:ro
     restart: unless-stopped
+    mem_limit: 1g
+    memswap_limit: 1g
     security_opt:
       - apparmor:unconfined
 
@@ -27,6 +29,8 @@ services:
       - /dev/kmsg
     privileged: true
     restart: unless-stopped
+    mem_limit: 1g
+    memswap_limit: 1g
 
   blackbox-exporter:
     image: prom/blackbox-exporter:latest
@@ -38,6 +42,8 @@ services:
     volumes:
       - /opt/monitoring/blackbox.yml:/config/blackbox.yml:ro
     restart: unless-stopped
+    mem_limit: 1g
+    memswap_limit: 1g
     security_opt:
       - apparmor:unconfined
 
@@ -53,6 +59,8 @@ services:
       - /opt/monitoring/provisioning/:/etc/grafana/provisioning/:ro
       - /opt/monitoring/dashboards/:/var/lib/grafana/dashboards:ro
     restart: unless-stopped
+    mem_limit: 1g
+    memswap_limit: 1g
     security_opt:
       - apparmor:unconfined
 
@@ -62,11 +70,13 @@ services:
     ports:
       - 9617:9617
     environment:
-      - PIHOLE_HOSTNAME=10.2.7.2
+      - PIHOLE_HOSTNAME=${PIHOLE_HOSTNAME:-10.0.0.2}
       - PIHOLE_PASSWORD=${PIHOLE_PASSWORD}
       - PIHOLE_PROTOCOL=http
       - PIHOLE_PORT=80
     restart: unless-stopped
+    mem_limit: 1g
+    memswap_limit: 1g
     security_opt:
       - apparmor:unconfined
 
@@ -76,7 +86,7 @@ services:
     ports:
       - 9999:9999
     environment:
-      - NUT_HOST=10.2.7.64
+      - NUT_HOST=${NUT_HOST:-monitoring.internal.lan}
       - NUT_PORT=3493
       - NUT_USER=monitor
       - NUT_PASSWORD=${NUT_PASSWORD}
@@ -84,6 +94,8 @@ services:
       - /opt/monitoring/nut_exporter.py:/app/exporter.py:ro
     command: python /app/exporter.py
     restart: unless-stopped
+    mem_limit: 1g
+    memswap_limit: 1g
     security_opt:
       - apparmor:unconfined
 
@@ -95,6 +107,8 @@ services:
     volumes:
       - /opt/monitoring/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
     restart: unless-stopped
+    mem_limit: 1g
+    memswap_limit: 1g
     security_opt:
       - apparmor:unconfined
 
@@ -107,11 +121,13 @@ services:
       - /opt/monitoring/webhook/receiver.py:/app/receiver.py:ro
     command: python -u /app/receiver.py
     restart: unless-stopped
+    mem_limit: 1g
+    memswap_limit: 1g
     security_opt:
       - apparmor:unconfined
 
   uptime-kuma:
-    image: louislam/uptime-kuma:latest
+    image: louislam/uptime-kuma:1
     container_name: uptime-kuma
     security_opt:
       - apparmor:unconfined
@@ -120,6 +136,8 @@ services:
     volumes:
       - uptime_kuma_data:/app/data
     restart: unless-stopped
+    mem_limit: 1g
+    memswap_limit: 1g
 
   gitea:
     image: gitea/gitea:latest
@@ -141,6 +159,18 @@ services:
       - GITEA__server__ROOT_URL=http://gitea.home.lan
       - GITEA__server__SSH_PORT=2222
     restart: unless-stopped
+    mem_limit: 1g
+    memswap_limit: 1g
+
+  portainer-agent:
+    image: portainer/agent:latest
+    container_name: portainer_agent
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/lib/docker/volumes:/var/lib/docker/volumes
+    restart: unless-stopped
+    mem_limit: 256m
+    memswap_limit: 256m
 
 volumes:
   gitea_data:

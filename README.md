@@ -8,15 +8,77 @@ This repository contains sanitized Docker Compose, monitoring, and reverse proxy
 
 | Layer | Services | Purpose |
 |-------|----------|---------|
-| **Hypervisor** | Proxmox VE (cluster) + PBS | LXC container hosting across dual hosts, ZFS backups |
-| **Gateway/Firewall** | OPNsense | VLAN routing, firewall, DHCP |
-| **DNS Filter** | Pi-hole | Network-wide ad blocking, local DNS |
-| **Monitoring** | Prometheus, Grafana, cAdvisor, Blackbox, Uptime Kuma | Metrics, alerting, dashboards |
-| **Security Monitoring** | Wazuh SIEM + passive network IDS sensor | Host & network threat detection, log analysis |
+| **Hypervisor** | Proxmox VE (2-node cluster) + Proxmox Backup Server | LXC/VM hosting across dual hosts, ZFS backups |
+| **Gateway/Firewall** | OPNsense | VLAN routing, firewall, DHCP, VPN |
+| **DNS Filter** | Pi-hole + Unbound | Network-wide ad blocking, local DNS, recursive resolver |
+| **VPN** | Tailscale | Secure mesh VPN for remote access |
+| **Monitoring** | Prometheus, Grafana, Node Exporter, cAdvisor, Blackbox, Uptime Kuma | Metrics, alerting, dashboards |
+| **Security Monitoring** | Wazuh SIEM + Zeek IDS sensor | Host & network threat detection, log analysis, ARP monitoring |
 | **Source Control** | Gitea | Private git hosting |
-| **Automation Agent** | Hermes (primary + local LLM) | AI orchestration, cron jobs, Discord gateway |
-| **Media Stack** | See below | Content ingestion, indexing, streaming |
-| **Office Stack** | Vaultwarden, OnlyOffice, LanguageTool, Actual Budget | Self-hosted productivity |
+| **Automation Agent** | Hermes Agent (primary + local LLM) | AI orchestration, cron jobs, Discord gateway |
+| **Container Management** | Portainer CE | Container orchestration UI |
+| **Service Dashboard** | Heimdall | Centralized bookmark & service dashboard |
+| **Media Stack** | 18 Docker containers | Content ingestion, indexing, streaming (VPN-protected) |
+| **Photo Management** | Immich | Self-hosted photo backup & management |
+| **File Sync** | Nextcloud | File sync, share, and collaboration |
+| **MDM** | MicroMDM | Apple device management (DEP, enrollment) |
+| **IT Asset Management** | Snipe-IT | Hardware and software asset tracking |
+| **Domain Services** | Windows Server 2025 AD | Domain controller, DNS, DHCP, GPO management |
+
+## Hardware Layout
+
+| Host | Type | Hardware | Storage |
+|------|------|----------|---------|
+| **Node A** (PVE) | Hypervisor | HP ProDesk 400 G4, Core i5-7500, 32GB RAM | 930GB SSD |
+| **Node B** (PVE) | Hypervisor | Custom build, Core i7-2600K, 16GB RAM | 4×2TB ZFS pool (2.72TB usable) |
+| **PBS Node** (PVE) | Backup Server | HP Z230, Xeon E3-1225 v3, 16GB RAM | ZFS storage |
+
+## Active Container Reference
+
+All containers use private RFC1918 addressing (10.x.x.x). No public IPs are exposed.
+
+### Node A (10.2.7.x)
+
+| Role | Hostname | CT | OS | vCPU | RAM | Disk | Notes |
+|------|----------|----|----|------|-----|------|-------|
+| AI Orchestration Agent | hermesagent | 100 | Debian 13 | 4 | 8GB | 30GB | Hermes Agent, Discord gateway, Node Exporter, Cockpit |
+| Network Alerting | pialert | 102 | Debian 13 | 2 | 2GB | 10GB | PiAlert ARP monitoring, Node Exporter, Cockpit |
+| SIEM Manager | wazuh | 105 | Debian 13 | 2 | 8GB | 50GB | Wazuh manager + indexer + dashboard, PatchMon |
+| Monitoring Hub | grafana | 106 | Ubuntu 24.04 | 2 | 4GB | 30GB | Grafana, Prometheus, Gitea, Uptime Kuma, Snipe-IT — 13 Docker containers |
+| DNS Filter | pihole | 107 | Debian 13 | 2 | 4GB | 4GB | Pi-hole + Unbound, Node Exporter, Cockpit |
+| Container Management | portainer | 108 | Debian 12 | 1 | 1GB | 10GB | Portainer CE |
+| Service Dashboard | heimdall-dashboard | 109 | Debian 13 | 1 | 1GB | 2GB | Heimdall dashboard |
+| Local LLM Inference | hermes-ollama | 113 | Ubuntu 24.04 | 4 | 8GB | 40GB | Ollama (qwen2.5:3b), Node Exporter, Cockpit |
+| Centralized Management | cockpit | 114 | Debian 12 | 2 | 2GB | 10GB | Cockpit node manager, Node Exporter |
+
+### Node B (10.2.7.x)
+
+| Role | Hostname | CT | OS | vCPU | RAM | Disk | Notes |
+|------|----------|----|----|------|-----|------|-------|
+| Network IDS Sensor | zeek | 101 | Debian 12 | 2 | 2GB | 12GB | Zeek passive traffic analysis on port-mirror |
+| Media Automation | ripper | 103 | Debian 12 | 2 | 2GB | 20GB | DVD ripping, python3 automation |
+| MDM Server | micromd | 104 | Debian 12 | 2 | 2GB | 20GB | MicroMDM (Apple device management), Docker |
+| Media Stack Host | media-stack | 110 | Debian 12 | 4 | 8GB | 60GB | 18 Docker containers: Jellyfin, Sonarr, Radarr, etc., Vaultwarden, NPM |
+| Photo Management | immich | 111 | Debian 13 | 2 | 4GB | 50GB | Immich + PostgreSQL + Redis, Node Exporter |
+| File Sync & Share | nextcloud | 112 | Debian 12 | 2 | 4GB | 50GB | Nextcloud + MariaDB + Redis, Node Exporter |
+
+## Virtual Machines
+
+| Role | VM | OS | vCPU | RAM | Disk |
+|------|----|----|------|-----|------|
+| Domain Controller | 200 | Windows Server 2025 | 2 | 4GB | 40GB |
+| Domain Client | 201 | Windows 11 | 2 | 4GB | 40GB |
+
+## Active Directory Lab
+
+| Component | Value |
+|-----------|-------|
+| Domain | homelab.local |
+| Domain Controller | Windows Server 2025 (VM 200) |
+| Services | AD DS, DNS, DHCP, GPOs |
+| Organizational Units | Employees → IT, Computers, Groups |
+| User Management | User accounts, group membership, domain join |
+| Remote Management | WinRM |
 
 ## Media Stack — Enterprise Abstraction Reference
 
@@ -35,36 +97,13 @@ This repository contains sanitized Docker Compose, monitoring, and reverse proxy
 | `credential-vault` | Vaultwarden | Password management |
 | `reverse-proxy` | Nginx Proxy Manager | SSL termination & domain routing |
 
-## Infrastructure Layout
-
-| Host | Type | Hardware | Containers |
-|------|------|----------|------------|
-| **Node A** (PVE 9.x) | Hypervisor | i5-7500, 32GB RAM, 930GB SSD | AI agent, DNS, monitoring, SIEM, dashboards, Portainer |
-| **Node B** (PVE 8.x) | Hypervisor | i7-2600K, 16GB RAM, 2.72TB ZFS pool | Media stack, Zeek sensor, Immich, Nextcloud |
-
-## Active Container Reference
-
-| Role | Host | OS | Cores | RAM | Disk | Purpose |
-|------|------|-----|-------|-----|------|---------|
-| **AI Agent (primary)** | Node A | Debian 13 | 4 | 4GB | 30GB | Main automation agent, Discord gateway |
-| **Local LLM Agent** | Node A | Ubuntu 24.04 | 4 | 8GB | 40GB | Ollama-based cron execution (0 API credits) |
-| **DNS Filter** | Node A | Debian 13 | 2 | 4GB | 4GB | Pi-hole network DNS & ad blocking |
-| **SIEM Manager** | Node A | Debian 12 | 2 | 8GB | 50GB | Wazuh security event management |
-| **Monitoring Hub** | Node A | Ubuntu 24.04 | 2 | 4GB | 30GB | Grafana, Prometheus, Gitea, 10 Docker services |
-| **Docker Management** | Node A | Debian 12 | 1 | 1GB | 10GB | Portainer UI across hosts |
-| **Service Dashboard** | Node A | Debian 13 | 1 | 512MB | 2GB | Heimdall bookmark dashboard |
-| **Network Alerting** | Node A | Debian 12 | 2 | 2GB | 10GB | PiAlert ARP-based device discovery |
-| **Network IDS Sensor** | Node B | Debian 12 | 2 | 2GB | 12GB | Zeek passive traffic analysis (port-mirror feed) |
-| **Media Stack** | Node B | Debian 13 | 4 | 8GB | 60GB | 13 Docker containers — VPN-protected media pipeline |
-| **Photo Vault** | Node B | Debian 13 | 2 | 4GB | 50GB | Immich photo management (native) |
-| **File Sync** | Node B | Debian 12 | 2 | 4GB | 50GB | Nextcloud with PostgreSQL |
-
 ## Prerequisites
 
 - Docker Engine 24+ and Docker Compose v2
-- Linux (tested on Debian 12 LXC containers)
+- Linux (tested on Debian 12/13 and Ubuntu 24.04 LXC containers)
 - A VPN subscription (for production media stack)
 - A wildcard DNS record or Pi-hole local DNS override
+- Proxmox VE 8.x+ (for cluster management)
 
 ## Quick Start
 
@@ -92,16 +131,49 @@ docker compose -f media-stack.yml up -d                 # Media stack (prod)
 .
 ├── docker-compose.yml              # Monitoring stack (Prometheus, Grafana, etc.)
 ├── media-stack.yml                 # Media stack — production (VPN-protected)
+├── media-stack-testing.yml         # Media stack — testing (no VPN, local only)
 ├── nextcloud-office-stack.yml      # Office productivity stack
 ├── nginx-default.conf              # Nginx reverse proxy subdomain config
 ├── nginx.conf                      # Base nginx configuration
 ├── prometheus.yml                  # Prometheus scrape configuration
 ├── alertmanager.yml                # Alertmanager routing & receivers
 ├── homelab_alerts.yml              # Prometheus alerting rules
+├── security-monitoring.md          # Zeek + Wazuh architecture reference
 ├── .env.example                    # Environment variable template
 ├── CREDENTIALS-TEMPLATE.md         # Credential tracking template (NEVER commit real creds)
 └── scripts/
-    └── pre-commit-secret-scan.py   # Pre-commit hook for secret detection
+    ├── pre-commit-secret-scan.py   # Pre-commit hook for secret detection
+    ├── homelab-panel.py            # Homelab monitoring panel
+    ├── media-dash.py               # Media stack dashboard
+    ├── dvd-webui.py                # DVD ripping web UI
+    └── dvd-watchdog.sh             # DVD watchdog service
+```
+
+## Boot Order
+
+### Node A (dependency-aware)
+
+```
+ 1. DNS Filter (107)   — DNS first — everything needs DNS
+ 2. Monitoring Hub (106) — Grafana, Prometheus, Gitea, Uptime Kuma
+ 3. Network Alerting (102) — PiAlert
+ 4. Container Management (108) — Portainer
+ 5. Local LLM Inference (113) — Ollama cron worker
+ 6. Service Dashboard (109) — Heimdall
+ 7. SIEM Manager (105) — Wazuh
+ 8. AI Orchestration Agent (100) — starts once infra is ready
+ 9. Centralized Management (114) — Cockpit node manager
+```
+
+### Node B
+
+```
+ 1. Network IDS Sensor (101)   — Zeek (passive capture, no dependencies)
+ 2. Photo Management (111)     — Immich
+ 3. File Sync & Share (112)    — Nextcloud
+ 4. MDM Server (104)           — MicroMDM
+ 5. Media Stack Host (110)     — heaviest, starts last (18 containers)
+ 6. Media Automation (103)     — DVD ripping
 ```
 
 ## Security
@@ -111,29 +183,9 @@ docker compose -f media-stack.yml up -d                 # Media stack (prod)
 - **Pre-commit hook** scans staged files for API keys, tokens, and credentials
 - **`.gitignore`** blocks `.env`, `.pem`, `.key`, `config/` directories, and more
 - **RFC1918 private IPs** only — no public WAN addresses exposed
-
-## Boot Order (Node A — dependency-aware)
-
-```
-1. DNS Filter (DNS first — everything needs DNS)
-2. Monitoring Hub (Prometheus, Grafana, Gitea, cAdvisor)
-3. Network Alerting (PiAlert)
-4. Docker Management (Portainer)
-5. Local LLM Agent (Ollama cron worker)
-6. Service Dashboard (Heimdall)
-7. SIEM Manager (Wazuh)
-8. AI Agent (primary — starts once infra is ready)
-```
-
-## Boot Order (Node B)
-
-```
-1. Network IDS Sensor (Zeek — passive capture, no dependencies)
-2. Photo Vault (Immich)
-3. File Sync (Nextcloud)
-4. Media Stack (heaviest, starts last — 13 containers)
-```
+- **Tailscale mesh VPN** for secure remote access without open ports
 
 ## Reference Documents
 
 - **[Security Monitoring](./security-monitoring.md)** — Passive network IDS (Zeek) + Wazuh SIEM architecture, deployment principles, and log reference
+- **[CREDENTIALS-TEMPLATE](./CREDENTIALS-TEMPLATE.md)** — Credential tracking template (DO NOT commit real values to public repos)

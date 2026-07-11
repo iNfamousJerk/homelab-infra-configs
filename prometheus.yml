@@ -18,34 +18,55 @@ scrape_configs:
   # ─── Node Exporters (System Metrics) ─────────────────────
   - job_name: 'node_pve'
     static_configs:
-      - targets: ['10.2.7.64:9100']
+      - targets:
+          - '10.2.7.X1:9100'  # PVE1
+          - '10.2.7.X2:9100'  # PVE2
+          - '10.2.7.X3:9100'  # PBS
+    relabel_configs:
+      - source_labels: [__address__]
+        regex: '10\.2\.7\.X1:9100'
+        replacement: 'pve1 (10.2.7.X1)'
+        target_label: instance
+      - source_labels: [__address__]
+        regex: '10\.2\.7\.X2:9100'
+        replacement: 'pve2 (10.2.7.X2)'
+        target_label: instance
+      - source_labels: [__address__]
+        regex: '10\.2\.7\.X3:9100'
+        replacement: 'pbs (10.2.7.X3)'
+        target_label: instance
 
   - job_name: 'node_containers'
     static_configs:
       - targets:
-          - '10.2.7.107:9100'
-          - '10.2.7.44:9100'
-          - '10.2.7.77:9100'
-          - '10.2.7.105:9100'
-          - '10.2.7.99:9100'
-          - '10.2.7.110:9100'
-          - '10.2.7.108:9100'
-          - '10.2.7.2:9100'
-          - '10.2.7.109:9100'
+          - '10.2.7.A1:9100'  # CT management agent
+          - '10.2.7.A2:9100'  # CT photo vault / immich
+          - '10.2.7.A3:9100'  # CT network alerting
+          - '10.2.7.A4:9100'  # CT credential vault / nextcloud
+          - '10.2.7.A5:9100'  # CT security monitoring
+          - '10.2.7.A6:9100'  # CT monitoring dashboards
+          - '10.2.7.A7:9100'  # CT dns filter
+          - '10.2.7.A8:9100'  # CT media stack
+          - '10.2.7.A9:9100'  # CT portainer
+          - '10.2.7.B1:9100'  # CT heimdall
+          - '10.2.7.B2:9100'  # CT hermes-ollama
+          - '10.2.7.B3:9100'  # CT cockpit
+          - '10.2.7.B4:9100'  # CT zeek
+          - '10.2.7.B5:9100'  # CT micromd
 
   # ─── Docker Metrics ──────────────────────────────────────
   - job_name: 'cadvisor'
     static_configs:
-      - targets: ['10.2.7.108:8080']
+      - targets: ['10.2.7.A6:8080']  # CT monitoring
 
   # ─── Service & Infrastructure Probes ────────────────────
   - job_name: 'pihole'
     static_configs:
-      - targets: ['10.2.7.108:9617']
+      - targets: ['10.2.7.A6:9617']  # CT monitoring
 
   - job_name: 'nut'
     static_configs:
-      - targets: ['10.2.7.108:9999']
+      - targets: ['10.2.7.A6:9999']  # CT monitoring
 
   # HTTP probes — web UIs that accept plain HTTP
   - job_name: 'blackbox_http'
@@ -54,28 +75,29 @@ scrape_configs:
       module: [http_2xx]
     static_configs:
       - targets:
-          # CT 101 — Photo Vault
-          - http://10.2.7.44:2283
-          # CT 102 — Network Alerting
-          - http://10.2.7.77
-          # CT 107 — DNS Filter
-          - http://10.2.7.2
-          # CT 106 — Monitoring Dashboard
-          - http://10.2.7.108:3000
-          # CT 104 — Office Stack
-          - http://10.2.7.99:8083
-          - http://10.2.7.99:5006
-          - http://10.2.7.99:8010
-          # CT 108 — Media Stack
-          - http://10.2.7.109:8096
-          - http://10.2.7.109:7878
-          - http://10.2.7.109:8989
-          - http://10.2.7.109:8686
-          - http://10.2.7.109:9696
-          - http://10.2.7.109:6767
-          - http://10.2.7.109:5055
-          - http://10.2.7.109:8080
-          - http://10.2.7.109:81
+          # CT — Immich / Photo Vault
+          - http://10.2.7.A2:2283
+          # CT — Network Alerting
+          - http://10.2.7.A3
+          # CT — Pi-hole DNS
+          - http://10.2.7.A7
+          # CT — Monitoring (Grafana, Uptime Kuma)
+          - http://10.2.7.A6:3001
+          - http://10.2.7.A6:3000
+          # CT — Media Stack
+          - http://10.2.7.A8:8096   # Jellyfin
+          - http://10.2.7.A8:7878   # Radarr
+          - http://10.2.7.A8:8989   # Sonarr
+          - http://10.2.7.A8:8686   # Lidarr
+          - http://10.2.7.A8:9696   # Prowlarr
+          - http://10.2.7.A8:6767   # Bazarr
+          - http://10.2.7.A8:5055   # Jellyseerr
+          - http://10.2.7.A8:8080   # NPM
+          - http://10.2.7.A8:81     # NPM DB
+          - http://10.2.7.A8:8787   # Additional service
+          - http://10.2.7.A8:13378  # Additional service
+          # PVE2
+          - http://10.2.7.X2:8006
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target
@@ -91,22 +113,42 @@ scrape_configs:
       module: [tcp_connect]
     static_configs:
       - targets:
-          # CT 104 — Credential Vault
-          - 10.2.7.99:8082
-          # CT 100 — Management Agent
-          - 10.2.7.107:22
-          - 10.2.7.107:8642
-          # CT 108 — Reverse Proxy
-          - 10.2.7.109:80
-          # CT 105 — Security Monitoring
-          - 10.2.7.110:443
-          - 10.2.7.110:55000
-          - 10.2.7.110:9200
-          # PVE / PBS (Hypervisor)
-          - 10.2.7.64:8006
-          - 10.2.7.64:22
+          # CT — Management Agent SSH
+          - 10.2.7.A1:22
+          # CT — NPM
+          - 10.2.7.A8:80
+          # CT — Security Monitoring (Wazuh, Elastic)
+          - 10.2.7.A5:443
+          - 10.2.7.A5:55000
+          - 10.2.7.A5:9200
+          # PVE1
+          - 10.2.7.X1:8006
+          - 10.2.7.X1:22
+          # PVE2
+          - 10.2.7.X2:8006
+          - 10.2.7.X2:22
+          # PBS
+          - 10.2.7.X3:8007
+          # CT — Immich SSH
+          - 10.2.7.A2:22
+          # CT — Nextcloud SSH
+          - 10.2.7.A4:22
+          # CT — Media Stack SSH
+          - 10.2.7.A8:22
           # Pi-hole DNS
-          - 10.2.7.2:53
+          - 10.2.7.A7:53
+          # CT — Portainer SSH
+          - 10.2.7.A9:22
+          # CT — Hermes Ollama SSH
+          - 10.2.7.B2:22
+          # CT — Cockpit SSH
+          - 10.2.7.B3:22
+          # CT — Heimdall SSH
+          - 10.2.7.B1:22
+          # CT — Zeek SSH
+          - 10.2.7.B4:22
+          # CT — MicroMD SSH
+          - 10.2.7.B5:22
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target

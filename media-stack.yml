@@ -25,7 +25,7 @@
 
 x-puid: &puid "1000"
 x-pgid: &pgid "1000"
-x-tz: &tz "America/New_York"
+x-tz: &tz "America/Los_Angeles"
 x-dns: &dns
   - "1.1.1.1"
   - "1.0.0.1"
@@ -45,7 +45,7 @@ services:
       - /dev/net/tun:/dev/net/tun
     environment:
       # Required: VPN credentials (set in .env file)
-      - VPN_SERVICE_PROVIDER=your-vpn-provider
+      - VPN_SERVICE_PROVIDER=${VPN_SERVICE_PROVIDER:-protonvpn}
       - VPN_TYPE=openvpn
       - OPENVPN_USER=${VPN_USER}
       - OPENVPN_PASSWORD=${VPN_PASSWORD}
@@ -58,7 +58,7 @@ services:
       # - WIREGUARD_ADDRESSES=${WG_ADDRESSES}
       # Port forwarding (varies by provider)
       # - VPN_PORT_FORWARDING=on
-      # - VPN_PORT_FORWARDING_PROVIDER=your-provider
+      # - VPN_PORT_FORWARDING_PROVIDER=${VPN_PROVIDER}
       # 🔒 Kill Switch (enabled by default — explicit for visibility)
       # Gluetun's iptables firewall blocks ALL non-VPN traffic.
       # If the VPN drops, the tunnel interface disappears and
@@ -81,7 +81,16 @@ services:
       - "6881:6881/udp"
     restart: *restart
 
-  # ─── Reverse Proxy (Web UI) ────────────────────────────────
+  # ─── Docker Agent ──────────────────────────────────────────────
+  docker-agent:
+    image: portainer/agent:latest
+    container_name: docker-agent
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/lib/docker/volumes:/var/lib/docker/volumes
+    restart: *restart
+
+  # ─── Reverse Proxy (Web UI) ────────────────────────────────────
   reverse-proxy:
     image: jc21/nginx-proxy-manager:latest
     container_name: reverse-proxy
@@ -94,7 +103,7 @@ services:
       - ./config/reverse-proxy/letsencrypt:/etc/letsencrypt
     restart: *restart
 
-  # ─── Credential Vault ──────────────────────────────────────
+  # ─── Credential Vault ──────────────────────────────────────────
   credential-vault:
     image: vaultwarden/server:latest
     container_name: credential-vault
@@ -107,9 +116,9 @@ services:
       - ./config/vaultwarden:/data
     restart: *restart
 
-  # ─── Ingress Transport Node (VPN-protected) ─────────────────
+  # ─── Ingress Transport Node (VPN-protected) ─────────────────────
   ingress-transport-node:
-    image: lscr.io/linuxserver/qbittorrent:latest
+    image: lscr.io/linuxserver/qbittorrent:5.1.0
     container_name: ingress-transport-node
     network_mode: "service:vpn-gateway"
     depends_on:
@@ -120,13 +129,14 @@ services:
       PGID: *pgid
       TZ: *tz
       UMASK: "002"
+      WEBUI_PASSWORD: ${QBITTORRENT_PASSWORD:-adminadmin}
     volumes:
       - ./config/ingress-transport-node:/config
-      - /mnt/data/ingestion:/mnt/data/ingestion
+      - /data:/data
     <<: *apparmor
     restart: *restart
 
-  # ─── Upstream Index Router ──────────────────────────────────
+  # ─── Upstream Index Router ──────────────────────────────────────
   upstream-index-router:
     image: lscr.io/linuxserver/prowlarr:develop
     container_name: upstream-index-router
@@ -141,7 +151,7 @@ services:
     <<: *apparmor
     restart: *restart
 
-  # ─── Captcha Resolver (Cloudflare Bypass) ───────────────────
+  # ─── Captcha Resolver (Cloudflare Bypass) ───────────────────────
   captcha-resolver:
     image: ghcr.io/flaresolverr/flaresolverr:latest
     container_name: captcha-resolver
@@ -151,7 +161,7 @@ services:
       - "8191:8191"
     restart: *restart
 
-  # ─── Content Aggregator (Film) ──────────────────────────────
+  # ─── Content Aggregator (Film) ──────────────────────────────────
   content-aggregator:
     image: lscr.io/linuxserver/radarr:latest
     container_name: content-aggregator
@@ -161,13 +171,13 @@ services:
       TZ: *tz
     volumes:
       - ./config/content-aggregator:/config
-      - /mnt/data/ingestion:/mnt/data/ingestion
+      - /data:/data
     ports:
       - "7878:7878"
     <<: *apparmor
     restart: *restart
 
-  # ─── Data Indexer Service (Episodic) ────────────────────────
+  # ─── Data Indexer Service (Episodic) ────────────────────────────
   data-indexer-service:
     image: lscr.io/linuxserver/sonarr:latest
     container_name: data-indexer-service
@@ -177,13 +187,13 @@ services:
       TZ: *tz
     volumes:
       - ./config/data-indexer-service:/config
-      - /mnt/data/ingestion:/mnt/data/ingestion
+      - /data:/data
     ports:
       - "8989:8989"
     <<: *apparmor
     restart: *restart
 
-  # ─── Data Indexer Service (Audio) ───────────────────────────
+  # ─── Data Indexer Service (Audio) ───────────────────────────────
   data-indexer-service-2:
     image: lscr.io/linuxserver/lidarr:latest
     container_name: data-indexer-service-2
@@ -193,13 +203,13 @@ services:
       TZ: *tz
     volumes:
       - ./config/data-indexer-service-2:/config
-      - /mnt/data/ingestion:/mnt/data/ingestion
+      - /data:/data
     ports:
       - "8686:8686"
     <<: *apparmor
     restart: *restart
 
-  # ─── Subtitle Enrichment Service ────────────────────────────
+  # ─── Subtitle Enrichment Service ────────────────────────────────
   subtitle-enrichment-service:
     image: lscr.io/linuxserver/bazarr:latest
     container_name: subtitle-enrichment-service
@@ -209,13 +219,13 @@ services:
       TZ: *tz
     volumes:
       - ./config/subtitle-enrichment-service:/config
-      - /mnt/data/ingestion:/mnt/data/ingestion
+      - /data:/data
     ports:
       - "6767:6767"
     <<: *apparmor
     restart: *restart
 
-  # ─── Internal Streaming Microservice ─────────────────────────
+  # ─── Internal Streaming Microservice ────────────────────────────
   internal-streaming-microservice:
     image: lscr.io/linuxserver/jellyfin:latest
     container_name: internal-streaming-microservice
@@ -225,23 +235,136 @@ services:
       TZ: *tz
     volumes:
       - ./config/internal-streaming-microservice:/config
-      - /mnt/storage/assets:/mnt/storage/assets
+      - /data/media:/data/media
+      - /data/torrents:/data/torrents
+    devices:
+      - /dev/dri:/dev/dri
+    group_add:
+      - "44"
+      - "104"
     ports:
       - "8096:8096"
     <<: *apparmor
     restart: *restart
 
-  # ─── Media Request Gateway ──────────────────────────────────
-  requestrr:
-    image: darkalfx/requestrr:latest
-    container_name: requestrr
+  # ─── Content Request Orchestrator (Media) ──────────────────────
+  content-request-orchestrator:
+    image: fallenbagel/jellyseerr:latest
+    container_name: content-request-orchestrator
     environment:
       PUID: *puid
       PGID: *pgid
-      TZ: "America/Los_Angeles"
+      TZ: *tz
     volumes:
-      - ./config/requestrr:/root/config
+      - ./config/content-request-orchestrator:/config
+    ports:
+      - "5055:5055"
+    <<: *apparmor
+    restart: *restart
+
+  # ─── Media Request Gateway (Discord Bot) ───────────────────────
+  request-gateway:
+    image: darkalfx/requestrr:latest
+    container_name: request-gateway
+    environment:
+      PUID: *puid
+      PGID: *pgid
+      TZ: *tz
+    volumes:
+      - ./config/request-gateway:/root/config
     ports:
       - "4545:4545"
     <<: *apparmor
     restart: *restart
+
+  # ─── Data Indexer Service (Literary) ──────────────────────────
+  data-indexer-service-3:
+    image: linuxserver/readarr:amd64-develop-version-0.4.18.2805
+    container_name: data-indexer-service-3
+    environment:
+      PUID: *puid
+      PGID: *pgid
+      TZ: *tz
+    volumes:
+      - ./config/data-indexer-service-3:/config
+      - /data:/data
+    ports:
+      - "8787:8787"
+    <<: *apparmor
+    restart: *restart
+
+  # ─── Audiobook & eBook Server ─────────────────────────────────
+  audiobook-service:
+    image: ghcr.io/advplyr/audiobookshelf:latest
+    container_name: audiobook-service
+    environment:
+      PUID: *puid
+      PGID: *pgid
+      TZ: *tz
+    volumes:
+      - ./config/audiobook-service/config:/config
+      - ./config/audiobook-service/metadata:/metadata
+      - /data/media/books:/audiobooks
+      - /data/media/books:/ebooks
+      - /data/torrents/books:/torrents
+    ports:
+      - "13378:80"
+    <<: *apparmor
+    restart: *restart
+
+  # ─── Music Streaming Service ──────────────────────────────────
+  music-streaming-service:
+    image: deluan/navidrome:latest
+    container_name: music-streaming-service
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: *tz
+      ND_SCANSCHEDULE: 1h
+      ND_LOGLEVEL: info
+      ND_SESSIONTIMEOUT: 24h
+      ND_BASEURL: ""
+    volumes:
+      - ./config/music-streaming-service:/data
+      - /data/media/music:/music:ro
+    ports:
+      - "4533:4533"
+    security_opt:
+      - apparmor=unconfined
+    restart: unless-stopped
+
+  # ─── Comics & Manga Manager ───────────────────────────────────
+  comics-manager:
+    image: lscr.io/linuxserver/mylar3:latest
+    container_name: comics-manager
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: *tz
+    volumes:
+      - ./config/comics-manager:/config
+      - /data:/data
+    ports:
+      - "8090:8090"
+    security_opt:
+      - apparmor=unconfined
+    restart: unless-stopped
+
+  # ─── Manga Request UI ─────────────────────────────────────────
+  manga-request-ui:
+    image: python:3.11-slim
+    container_name: manga-request-ui
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=*tz
+    volumes:
+      - ./scripts/manga-request-ui.py:/app/app.py:ro
+      - /data/manga-requests:/data/manga-requests
+    ports:
+      - "5000:5000"
+    command: >
+      sh -c "pip install flask --break-system-packages -q && python /app/app.py"
+    security_opt:
+      - apparmor=unconfined
+    restart: unless-stopped

@@ -21,16 +21,16 @@ groups:
           description: "One or more node_exporter targets not reporting."
 
       - alert: HighDiskUsage
-        expr: (1 - (node_filesystem_avail_bytes{fstype!="tmpfs",fstype!="overlay",fstype!="devtmpfs"} / node_filesystem_size_bytes{fstype!="tmpfs",fstype!="overlay",fstype!="devtmpfs"})) * 100 > 85
+        expr: (1 - (node_filesystem_avail_bytes{fstype!="tmpfs",fstype!="overlay",fstype!="devtmpfs",fstype!="zfs"} / node_filesystem_size_bytes{fstype!="tmpfs",fstype!="overlay",fstype!="devtmpfs",fstype!="zfs"})) * 100 > 90
         for: 5m
         labels:
           severity: warning
         annotations:
-          summary: "Disk >85% on {{ $labels.instance }}"
+          summary: "Disk >90% on {{ $labels.instance }}"
           description: "{{ $labels.mountpoint }} is {{ $value | humanizePercentage }} full"
 
       - alert: DiskAlmostFull
-        expr: (1 - (node_filesystem_avail_bytes{fstype!="tmpfs",fstype!="overlay",fstype!="devtmpfs"} / node_filesystem_size_bytes{fstype!="tmpfs",fstype!="overlay",fstype!="devtmpfs"})) * 100 > 95
+        expr: (1 - (node_filesystem_avail_bytes{fstype!="tmpfs",fstype!="overlay",fstype!="devtmpfs",fstype!="zfs"} / node_filesystem_size_bytes{fstype!="tmpfs",fstype!="overlay",fstype!="devtmpfs",fstype!="zfs"})) * 100 > 95
         for: 2m
         labels:
           severity: critical
@@ -95,12 +95,12 @@ groups:
           description: "Container {{ $labels.name }} hit OOM! Increase memory limit."
 
       - alert: ContainerHighMemoryMB
-        expr: container_memory_usage_bytes{name!=""} / 1024 / 1024 > 500
+        expr: container_memory_usage_bytes{name!=""} / 1024 / 1024 > 900
         for: 5m
         labels:
           severity: info
         annotations:
-          summary: "Container {{ $labels.name }} >500MB RAM"
+          summary: "Container {{ $labels.name }} >900MB RAM"
           description: "{{ $labels.name }} using {{ $value | humanize1024 }}"
 
       - alert: ContainerHighCPU
@@ -113,12 +113,12 @@ groups:
           description: "{{ $labels.name }} CPU at {{ $value }} cores for 10+ min"
 
       - alert: ContainerDiskUsage
-        expr: (container_fs_usage_bytes{name!=""} / container_fs_limit_bytes{name!=""}) * 100 > 85
+        expr: (container_fs_usage_bytes{name!=""} / container_fs_limit_bytes{name!=""}) * 100 > 90
         for: 5m
         labels:
           severity: warning
         annotations:
-          summary: "Container {{ $labels.name }} disk >85%"
+          summary: "Container {{ $labels.name }} disk >90%"
           description: "{{ $labels.name }} filesystem {{ $value | humanizePercentage }} full"
 
       - alert: ContainerNetworkErrors
@@ -134,13 +134,13 @@ groups:
     interval: 30s
     rules:
       - alert: PiholeStatus
-        expr: pihole_status{status!="enabled"}
+        expr: pihole_status == 0
         for: 1m
         labels:
           severity: warning
         annotations:
-          summary: "DNS filter status: {{ $labels.status }}"
-          description: "Check DNS filter admin panel"
+          summary: "Pi-hole DISABLED"
+          description: "Pi-hole is disabled. Check admin panel at http://10.2.7.X/admin"
 
       - alert: PiholeExporterDown
         expr: absent(up{job="pihole"} == 1)
@@ -148,8 +148,8 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "DNS filter exporter DOWN"
-          description: "No DNS filter metrics for 2+ minutes"
+          summary: "Pi-hole exporter DOWN"
+          description: "No Pi-hole metrics for 2+ minutes"
 
       - alert: PiholeBlockRateDrop
         expr: pihole_ads_percentage_today < 5
@@ -157,7 +157,7 @@ groups:
         labels:
           severity: info
         annotations:
-          summary: "DNS filter blocking low ({{ $value | humanizePercentage }})"
+          summary: "Pi-hole blocking low ({{ $value | humanizePercentage }})"
           description: "Ads blocked today is only {{ $value | humanizePercentage }}"
 
       - alert: ServiceHTTPDown
@@ -168,6 +168,7 @@ groups:
         annotations:
           summary: "HTTP service down: {{ $labels.instance }}"
           description: "HTTP probe failed for {{ $labels.instance }}"
+
 
       - alert: ServiceTCPDown
         expr: probe_success{job="blackbox_tcp"} == 0
@@ -200,7 +201,7 @@ groups:
           description: "UPS running on battery! Runtime: {{ $labels.instance }}"
 
       - alert: UPSBatteryLow
-        expr: nut_battery_charge < 30 and nut_battery_charge >= 0
+        expr: nut_battery_charge < 15 and nut_battery_charge >= 0
         for: 10s
         labels:
           severity: critical
@@ -218,7 +219,7 @@ groups:
           description: "UPS at {{ $value }}% load - consider redistributing"
 
       - alert: UPSLowRuntime
-        expr: nut_battery_runtime < 600 and nut_battery_runtime >= 0
+        expr: nut_battery_runtime < 120 and nut_battery_runtime >= 0
         for: 10s
         labels:
           severity: critical
@@ -234,7 +235,6 @@ groups:
         annotations:
           summary: "NUT exporter DOWN"
           description: "UPS metrics unavailable for 2+ minutes"
-
       - alert: UPSDisconnected
         expr: nut_ups_status == -1
         for: 1m

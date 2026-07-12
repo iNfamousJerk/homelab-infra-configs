@@ -33,6 +33,8 @@ SERVICES = [
     {"name": "HO (Ollama)", "url": "http://10.2.7.x:11434", "icon": "🧠", "cat": "ai"},
     {"name": "DVD Ripper", "url": "http://10.2.7.x:5050", "icon": "💿", "cat": "tools"},
     {"name": "Media Dash", "url": "http://10.2.7.x:5051", "icon": "📋", "cat": "tools"},
+    {"name": "osTicket", "url": "http://10.2.7.x:8001", "icon": "🎫", "cat": "tools"},
+    {"name": "Snipe-IT", "url": "http://10.2.7.x:8000", "icon": "📦", "cat": "infra"},
     {"name": "Homelab Panel", "url": "http://10.2.7.x:5052", "icon": "🏗️", "cat": "docs"},
 ]
 
@@ -210,7 +212,7 @@ text{font-family:system-ui,-apple-system,sans-serif;fill:#e2e8f0;font-size:11px}
 </style>
 <!-- Title -->
 <text x="550" y="30" text-anchor="middle" class="title">🏠 Piper Homelab Topology</text>
-<text x="550" y="46" text-anchor="middle" class="sub">Las Vegas · 10.2.7.x/24 · Proxmox Cluster</text>
+<text x="550" y="46" text-anchor="middle" class="sub">California · 10.2.7.x/24 · Proxmox Cluster</text>
 <!-- === INTERNET === -->
 <rect x="450" y="60" width="200" height="36" class="box"/>
 <text x="550" y="77" text-anchor="middle" font-size="12" fill="#34d399">🌐 Internet</text>
@@ -219,12 +221,12 @@ text{font-family:system-ui,-apple-system,sans-serif;fill:#e2e8f0;font-size:11px}
 <!-- === OPNsense === -->
 <rect x="400" y="120" width="300" height="44" class="box" stroke="#fb923c"/>
 <text x="550" y="140" text-anchor="middle" font-size="12" class="net">🛡 OPNsense</text>
-<text x="550" y="155" text-anchor="middle" class="label">VLANs: Family (10.2.10.1) · Server (10.2.30.1) · Guest (10.2.20.1) · LAN (10.2.7.x)</text>
+<text x="550" y="155" text-anchor="middle" class="label">VLANs: Mgmt (10.2.10.1) · Services (10.2.20.1) · Security (10.2.30.1) · Media (10.2.40.1) · Client (10.2.50.1) · IoT (10.2.60.1) · Lab (10.2.70.1)</text>
 <line x1="550" y1="164" x2="550" y2="182" class="line"/>
 <!-- === Switch === -->
 <rect x="400" y="184" width="300" height="36" class="box" stroke="#34d399"/>
-<text x="550" y="200" text-anchor="middle" font-size="12" class="mon">🔀 NETGEAR GS305E</text>
-<text x="550" y="214" text-anchor="middle" class="label">Managed Gigabit Switch</text>
+<text x="550" y="200" text-anchor="middle" font-size="12" class="mon">🔀 TP-Link TL-SG108E</text>
+<text x="550" y="214" text-anchor="middle" class="label">8-Port Gigabit Smart Switch</text>
 <line x1="220" y1="220" x2="220" y2="250" class="line"/>
 <line x1="550" y1="220" x2="550" y2="250" class="line"/>
 <line x1="880" y1="220" x2="880" y2="250" class="line"/>
@@ -244,7 +246,7 @@ text{font-family:system-ui,-apple-system,sans-serif;fill:#e2e8f0;font-size:11px}
 <rect x="225" y="440" width="110" height="34" class="box3"/><text x="280" y="455" text-anchor="middle" font-size="10" class="mon">❤️ Uptime Kuma</text><text x="280" y="468" text-anchor="middle" class="label">Monitor · 10.2.7.x:3001</text>
 <rect x="105" y="480" width="110" height="34" class="box3"/><text x="160" y="495" text-anchor="middle" font-size="10" class="ai">🧠 HO (113)</text><text x="160" y="508" text-anchor="middle" class="label">Ollama · 10.2.7.x</text>
 <rect x="225" y="480" width="110" height="34" class="box3"/><text x="280" y="495" text-anchor="middle" font-size="10" class="infra">🖥️ Cockpit (114)</text><text x="280" y="508" text-anchor="middle" class="label">Web Admin · 10.2.7.x</text>
-<text x="220" y="590" text-anchor="middle" class="label">🔗 VLAN: Server (10.2.30.1)</text>
+<text x="220" y="590" text-anchor="middle" class="label">🔗 VLAN: Mgmt (10) · cluster mgmt</text>
 <!-- === PVE2 === -->
 <rect x="450" y="252" width="200" height="36" class="box" stroke="#22d3ee"/>
 <text x="550" y="269" text-anchor="middle" font-size="12" class="hl">🖥 PVE2 — 10.2.7.x</text>
@@ -256,7 +258,7 @@ text{font-family:system-ui,-apple-system,sans-serif;fill:#e2e8f0;font-size:11px}
 <rect x="435" y="360" width="150" height="34" class="box3"/><text x="510" y="375" text-anchor="middle" font-size="10" class="media">🎬 Media Stack (110)</text><text x="510" y="388" text-anchor="middle" class="label">Jellyfin + *arrs</text>
 <rect x="435" y="400" width="110" height="34" class="box3"/><text x="490" y="415" text-anchor="middle" font-size="10" class="media">📸 Immich (111)</text><text x="490" y="428" text-anchor="middle" class="label">Photo Backup · 10.2.7.x</text>
 <rect x="555" y="400" width="110" height="34" class="box3"/><text x="610" y="415" text-anchor="middle" font-size="10" class="infra">☁ Nextcloud (112)</text><text x="610" y="428" text-anchor="middle" class="label">File Sync · 10.2.7.x</text>
-<text x="550" y="530" text-anchor="middle" class="label">🔗 VLAN: Server (10.2.30.1) · ZFS: media pool</text>
+<text x="550" y="530" text-anchor="middle" class="label">🔗 ZFS: media pool · 2×2TB + 2×1TB mirrors</text>
 <!-- === PBS === -->
 <rect x="780" y="252" width="200" height="36" class="box" stroke="#a78bfa"/>
 <text x="880" y="269" text-anchor="middle" font-size="12" class="infra">💾 PBS — 10.2.7.x</text>
@@ -288,7 +290,7 @@ text{font-family:system-ui,-apple-system,sans-serif;fill:#e2e8f0;font-size:11px}
 <rect x="620" y="733" width="10" height="10" rx="2" fill="#fb923c"/><text x="635" y="742" font-size="9" fill="#fb923c">Network</text>
 <rect x="710" y="733" width="10" height="10" rx="2" fill="#a78bfa"/><text x="725" y="742" font-size="9" fill="#a78bfa">Backup</text>
 <rect x="790" y="733" width="10" height="10" rx="2" fill="#c084fc"/><text x="805" y="742" font-size="9" fill="#c084fc">AI</text>
-<text x="550" y="768" text-anchor="middle" class="sub" font-size="9">Generated by Hermes Agent · v3 · Updated Jul 2026</text>
+<text x="550" y="768" text-anchor="middle" class="sub" font-size="9">Generated by Hermes Agent · v3 · Updated Jul 12 2026</text>
 </svg>"""
 
 # ─── HTML Template v3 — Tab Buttons + Mauve Dark Theme ──────────
@@ -465,7 +467,7 @@ h1{font-size:1.15rem;font-weight:700;letter-spacing:-0.02em}
       <span class="header-icon">🏠</span>
       <div>
         <h1>Piper Homelab</h1>
-        <div class="subtitle">Anthony Piper · Las Vegas · 10.2.7.x/24</div>
+        <div class="subtitle">Anthony Piper · California · 10.2.7.x/24</div>
       </div>
     </div>
     <div class="header-right">

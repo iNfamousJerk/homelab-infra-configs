@@ -18,6 +18,7 @@ SERVICES = [
     {"name": "Bazarr", "url": "http://10.2.7.x:6767", "icon": "💬", "cat": "arr"},
     {"name": "Jellyseerr", "url": "http://10.2.7.x:5055", "icon": "📺", "cat": "request"},
     {"name": "Mylar3", "url": "http://10.2.7.x:8090", "icon": "📚", "cat": "arr"},
+    {"name": "Mango", "url": "http://10.2.7.x:9000", "icon": "🎌", "cat": "media"},
     {"name": "Manga Request", "url": "http://10.2.7.x:5000", "icon": "🎴", "cat": "request"},
     {"name": "qBittorrent", "url": "http://10.2.7.x:8080", "icon": "⚡", "cat": "download"},
     {"name": "Navidrome", "url": "http://10.2.7.x:4533", "icon": "🎶", "cat": "media"},

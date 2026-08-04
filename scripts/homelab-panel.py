@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Piper Homelab — Control Panel v3 with Tab Navigation, Updated Services & Architecture"""
+"""Piper Homelab — Cyberpunk Control Panel v4"""
 import re, os, time, json, urllib.request, ssl
 from flask import Flask, render_template_string
 
@@ -16,14 +16,18 @@ SERVICES = [
     {"name": "Readarr", "url": "http://10.2.7.x:8787", "icon": "📖", "cat": "arr"},
     {"name": "Prowlarr", "url": "http://10.2.7.x:9696", "icon": "🔍", "cat": "arr"},
     {"name": "Bazarr", "url": "http://10.2.7.x:6767", "icon": "💬", "cat": "arr"},
+    {"name": "Jellyseerr", "url": "http://10.2.7.x:5055", "icon": "📺", "cat": "request"},
+    {"name": "Mylar3", "url": "http://10.2.7.x:8090", "icon": "📚", "cat": "arr"},
+    {"name": "Manga Request", "url": "http://10.2.7.x:5000", "icon": "🎴", "cat": "request"},
     {"name": "qBittorrent", "url": "http://10.2.7.x:8080", "icon": "⚡", "cat": "download"},
     {"name": "Navidrome", "url": "http://10.2.7.x:4533", "icon": "🎶", "cat": "media"},
     {"name": "Audiobookshelf", "url": "http://10.2.7.x:13378", "icon": "🎧", "cat": "media"},
     {"name": "Requestrr", "url": "http://10.2.7.x:4545", "icon": "📝", "cat": "request"},
     {"name": "Immich", "url": "http://10.2.7.x:2283", "icon": "📸", "cat": "media"},
-    {"name": "Nextcloud", "url": "http://10.2.7.x", "icon": "☁️", "cat": "infra"},
+    {"name": "Nextcloud", "url": "http://10.2.7.x:80", "icon": "☁️", "cat": "infra"},
     {"name": "NPM", "url": "http://10.2.7.x:81", "icon": "🔒", "cat": "infra"},
     {"name": "Grafana", "url": "http://10.2.7.x:3000", "icon": "📊", "cat": "monitor"},
+    {"name": "Prometheus", "url": "http://10.2.7.x:9090", "icon": "📈", "cat": "monitor"},
     {"name": "Uptime Kuma", "url": "http://10.2.7.x:3001", "icon": "❤️", "cat": "monitor"},
     {"name": "Wazuh", "url": "https://10.2.7.x:443", "icon": "🛡️", "cat": "security"},
     {"name": "Pi-hole", "url": "http://10.2.7.x/admin", "icon": "🚫", "cat": "network"},
@@ -31,10 +35,12 @@ SERVICES = [
     {"name": "Portainer", "url": "https://10.2.7.x:9443", "icon": "🐳", "cat": "infra"},
     {"name": "Cockpit", "url": "https://10.2.7.x:9090", "icon": "🖥️", "cat": "infra"},
     {"name": "HO (Ollama)", "url": "http://10.2.7.x:11434", "icon": "🧠", "cat": "ai"},
+    {"name": "Donetick", "url": "http://10.2.7.x:2021", "icon": "✅", "cat": "tools"},
     {"name": "DVD Ripper", "url": "http://10.2.7.x:5050", "icon": "💿", "cat": "tools"},
     {"name": "Media Dash", "url": "http://10.2.7.x:5051", "icon": "📋", "cat": "tools"},
-    {"name": "osTicket", "url": "http://10.2.7.x:8001", "icon": "🎫", "cat": "tools"},
+    {"name": "osTicket", "url": "http://10.2.7.x:8081", "icon": "🎫", "cat": "tools"},
     {"name": "Snipe-IT", "url": "http://10.2.7.x:8000", "icon": "📦", "cat": "infra"},
+    {"name": "Keycloak", "url": "http://10.2.7.x:5252", "icon": "🔑", "cat": "security"},
     {"name": "Homelab Panel", "url": "http://10.2.7.x:5052", "icon": "🏗️", "cat": "docs"},
 ]
 
@@ -45,7 +51,6 @@ PVE_PASSWORDS = {
 }
 
 def pve_api(host, endpoint, password):
-    """Authenticate to Proxmox API and fetch endpoint data."""
     ctx = ssl.create_default_context()
     ctx.check_hostname = False
     ctx.verify_mode = ssl.CERT_NONE
@@ -66,7 +71,6 @@ def pve_api(host, endpoint, password):
         return {"error": str(e)}
 
 def parse_node_status(host, label, password):
-    """Get node status via Proxmox API."""
     s = {"host": host, "label": label}
     status_data = pve_api(host, "/nodes/localhost/status", password)
     if isinstance(status_data, dict) and "error" in status_data:
@@ -110,7 +114,6 @@ def parse_node_status(host, label, password):
     return s
 
 def parse_pbs_status(host, label, password):
-    """Get PBS status via Proxmox Backup Server API."""
     s = {"host": host, "label": label}
     ctx = ssl.create_default_context()
     ctx.check_hostname = False
@@ -190,161 +193,194 @@ def collect_stats():
     pbs = parse_pbs_status("10.2.7.x", "PBS", PVE_PASSWORDS.get("10.2.7.x", ""))
     return {"pve1": pve1, "pve2": pve2, "pbs": pbs}
 
-# ─── Architecture SVG ───────────────────────────────────────────
-ARCH_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 870" style="background:#020617;width:100%;height:auto;max-width:1100px">
+ARCH_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 870" style="background:#08080f;width:100%;height:auto;max-width:1100px">
 <style>
-text{font-family:system-ui,-apple-system,sans-serif;fill:#e2e8f0;font-size:11px}
-.box{fill:rgba(15,23,42,0.8);stroke:#1e293b;stroke-width:1.5;rx:6;ry:6}
-.box2{fill:rgba(30,41,59,0.6);stroke:#334155;stroke-width:1;rx:4;ry:4}
-.box3{fill:rgba(15,23,42,0.5);stroke:#a78bfa;stroke-width:1;rx:4;ry:4}
-.label{font-size:10px;fill:#94a3b8}
-.hl{fill:#22d3ee;font-weight:bold}
-.arr{fill:#fbbf24}
-.media{fill:#22d3ee}
-.mon{fill:#34d399}
-.sec{fill:#fb7185}
-.infra{fill:#a78bfa}
-.net{fill:#fb923c}
-.ai{fill:#c084fc}
-.line{stroke:#334155;stroke-width:1.5;fill:none}
-.title{font-size:13px;font-weight:bold;fill:#f1f5f9}
-.sub{font-size:10px;fill:#64748b}
+text{font-family:'JetBrains Mono','Courier New',monospace;fill:#c0c0e0;font-size:11px}
+.box{fill:rgba(10,10,25,0.85);stroke:#ff00aa;stroke-width:1.5;rx:6;ry:6;filter:url(#glow)}
+.box2{fill:rgba(15,15,30,0.6);stroke:#ff00aa44;stroke-width:1;rx:4;ry:4}
+.box3{fill:rgba(10,10,25,0.5);stroke:#00f0ff66;stroke-width:1;rx:4;ry:4}
+.label{font-size:10px;fill:#8888aa}
+.hl{fill:#00f0ff;font-weight:bold}
+.arr{fill:#ffd700}
+.media{fill:#00f0ff}
+.mon{fill:#00ff41}
+.sec{fill:#ff0044}
+.infra{fill:#ff00aa}
+.net{fill:#ff8800}
+.ai{fill:#aa66ff}
+.line{stroke:#ff00aa44;stroke-width:1.5;fill:none}
+.title{font-size:13px;font-weight:bold;fill:#00f0ff}
+.sub{font-size:10px;fill:#6666aa}
 </style>
-<!-- Title -->
-<text x="550" y="30" text-anchor="middle" class="title">🏠 Piper Homelab Topology</text>
-<text x="550" y="46" text-anchor="middle" class="sub">California · 10.2.7.x/24 · Proxmox Cluster</text>
-<!-- === INTERNET === -->
+<defs>
+<filter id="glow"><feGaussianBlur stdDeviation="2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<rect width="1100" height="870" fill="#08080f"/>
+<text x="550" y="30" text-anchor="middle" class="title">🏴 Piper Homelab Topology</text>
+<text x="550" y="46" text-anchor="middle" class="sub">Las Vegas · 10.2.7.x/24 · Proxmox Cluster</text>
+<!-- INTERNET -->
 <rect x="450" y="60" width="200" height="36" class="box"/>
-<text x="550" y="77" text-anchor="middle" font-size="12" fill="#34d399">🌐 Internet</text>
+<text x="550" y="77" text-anchor="middle" font-size="12" fill="#00ff41">🌐 Internet</text>
 <text x="550" y="90" text-anchor="middle" class="label">Comcast Cable</text>
 <line x1="550" y1="96" x2="550" y2="118" class="line"/>
-<!-- === OPNsense === -->
-<rect x="400" y="120" width="300" height="44" class="box" stroke="#fb923c"/>
-<text x="550" y="140" text-anchor="middle" font-size="12" class="net">🛡 OPNsense</text>
-<text x="550" y="155" text-anchor="middle" class="label">VLANs: Mgmt (10.2.10.1) · Services (10.2.20.1) · Security (10.2.30.1) · Media (10.2.40.1) · Client (10.2.50.1) · IoT (10.2.60.1) · Lab (10.2.70.1)</text>
+<!-- OPNsense -->
+<rect x="400" y="120" width="300" height="44" class="box" stroke="#ff8800"/>
+<text x="550" y="140" text-anchor="middle" font-size="12" class="net">🛡 OPNsense — 10.2.7.x</text>
+<text x="550" y="155" text-anchor="middle" class="label">Firewall · VLANs · DHCP · NAT</text>
 <line x1="550" y1="164" x2="550" y2="182" class="line"/>
-<!-- === Switch === -->
-<rect x="400" y="184" width="300" height="36" class="box" stroke="#34d399"/>
+<!-- Switch -->
+<rect x="400" y="184" width="300" height="36" class="box" stroke="#00ff41"/>
 <text x="550" y="200" text-anchor="middle" font-size="12" class="mon">🔀 TP-Link TL-SG108E</text>
 <text x="550" y="214" text-anchor="middle" class="label">8-Port Gigabit Smart Switch</text>
 <line x1="220" y1="220" x2="220" y2="250" class="line"/>
 <line x1="550" y1="220" x2="550" y2="250" class="line"/>
 <line x1="880" y1="220" x2="880" y2="250" class="line"/>
-<!-- === PVE1 === -->
-<rect x="120" y="252" width="200" height="36" class="box" stroke="#22d3ee"/>
+<!-- PVE1 -->
+<rect x="120" y="252" width="200" height="36" class="box" stroke="#00f0ff"/>
 <text x="220" y="269" text-anchor="middle" font-size="12" class="hl">🖥 PVE1 — 10.2.7.x</text>
 <text x="220" y="282" text-anchor="middle" class="label">i5-7500 · 31GB RAM · 94GB SSD</text>
-<rect x="95" y="295" width="250" height="310" class="box2"/>
+<rect x="95" y="295" width="250" height="330" class="box2"/>
 <text x="220" y="312" text-anchor="middle" class="label" font-size="9">CONTAINERS</text>
 <rect x="105" y="320" width="110" height="34" class="box3"/><text x="160" y="335" text-anchor="middle" font-size="10" class="infra">🤖 Hermes (100)</text><text x="160" y="348" text-anchor="middle" class="label">AI Agent · 10.2.7.x</text>
-<rect x="225" y="320" width="110" height="34" class="box3"/><text x="280" y="335" text-anchor="middle" font-size="10" class="sec">⚠ PiAlert (102)</text><text x="280" y="348" text-anchor="middle" class="label">Network Alerts</text>
+<rect x="225" y="320" width="110" height="34" class="box3"/><text x="280" y="335" text-anchor="middle" font-size="10" class="mon">✅ Donetick (102)</text><text x="280" y="348" text-anchor="middle" class="label">Tasks · 10.2.7.x</text>
 <rect x="105" y="360" width="110" height="34" class="box3"/><text x="160" y="375" text-anchor="middle" font-size="10" class="sec">🛡 Wazuh (105)</text><text x="160" y="388" text-anchor="middle" class="label">SIEM · 10.2.7.x</text>
 <rect x="225" y="360" width="110" height="34" class="box3"/><text x="280" y="375" text-anchor="middle" font-size="10" class="mon">📊 Grafana (106)</text><text x="280" y="388" text-anchor="middle" class="label">Monitoring · 10.2.7.x</text>
 <rect x="105" y="400" width="110" height="34" class="box3"/><text x="160" y="415" text-anchor="middle" font-size="10" class="net">🚫 Pi-hole (107)</text><text x="160" y="428" text-anchor="middle" class="label">DNS · 10.2.7.x</text>
-<rect x="225" y="400" width="110" height="34" class="box3"/><text x="280" y="415" text-anchor="middle" font-size="10" class="infra">🐳 Portainer (108)</text><text x="280" y="428" text-anchor="middle" class="label">Docker Mgr · 10.2.7.x</text>
-<rect x="105" y="440" width="110" height="34" class="box3"/><text x="160" y="455" text-anchor="middle" font-size="10" class="infra">📋 Heimdall (109)</text><text x="160" y="468" text-anchor="middle" class="label">Dashboard · 10.2.7.x</text>
-<rect x="225" y="440" width="110" height="34" class="box3"/><text x="280" y="455" text-anchor="middle" font-size="10" class="mon">❤️ Uptime Kuma</text><text x="280" y="468" text-anchor="middle" class="label">Monitor · 10.2.7.x:3001</text>
-<rect x="105" y="480" width="110" height="34" class="box3"/><text x="160" y="495" text-anchor="middle" font-size="10" class="ai">🧠 HO (113)</text><text x="160" y="508" text-anchor="middle" class="label">Ollama · 10.2.7.x</text>
-<rect x="225" y="480" width="110" height="34" class="box3"/><text x="280" y="495" text-anchor="middle" font-size="10" class="infra">🖥️ Cockpit (114)</text><text x="280" y="508" text-anchor="middle" class="label">Web Admin · 10.2.7.x</text>
-<text x="220" y="590" text-anchor="middle" class="label">🔗 VLAN: Mgmt (10) · cluster mgmt</text>
-<!-- === PVE2 === -->
-<rect x="450" y="252" width="200" height="36" class="box" stroke="#22d3ee"/>
+<rect x="225" y="400" width="110" height="34" class="box3"/><text x="280" y="415" text-anchor="middle" font-size="10" class="infra">🐳 Portainer (108)</text><text x="280" y="428" text-anchor="middle" class="label">Docker Mgr</text>
+<rect x="105" y="440" width="110" height="34" class="box3"/><text x="160" y="455" text-anchor="middle" font-size="10" class="infra">📋 Heimdall (109)</text><text x="160" y="468" text-anchor="middle" class="label">Dashboard</text>
+<rect x="225" y="440" width="110" height="34" class="box3"/><text x="280" y="455" text-anchor="middle" font-size="10" class="mon">❤️ Uptime Kuma</text><text x="280" y="468" text-anchor="middle" class="label">Uptime</text>
+<rect x="105" y="480" width="110" height="34" class="box3"/><text x="160" y="495" text-anchor="middle" font-size="10" class="media">📸 Immich (111)</text><text x="160" y="508" text-anchor="middle" class="label">Photos</text>
+<rect x="225" y="480" width="110" height="34" class="box3"/><text x="280" y="495" text-anchor="middle" font-size="10" class="ai">🧠 HO (113)</text><text x="280" y="508" text-anchor="middle" class="label">Ollama · 10.2.7.x</text>
+<rect x="105" y="520" width="110" height="34" class="box3"/><text x="160" y="535" text-anchor="middle" font-size="10" class="infra">🖥️ Cockpit (114)</text><text x="160" y="548" text-anchor="middle" class="label">Web Admin</text>
+<rect x="225" y="520" width="110" height="34" class="box3"/><text x="280" y="535" text-anchor="middle" font-size="10" class="infra">☁ Nextcloud (112)</text><text x="280" y="548" text-anchor="middle" class="label">File Sync · 10.2.7.x</text>
+<text x="220" y="610" text-anchor="middle" class="label">🔗 10.2.7.x/24 subnet</text>
+<!-- PVE2 -->
+<rect x="450" y="252" width="200" height="36" class="box" stroke="#00f0ff"/>
 <text x="550" y="269" text-anchor="middle" font-size="12" class="hl">🖥 PVE2 — 10.2.7.x</text>
-<text x="550" y="282" text-anchor="middle" class="label">i7-2600 · 16GB RAM · 2.72TB ZFS</text>
-<rect x="425" y="295" width="250" height="245" class="box2"/>
+<text x="550" y="282" text-anchor="middle" class="label">i7-2600 · 31GB RAM · 3.62TB ZFS</text>
+<rect x="425" y="295" width="250" height="195" class="box2"/>
 <text x="550" y="312" text-anchor="middle" class="label" font-size="9">CONTAINERS</text>
 <rect x="435" y="320" width="110" height="34" class="box3"/><text x="490" y="335" text-anchor="middle" font-size="10" class="sec">🔍 Zeek (101)</text><text x="490" y="348" text-anchor="middle" class="label">IDS Sensor</text>
 <rect x="555" y="320" width="110" height="34" class="box3"/><text x="610" y="335" text-anchor="middle" font-size="10" class="tools">💿 Ripper (103)</text><text x="610" y="348" text-anchor="middle" class="label">DVD Ripping</text>
 <rect x="435" y="360" width="150" height="34" class="box3"/><text x="510" y="375" text-anchor="middle" font-size="10" class="media">🎬 Media Stack (110)</text><text x="510" y="388" text-anchor="middle" class="label">Jellyfin + *arrs</text>
-<rect x="435" y="400" width="110" height="34" class="box3"/><text x="490" y="415" text-anchor="middle" font-size="10" class="media">📸 Immich (111)</text><text x="490" y="428" text-anchor="middle" class="label">Photo Backup · 10.2.7.x</text>
-<rect x="555" y="400" width="110" height="34" class="box3"/><text x="610" y="415" text-anchor="middle" font-size="10" class="infra">☁ Nextcloud (112)</text><text x="610" y="428" text-anchor="middle" class="label">File Sync · 10.2.7.x</text>
-<text x="550" y="530" text-anchor="middle" class="label">🔗 ZFS: media pool · 2×2TB + 2×1TB mirrors</text>
-<!-- === PBS === -->
-<rect x="780" y="252" width="200" height="36" class="box" stroke="#a78bfa"/>
+<text x="550" y="480" text-anchor="middle" class="label">🔗 ZFS: media · 4×2TB mirror</text>
+<!-- PBS -->
+<rect x="780" y="252" width="200" height="36" class="box" stroke="#ff00aa"/>
 <text x="880" y="269" text-anchor="middle" font-size="12" class="infra">💾 PBS — 10.2.7.x</text>
-<text x="880" y="282" text-anchor="middle" class="label">Xeon E3-1225 v3 · 15GB · 3TB</text>
-<rect x="760" y="295" width="240" height="100" class="box2"/>
+<text x="880" y="282" text-anchor="middle" class="label">Xeon E3-1225 · 15GB · 3TB</text>
+<rect x="760" y="295" width="240" height="120" class="box2"/>
 <text x="880" y="315" text-anchor="middle" class="label" font-size="9">BACKUP SERVER</text>
-<text x="790" y="340" class="label">• Backs up all CTs</text>
-<text x="790" y="358" class="label">• Media backups via cron</text>
-<text x="790" y="376" class="label">• Datastore: media-backups</text>
-<rect x="760" y="405" width="240" height="75" class="box2" stroke="#34d399"/>
-<text x="880" y="425" text-anchor="middle" class="label" font-size="9">BACKUP SCHEDULE</text>
-<text x="790" y="445" class="net">✓ All CTs: daily @ 03:30, 15:30</text>
-<text x="790" y="463" class="net">✓ Media stack: 33 min past</text>
-<!-- === Bottom sections === -->
-<rect x="200" y="560" width="700" height="44" class="box" stroke="#fbbf24"/>
+<text x="790" y="340" class="label">• Deduplicated backups</text>
+<text x="790" y="358" class="label">• All CTs @ daily 03:30, 15:30</text>
+<text x="790" y="376" class="label">• Media stack @ :33 past</text>
+<text x="790" y="394" class="label">• Hitachi 3TB HDD</text>
+<!-- Bottom -->
+<rect x="200" y="560" width="700" height="44" class="box" stroke="#ffd700"/>
 <text x="550" y="578" text-anchor="middle" font-size="12" class="arr">📺 Media Stack — CT 110 (10.2.7.x)</text>
-<text x="550" y="594" text-anchor="middle" class="label">🎬 Jellyfin :8096 · 🎥 Radarr :7878 · 📺 Sonarr :8989 · 🔍 Prowlarr :9696 · ⚡ qBit :8080 · 🎶 Navidrome :4533</text>
-<rect x="200" y="620" width="700" height="44" class="box" stroke="#34d399"/>
+<text x="550" y="594" text-anchor="middle" class="label">🎬 Jellyfin · 🎥 Radarr · 📺 Sonarr · 🔍 Prowlarr · ⚡ qBit · 🎶 Navidrome · 📝 Requestrr</text>
+<rect x="200" y="620" width="700" height="44" class="box" stroke="#00ff41"/>
 <text x="550" y="640" text-anchor="middle" font-size="12" class="mon">💾 Storage Layout</text>
-<text x="550" y="656" text-anchor="middle" class="label">PVE1: 94GB SSD (boot) · PVE2: 2TB+1TB ZFS mirror (@ /media/data) · PBS: 3TB Hitachi @ media-backups</text>
-<rect x="200" y="680" width="700" height="30" class="box" stroke="#fb923c"/>
-<text x="550" y="700" text-anchor="middle" class="label" font-size="11">📁 SMB: \\\\10.2.7.x\\Media · \\\\10.2.7.x\\Immich · \\\\10.2.7.x\\Nextcloud — user: media/media</text>
-<rect x="200" y="725" width="700" height="50" class="box2"/>
-<text x="230" y="742" class="label" font-size="9">Legend:</text>
-<rect x="290" y="733" width="10" height="10" rx="2" fill="#22d3ee"/><text x="305" y="742" font-size="9" fill="#22d3ee">Proxmox</text>
-<rect x="380" y="733" width="10" height="10" rx="2" fill="#fbbf24"/><text x="395" y="742" font-size="9" fill="#fbbf24">Media</text>
-<rect x="455" y="733" width="10" height="10" rx="2" fill="#34d399"/><text x="470" y="742" font-size="9" fill="#34d399">Infra</text>
-<rect x="530" y="733" width="10" height="10" rx="2" fill="#fb7185"/><text x="545" y="742" font-size="9" fill="#fb7185">Security</text>
-<rect x="620" y="733" width="10" height="10" rx="2" fill="#fb923c"/><text x="635" y="742" font-size="9" fill="#fb923c">Network</text>
-<rect x="710" y="733" width="10" height="10" rx="2" fill="#a78bfa"/><text x="725" y="742" font-size="9" fill="#a78bfa">Backup</text>
-<rect x="790" y="733" width="10" height="10" rx="2" fill="#c084fc"/><text x="805" y="742" font-size="9" fill="#c084fc">AI</text>
-<text x="550" y="768" text-anchor="middle" class="sub" font-size="9">Generated by Hermes Agent · v3 · Updated Jul 12 2026</text>
+<text x="550" y="656" text-anchor="middle" class="label">PVE1: 94GB SSD · PVE2: 4×2TB ZFS mirror (~2.63T used / 3.62T) · PBS: 3TB HDD</text>
+<rect x="200" y="690" width="700" height="30" class="box" stroke="#ff8800"/>
+<text x="550" y="710" text-anchor="middle" class="label" font-size="11">🔗 Tailscale mesh · ProtonVPN via Gluetun · Pi-hole DNS · Wazuh SIEM</text>
+<rect x="200" y="735" width="700" height="50" class="box2"/>
+<text x="230" y="752" class="label" font-size="9">Legend:</text>
+<rect x="290" y="743" width="10" height="10" rx="2" fill="#00f0ff"/><text x="305" y="752" font-size="9" fill="#00f0ff">Proxmox</text>
+<rect x="380" y="743" width="10" height="10" rx="2" fill="#ffd700"/><text x="395" y="752" font-size="9" fill="#ffd700">Media</text>
+<rect x="455" y="743" width="10" height="10" rx="2" fill="#00ff41"/><text x="470" y="752" font-size="9" fill="#00ff41">Monitoring</text>
+<rect x="530" y="743" width="10" height="10" rx="2" fill="#ff0044"/><text x="545" y="752" font-size="9" fill="#ff0044">Security</text>
+<rect x="620" y="743" width="10" height="10" rx="2" fill="#ff8800"/><text x="635" y="752" font-size="9" fill="#ff8800">Network</text>
+<rect x="710" y="743" width="10" height="10" rx="2" fill="#ff00aa"/><text x="725" y="752" font-size="9" fill="#ff00aa">Infra/Backup</text>
+<rect x="790" y="743" width="10" height="10" rx="2" fill="#aa66ff"/><text x="805" y="752" font-size="9" fill="#aa66ff">AI</text>
+<text x="550" y="778" text-anchor="middle" class="sub" font-size="9">Cyberpunk Homelab · Generated by Hermes Agent · v4 · Updated Aug 4 2026</text>
 </svg>"""
 
-# ─── HTML Template v3 — Tab Buttons + Mauve Dark Theme ──────────
 HTML = """<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Piper Homelab</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>Piper Homelab — CYBERPUNK</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+*{margin:0;padding:0;box-sizing:border-box}
 
 body{
-  font-family:'Inter',system-ui,-apple-system,sans-serif;
-  background:#C48B9F;
-  color:#fff;
+  font-family:'Inter','JetBrains Mono',system-ui,sans-serif;
+  background:#08080f;
+  color:#c0c0e0;
   min-height:100vh;
   overflow-x:hidden;
+  position:relative;
+}
+
+/* Scanline overlay */
+body::before{
+  content:'';
+  position:fixed;
+  top:0;left:0;width:100%;height:100%;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,240,255,0.015) 2px,rgba(0,240,255,0.015) 4px);
+  pointer-events:none;z-index:9999;
 }
 
 .container{max-width:1100px;margin:0 auto;padding:0.75rem}
 
 /* ── Header ── */
 .header{
-  background:#121212;
-  border-radius:14px;
-  padding:0.9rem 1.25rem;
-  margin-bottom:0.75rem;
-  border:1px solid #2a2a2a;
+  background:linear-gradient(135deg,#0d0d1a 0%,#0a0a18 100%);
+  border-radius:14px;padding:0.9rem 1.25rem;margin-bottom:0.75rem;
+  border:1px solid rgba(255,0,170,0.3);
+  box-shadow:0 0 15px rgba(255,0,170,0.1),inset 0 0 30px rgba(0,240,255,0.03);
+  position:relative;overflow:hidden;
+}
+.header::after{
+  content:'';position:absolute;top:0;left:0;width:100%;height:1px;
+  background:linear-gradient(90deg,transparent,#ff00aa,transparent);
 }
 .header-row{display:flex;align-items:center;justify-content:space-between}
 .header-left{display:flex;align-items:center;gap:0.75rem}
-.header-icon{font-size:1.4rem}
-h1{font-size:1.15rem;font-weight:700;letter-spacing:-0.02em}
+.header-icon{font-size:1.4rem;filter:drop-shadow(0 0 6px rgba(0,240,255,0.4))}
+h1{
+  font-size:1.15rem;font-weight:700;
+  background:linear-gradient(90deg,#00f0ff,#ff00aa);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;letter-spacing:-0.02em;
+}
 .header-right{text-align:right}
-.last-update{color:#888;font-size:0.65rem;line-height:1.3}
-.status-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#34d399;margin-right:4px}
-.subtitle{color:#999;font-size:0.72rem;margin-top:2px}
+.last-update{color:#6666aa;font-size:0.65rem;font-family:'JetBrains Mono',monospace;line-height:1.3}
+.status-dot{
+  display:inline-block;width:7px;height:7px;border-radius:50%;
+  background:#00ff41;box-shadow:0 0 8px rgba(0,255,65,0.5);
+  margin-right:4px;animation:pulse 2s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.subtitle{color:#6666aa;font-size:0.72rem;margin-top:2px}
 
-/* ── Tab Navigation ── */
+/* ── Tab Nav ── */
 .tab-bar{
   display:flex;gap:0;margin-bottom:0.75rem;
-  background:#121212;border-radius:10px;border:1px solid #2a2a2a;
+  background:#0d0d1a;border-radius:10px;
+  border:1px solid rgba(255,0,170,0.2);
   overflow:hidden;
 }
 .tab-btn{
   flex:1;text-align:center;
   padding:0.6rem 0.5rem;cursor:pointer;font-size:0.78rem;font-weight:500;
-  color:#666;transition:all 0.2s;
+  color:#5555aa;transition:all 0.3s;
   border:none;background:transparent;font-family:inherit;
+  position:relative;
 }
-.tab-btn.active{color:#fff;background:rgba(255,255,255,0.06)}
-.tab-btn:not(:last-child){border-right:1px solid #2a2a2a}
+.tab-btn.active{
+  color:#00f0ff;
+  background:rgba(0,240,255,0.05);
+  text-shadow:0 0 10px rgba(0,240,255,0.3);
+}
+.tab-btn.active::after{
+  content:'';position:absolute;bottom:0;left:10%;width:80%;height:2px;
+  background:linear-gradient(90deg,transparent,#00f0ff,transparent);
+}
+.tab-btn:not(:last-child){border-right:1px solid rgba(255,0,170,0.15)}
+.tab-btn:hover{color:#8888dd}
 
 /* ── Tab Content ── */
 .tab-content{display:none}
@@ -352,16 +388,22 @@ h1{font-size:1.15rem;font-weight:700;letter-spacing:-0.02em}
 
 /* ── Cards ── */
 .card{
-  background:#121212;
-  border-radius:14px;
-  padding:0.9rem 1rem;
-  border:1px solid #2a2a2a;
+  background:linear-gradient(135deg,#0d0d1a 0%,#0a0a15 100%);
+  border-radius:14px;padding:0.9rem 1rem;
+  border:1px solid rgba(255,0,170,0.15);
   margin-bottom:0.6rem;
+  box-shadow:0 0 10px rgba(255,0,170,0.05);
+  transition:border-color 0.3s,box-shadow 0.3s;
+}
+.card:hover{
+  border-color:rgba(0,240,255,0.3);
+  box-shadow:0 0 20px rgba(0,240,255,0.08);
 }
 .card-title{
-  font-size:0.72rem;font-weight:600;color:#aaa;text-transform:uppercase;
-  letter-spacing:0.05em;margin-bottom:0.6rem;
+  font-size:0.72rem;font-weight:600;color:#8888cc;
+  text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.6rem;
   display:flex;align-items:center;gap:0.4rem;
+  font-family:'JetBrains Mono',monospace;
 }
 
 /* ── Stats Grid ── */
@@ -369,39 +411,36 @@ h1{font-size:1.15rem;font-weight:700;letter-spacing:-0.02em}
 .stat-row{
   display:flex;justify-content:space-between;align-items:center;
   padding:0.35rem 0;font-size:0.72rem;
-  border-bottom:1px solid rgba(255,255,255,0.05)
+  border-bottom:1px solid rgba(255,255,255,0.03);
 }
 .stat-row:last-child{border-bottom:none}
-.stat-label{color:#888}
-.stat-value{color:#ddd;font-weight:500;text-align:right}
+.stat-label{color:#6666aa}
+.stat-value{color:#c0c0e0;font-weight:500;text-align:right;font-family:'JetBrains Mono',monospace}
 
-/* ── Progress Bar ── */
-.bar-wrap{height:3px;background:#2a2a2a;border-radius:2px;margin:0.2rem 0 0.35rem;overflow:hidden}
+/* ── Bars ── */
+.bar-wrap{height:3px;background:rgba(255,255,255,0.05);border-radius:2px;margin:0.2rem 0 0.35rem;overflow:hidden}
 .bar-fill{height:100%;border-radius:2px;transition:width 0.5s ease}
-.bar-fill.green{background:#34d399}
-.bar-fill.yellow{background:#fbbf24}
-.bar-fill.red{background:#fb7185}
+.bar-fill.green{background:#00ff41;box-shadow:0 0 8px rgba(0,255,65,0.3)}
+.bar-fill.yellow{background:#ffd700;box-shadow:0 0 8px rgba(255,215,0,0.3)}
+.bar-fill.red{background:#ff0044;box-shadow:0 0 8px rgba(255,0,68,0.3)}
 
-/* ── Container List ── */
-.ct-list{font-size:0.65rem;color:#777;margin-top:0.3rem;max-height:140px;overflow-y:auto}
+/* ── CT List ── */
+.ct-list{font-size:0.65rem;color:#6666aa;margin-top:0.3rem;max-height:140px;overflow-y:auto;font-family:'JetBrains Mono',monospace}
 .ct-list::-webkit-scrollbar{width:3px}
-.ct-list::-webkit-scrollbar-thumb{background:#333;border-radius:2px}
-.ct-list-item{
-  padding:0.18rem 0;border-bottom:1px solid rgba(255,255,255,0.03);
-  display:flex;gap:0.3rem;
-}
-.ct-id{color:#555;min-width:2rem}
-.ct-name{color:#aaa}
-.ct-status{color:#34d399}
-.ct-status.off{color:#fb7185}
+.ct-list::-webkit-scrollbar-thumb{background:rgba(255,0,170,0.3);border-radius:2px}
+.ct-list-item{padding:0.18rem 0;border-bottom:1px solid rgba(255,255,255,0.03);display:flex;gap:0.3rem}
+.ct-id{color:#444488;min-width:2rem}
+.ct-name{color:#8888bb}
+.ct-status{color:#00ff41}
+.ct-status.stop{color:#ff0044}
 
 /* ── Error ── */
-.error-msg{color:#fb7185;font-size:0.68rem;font-style:italic;margin-bottom:0.3rem}
+.error-msg{color:#ff0044;font-size:0.68rem;font-style:italic;margin-bottom:0.3rem}
 
 /* ── Datastore ── */
 .ds-row{display:flex;justify-content:space-between;font-size:0.68rem;padding:0.2rem 0;border-bottom:1px solid rgba(255,255,255,0.03)}
-.ds-name{color:#a78bfa}
-.ds-bar{height:2px;background:#2a2a2a;border-radius:2px;margin:0.15rem 0;overflow:hidden}
+.ds-name{color:#ff00aa}
+.ds-bar{height:2px;background:rgba(255,255,255,0.05);border-radius:2px;margin:0.15rem 0;overflow:hidden}
 
 /* ── Services Grid ── */
 .services-grid{
@@ -410,49 +449,68 @@ h1{font-size:1.15rem;font-weight:700;letter-spacing:-0.02em}
   gap:0.5rem;
 }
 .service-card{
-  background:#121212;
-  border:1px solid #2a2a2a;
-  border-radius:12px;
-  padding:0.7rem 0.5rem;
-  text-align:center;
-  text-decoration:none;color:#fff;
-  transition:border-color 0.2s;
+  background:linear-gradient(135deg,#0d0d1a 0%,#0a0a15 100%);
+  border:1px solid rgba(255,0,170,0.15);
+  border-radius:12px;padding:0.7rem 0.5rem;
+  text-align:center;text-decoration:none;color:#c0c0e0;
+  transition:all 0.3s;
+  position:relative;overflow:hidden;
 }
-.service-card:hover{border-color:#a78bfa;background:rgba(167,139,250,0.05)}
+.service-card::before{
+  content:'';position:absolute;top:0;left:0;width:100%;height:1px;
+  background:linear-gradient(90deg,transparent,#ff00aa,transparent);
+  opacity:0;transition:opacity 0.3s;
+}
+.service-card:hover{
+  border-color:#00f0ff;
+  background:rgba(0,240,255,0.03);
+  box-shadow:0 0 20px rgba(0,240,255,0.1);
+  transform:translateY(-2px);
+}
+.service-card:hover::before{opacity:1}
 .service-card:active{transform:scale(0.97)}
 .service-icon{font-size:1.4rem;margin-bottom:0.2rem}
 .service-name{font-size:0.68rem;font-weight:600}
-.service-cat{font-size:0.6rem;color:#888;margin-top:0.1rem}
+.service-cat{font-size:0.6rem;color:#6666aa;margin-top:0.1rem;font-family:'JetBrains Mono',monospace}
 
-/* ── Category Colors ── */
-.cat-media{color:#22d3ee}
-.cat-arr{color:#fbbf24}
-.cat-download{color:#fb7185}
-.cat-infra{color:#a78bfa}
-.cat-monitor{color:#34d399}
-.cat-security{color:#fb7185}
-.cat-network{color:#fb923c}
-.cat-dev{color:#94a3b8}
-.cat-tools{color:#67e8f9}
-.cat-docs{color:#94a3b8}
-.cat-request{color:#34d399}
-.cat-ai{color:#c084fc}
+/* ── Cat Colors ── */
+.cat-media{color:#00f0ff}
+.cat-arr{color:#ffd700}
+.cat-download{color:#ff0044}
+.cat-infra{color:#ff00aa}
+.cat-monitor{color:#00ff41}
+.cat-security{color:#ff0044}
+.cat-network{color:#ff8800}
+.cat-dev{color:#6666aa}
+.cat-tools{color:#00f0ff}
+.cat-docs{color:#6666aa}
+.cat-request{color:#00ff41}
+.cat-ai{color:#aa66ff}
 
 /* ── Architecture ── */
 .arch-wrap{
-  background:#121212;
-  border-radius:14px;
-  border:1px solid #2a2a2a;
-  padding:0.8rem;
-  overflow-x:auto;
+  background:#0d0d1a;border-radius:14px;
+  border:1px solid rgba(255,0,170,0.15);
+  padding:0.8rem;overflow-x:auto;
 }
 .arch-frame{width:100%;border:none;display:block}
 
 /* ── Footer ── */
 .footer{
   text-align:center;padding:1rem 0 0.5rem;
-  color:rgba(0,0,0,0.5);font-size:0.65rem;
-  border-top:1px solid rgba(0,0,0,0.1);margin-top:0.5rem;
+  color:#444477;font-size:0.65rem;
+  border-top:1px solid rgba(255,0,170,0.1);margin-top:0.5rem;
+  font-family:'JetBrains Mono',monospace;
+}
+
+/* ── Grid bg ── */
+.container::before{
+  content:'';position:fixed;top:0;left:0;width:100%;height:100%;
+  background-image:
+    linear-gradient(rgba(0,240,255,0.02) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,240,255,0.02) 1px,transparent 1px);
+  background-size:40px 40px;
+  pointer-events:none;z-index:-1;
 }
 </style>
 </head>
@@ -464,31 +522,31 @@ h1{font-size:1.15rem;font-weight:700;letter-spacing:-0.02em}
 <div class="header">
   <div class="header-row">
     <div class="header-left">
-      <span class="header-icon">🏠</span>
+      <span class="header-icon">🏴</span>
       <div>
-        <h1>Piper Homelab</h1>
-        <div class="subtitle">Anthony Piper · California · 10.2.7.x/24</div>
+        <h1>PIPER HOMELAB</h1>
+        <div class="subtitle">Anthony Piper /* Las Vegas */ 10.2.7.x/24</div>
       </div>
     </div>
     <div class="header-right">
-      <div style="font-size:0.65rem;color:#888"><span class="status-dot"></span>All systems</div>
+      <div style="font-size:0.65rem;color:#8888cc"><span class="status-dot"></span>SYSTEMS ONLINE</div>
       <div class="last-update">{{ updated }}</div>
     </div>
   </div>
 </div>
 
-<!-- Tab Buttons -->
+<!-- Tabs -->
 <div class="tab-bar">
-  <button class="tab-btn active" onclick="switchTab(0)">📊 Overview</button>
-  <button class="tab-btn" onclick="switchTab(1)">🔗 Services</button>
-  <button class="tab-btn" onclick="switchTab(2)">🏗️ Architecture</button>
+  <button class="tab-btn active" onclick="switchTab(0)">📊 OVERVIEW</button>
+  <button class="tab-btn" onclick="switchTab(1)">🔗 SERVICES</button>
+  <button class="tab-btn" onclick="switchTab(2)">🏗️ TOPOLOGY</button>
 </div>
 
-<!-- TAB: Overview -->
+<!-- Tab: Overview -->
 <div class="tab-content active" id="tab0">
   <div class="stats-grid">
 
-    <!-- PVE1 Card -->
+    <!-- PVE1 -->
     <div class="card">
       <div class="card-title">🖥 PVE1 — 10.2.7.x</div>
       {% if p1.error %}<div class="error-msg">⚠ {{ p1.error[:100] }}</div>{% endif %}
@@ -499,28 +557,21 @@ h1{font-size:1.15rem;font-weight:700;letter-spacing:-0.02em}
       {% if p1.mem_total %}
       {% set mu = p1.mem_used|replace('Gi','')|replace('Mi','')|float %}
       {% set mt = p1.mem_total|replace('Gi','')|replace('Mi','')|float %}
-      {% if mt > 0 %}{% set mp = (mu / mt * 100)|round %}
-      <div class="bar-wrap"><div class="bar-fill {{ 'green' if mp < 70 else 'yellow' if mp < 90 else 'red' }}" style="width:{{ mp }}%"></div></div>
-      {% endif %}{% endif %}
+      {% if mt > 0 %}{% set mp = (mu / mt * 100)|round %}<div class="bar-wrap"><div class="bar-fill {{ 'green' if mp < 70 else 'yellow' if mp < 90 else 'red' }}" style="width:{{ mp }}%"></div></div>{% endif %}
+      {% endif %}
       <div class="stat-row"><span class="stat-label">Disk</span><span class="stat-value">{{ p1.disk_used or '?' }} / {{ p1.disk_total or '?' }} ({{ p1.disk_pct or '?' }})</span></div>
-      {% if p1.disk_pct %}<div class="bar-wrap"><div class="bar-fill {{ p1.disk_bar or 'green' }}" style="width:{{ p1.disk_pct|replace('%','') }}%"></div></div>{% endif %}
       <div class="stat-row"><span class="stat-label">Uptime</span><span class="stat-value">{{ p1.uptime or '—' }}</span></div>
       {% if p1.cts %}
       <div class="ct-list">
-        <div style="color:#555;font-size:0.6rem;margin-bottom:0.2rem">CONTAINERS ({{ p1.cts|length }})</div>
+        <div style="color:#6666aa;font-size:0.65rem;margin-bottom:0.25rem;font-family:'JetBrains Mono',monospace">// CONTAINERS</div>
         {% for ct in p1.cts %}
-        {% set parts = ct.split(' | ') %}
-        <div class="ct-list-item">
-          <span class="ct-id">{{ parts[0] if parts|length > 0 else '' }}</span>
-          <span class="ct-name">{{ parts[1] if parts|length > 1 else ct }}</span>
-          <span class="ct-status {{ 'off' if parts[2]|trim|lower != 'running' else '' }}" style="margin-left:auto">{{ parts[2] if parts|length > 2 else '' }}</span>
-        </div>
+        <div class="ct-list-item"><span class="ct-id">{{ ct.split('|')[0].strip() }}</span><span class="ct-name">{{ ct.split('|')[1].strip() }}</span><span class="ct-status{{ ' stop' if ct.split('|')[2].strip() != 'running' else '' }}">{{ ct.split('|')[2].strip() }}</span></div>
         {% endfor %}
       </div>
       {% endif %}
     </div>
 
-    <!-- PVE2 Card -->
+    <!-- PVE2 -->
     <div class="card">
       <div class="card-title">🖥 PVE2 — 10.2.7.x</div>
       {% if p2.error %}<div class="error-msg">⚠ {{ p2.error[:100] }}</div>{% endif %}
@@ -531,28 +582,21 @@ h1{font-size:1.15rem;font-weight:700;letter-spacing:-0.02em}
       {% if p2.mem_total %}
       {% set mu = p2.mem_used|replace('Gi','')|replace('Mi','')|float %}
       {% set mt = p2.mem_total|replace('Gi','')|replace('Mi','')|float %}
-      {% if mt > 0 %}{% set mp = (mu / mt * 100)|round %}
-      <div class="bar-wrap"><div class="bar-fill {{ 'green' if mp < 70 else 'yellow' if mp < 90 else 'red' }}" style="width:{{ mp }}%"></div></div>
-      {% endif %}{% endif %}
+      {% if mt > 0 %}{% set mp = (mu / mt * 100)|round %}<div class="bar-wrap"><div class="bar-fill {{ 'green' if mp < 70 else 'yellow' if mp < 90 else 'red' }}" style="width:{{ mp }}%"></div></div>{% endif %}
+      {% endif %}
       <div class="stat-row"><span class="stat-label">Disk</span><span class="stat-value">{{ p2.disk_used or '?' }} / {{ p2.disk_total or '?' }} ({{ p2.disk_pct or '?' }})</span></div>
-      {% if p2.disk_pct %}<div class="bar-wrap"><div class="bar-fill {{ p2.disk_bar or 'green' }}" style="width:{{ p2.disk_pct|replace('%','') }}%"></div></div>{% endif %}
       <div class="stat-row"><span class="stat-label">Uptime</span><span class="stat-value">{{ p2.uptime or '—' }}</span></div>
       {% if p2.cts %}
       <div class="ct-list">
-        <div style="color:#555;font-size:0.6rem;margin-bottom:0.2rem">CONTAINERS ({{ p2.cts|length }})</div>
+        <div style="color:#6666aa;font-size:0.65rem;margin-bottom:0.25rem;font-family:'JetBrains Mono',monospace">// CONTAINERS</div>
         {% for ct in p2.cts %}
-        {% set parts = ct.split(' | ') %}
-        <div class="ct-list-item">
-          <span class="ct-id">{{ parts[0] if parts|length > 0 else '' }}</span>
-          <span class="ct-name">{{ parts[1] if parts|length > 1 else ct }}</span>
-          <span class="ct-status {{ 'off' if parts[2]|trim|lower != 'running' else '' }}" style="margin-left:auto">{{ parts[2] if parts|length > 2 else '' }}</span>
-        </div>
+        <div class="ct-list-item"><span class="ct-id">{{ ct.split('|')[0].strip() }}</span><span class="ct-name">{{ ct.split('|')[1].strip() }}</span><span class="ct-status{{ ' stop' if ct.split('|')[2].strip() != 'running' else '' }}">{{ ct.split('|')[2].strip() }}</span></div>
         {% endfor %}
       </div>
       {% endif %}
     </div>
 
-    <!-- PBS Card -->
+    <!-- PBS -->
     <div class="card">
       <div class="card-title">💾 PBS — 10.2.7.x</div>
       {% if pbs.error %}<div class="error-msg">⚠ {{ pbs.error[:100] }}</div>{% endif %}
@@ -564,19 +608,15 @@ h1{font-size:1.15rem;font-weight:700;letter-spacing:-0.02em}
       {% if pbs.mem_total %}
       {% set mu = pbs.mem_used|replace('Gi','')|replace('Mi','')|float %}
       {% set mt = pbs.mem_total|replace('Gi','')|replace('Mi','')|float %}
-      {% if mt > 0 %}{% set mp = (mu / mt * 100)|round %}
-      <div class="bar-wrap"><div class="bar-fill {{ 'green' if mp < 70 else 'yellow' if mp < 90 else 'red' }}" style="width:{{ mp }}%"></div></div>
-      {% endif %}{% endif %}
+      {% if mt > 0 %}{% set mp = (mu / mt * 100)|round %}<div class="bar-wrap"><div class="bar-fill {{ 'green' if mp < 70 else 'yellow' if mp < 90 else 'red' }}" style="width:{{ mp }}%"></div></div>{% endif %}
+      {% endif %}
       <div class="stat-row"><span class="stat-label">Boot</span><span class="stat-value">{{ pbs.boot_used or '?' }} / {{ pbs.boot_total or '?' }} ({{ pbs.boot_pct or '?' }})</span></div>
       <div class="stat-row"><span class="stat-label">Uptime</span><span class="stat-value">{{ pbs.uptime or '—' }}</span></div>
       {% if pbs.datastores %}
-      <div style="margin-top:0.4rem;font-size:0.65rem;color:#555;margin-bottom:0.2rem">DATASTORES</div>
+      <div style="margin-top:0.5rem;font-size:0.65rem;color:#6666aa;margin-bottom:0.25rem;font-family:'JetBrains Mono',monospace">// DATASTORES</div>
       {% for ds in pbs.datastores %}
-      <div class="ds-row">
-        <span class="ds-name">{{ ds.name }}</span>
-        <span style="color:#ddd">{{ ds.used }} / {{ ds.total }} ({{ ds.pct }})</span>
-      </div>
-      <div class="ds-bar"><div class="bar-fill {{ ds.bar }}" style="width:{{ ds.pct|replace('%','') }}%"></div></div>
+      <div class="ds-row"><span class="ds-name">{{ ds.name }}</span><span style="color:#c0c0e0">{{ ds.used }} / {{ ds.total }} ({{ ds.pct }})</span></div>
+      <div class="ds-bar"><div class="bar-fill {{ ds.bar }}" style="width:{{ ds.pct.replace('%','') }}%"></div></div>
       {% endfor %}
       {% endif %}
     </div>
@@ -584,42 +624,37 @@ h1{font-size:1.15rem;font-weight:700;letter-spacing:-0.02em}
   </div>
 </div>
 
-<!-- TAB: Services -->
+<!-- Tab: Services -->
 <div class="tab-content" id="tab1">
-  <div class="card" style="padding:0.5rem 0.75rem 0.1rem">
-    <div class="card-title" style="margin-bottom:0.3rem">🔗 All Services ({{ services|length }})</div>
-  </div>
-  <div class="services-grid">
-  {% for s in services %}
-  <a class="service-card" href="{{ s.url }}" target="_blank">
-    <div class="service-icon">{{ s.icon }}</div>
-    <div class="service-name">{{ s.name }}</div>
-    <div class="service-cat cat-{{ s.cat }}">{{ s.cat }}</div>
-  </a>
-  {% endfor %}
-  </div>
+<div class="services-grid">
+{% for s in services %}
+<a class="service-card" href="{{ s.url }}" target="_blank">
+<div class="service-icon">{{ s.icon }}</div>
+<div class="service-name">{{ s.name }}</div>
+<div class="service-cat {{ s.cat }}">[{{ s.cat }}]</div>
+</a>
+{% endfor %}
+</div>
 </div>
 
-<!-- TAB: Architecture -->
+<!-- Tab: Architecture -->
 <div class="tab-content" id="tab2">
-  <div class="arch-wrap">
-    <img src="/arch" alt="Homelab Architecture" class="arch-frame" />
-  </div>
+<div class="arch-wrap">
+<img src="/arch" alt="Homelab Topology" class="arch-frame" />
+</div>
 </div>
 
-<div class="footer">🤖 Powered by Hermes Agent · v3 · Updated Jul 2026</div>
+<div class="footer">// POWERED BY HERMES AGENT · v4.0 · CT 100 (10.2.7.x) //</div>
 </div>
 
 <script>
-function switchTab(idx){
-  var tabs = document.querySelectorAll('.tab-btn');
-  var contents = document.querySelectorAll('.tab-content');
-  tabs.forEach(function(t){ t.classList.remove('active'); });
-  contents.forEach(function(c){ c.classList.remove('active'); });
-  tabs[idx].classList.add('active');
-  contents[idx].classList.add('active');
+function switchTab(n){
+document.querySelectorAll('.tab-btn').forEach(t=>t.classList.remove('active'));
+document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+document.querySelectorAll('.tab-btn')[n].classList.add('active');
+document.getElementById('tab'+n).classList.add('active');
 }
-setTimeout(function(){ location.reload(); }, 60000);
+setTimeout(function(){location.reload()},60000);
 </script>
 </body></html>"""
 
@@ -642,4 +677,4 @@ def arch():
     return ARCH_SVG, 200, {"Content-Type": "image/svg+xml"}
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5052, debug=False)
+    app.run(host="0.0.0.0", port=5052, debug=False, threaded=True)

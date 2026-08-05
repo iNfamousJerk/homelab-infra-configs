@@ -14,6 +14,7 @@ SERVICES = [
     {"name": "Sonarr", "url": "http://10.2.7.x:8989", "icon": "📺", "cat": "arr"},
     {"name": "Lidarr", "url": "http://10.2.7.x:8686", "icon": "🎵", "cat": "arr"},
     {"name": "Readarr", "url": "http://10.2.7.x:8787", "icon": "📖", "cat": "arr"},
+    {"name": "Librarr", "url": "http://10.2.7.x:5050", "icon": "📚", "cat": "arr"},
     {"name": "Prowlarr", "url": "http://10.2.7.x:9696", "icon": "🔍", "cat": "arr"},
     {"name": "Bazarr", "url": "http://10.2.7.x:6767", "icon": "💬", "cat": "arr"},
     {"name": "Jellyseerr", "url": "http://10.2.7.x:5055", "icon": "📺", "cat": "request"},

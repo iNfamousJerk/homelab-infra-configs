@@ -258,7 +258,6 @@ text{font-family:'JetBrains Mono','Courier New',monospace;fill:#c0c0e0;font-size
 <text x="550" y="282" text-anchor="middle" class="label">i7-2600 · 31GB RAM · 3.62TB ZFS</text>
 <rect x="425" y="295" width="250" height="195" class="box2"/>
 <text x="550" y="312" text-anchor="middle" class="label" font-size="9">CONTAINERS</text>
-<rect x="435" y="320" width="110" height="34" class="box3"/><text x="490" y="335" text-anchor="middle" font-size="10" class="sec">🔍 Zeek (101)</text><text x="490" y="348" text-anchor="middle" class="label">IDS Sensor</text>
 <rect x="555" y="320" width="110" height="34" class="box3"/><text x="610" y="335" text-anchor="middle" font-size="10" class="tools">💿 Ripper (103)</text><text x="610" y="348" text-anchor="middle" class="label">DVD Ripping</text>
 <rect x="435" y="360" width="150" height="34" class="box3"/><text x="510" y="375" text-anchor="middle" font-size="10" class="media">🎬 Media Stack (110)</text><text x="510" y="388" text-anchor="middle" class="label">Jellyfin + *arrs</text>
 <text x="550" y="480" text-anchor="middle" class="label">🔗 ZFS: media · 4×2TB mirror</text>

@@ -30,12 +30,12 @@ SERVICES = [
     {"name": "Grafana", "url": "http://10.2.7.x:3000", "icon": "📊", "cat": "monitor"},
     {"name": "Prometheus", "url": "http://10.2.7.x:9090", "icon": "📈", "cat": "monitor"},
     {"name": "Uptime Kuma", "url": "http://10.2.7.x:3001", "icon": "❤️", "cat": "monitor"},
-    {"name": "Wazuh", "url": "https://10.2.7.x:443", "icon": "🛡️", "cat": "security"},
     {"name": "Pi-hole", "url": "http://10.2.7.x/admin", "icon": "🚫", "cat": "network"},
     {"name": "Gitea", "url": "http://10.2.7.x:3002", "icon": "🔧", "cat": "dev"},
-    {"name": "Portainer", "url": "https://10.2.7.x:9443", "icon": "🐳", "cat": "infra"},
-    {"name": "Cockpit", "url": "https://10.2.7.x:9090", "icon": "🖥️", "cat": "infra"},
-    {"name": "HO (Ollama)", "url": "http://10.2.7.x:11434", "icon": "🧠", "cat": "ai"},
+    {"name": "Keycloak", "url": "http://10.2.7.x:5252", "icon": "🔐", "cat": "auth"},
+    {"name": "Snipe-IT", "url": "http://10.2.7.x:8000", "icon": "🏷️", "cat": "helpdesk"},
+    {"name": "osTicket", "url": "http://10.2.7.x:8081", "icon": "🎫", "cat": "helpdesk"},
+    {"name": "Cheat.sh", "url": "http://10.2.7.x:8002", "icon": "📜", "cat": "tools"},
     {"name": "Donetick", "url": "http://10.2.7.x:2021", "icon": "✅", "cat": "tools"},
     {"name": "DVD Ripper", "url": "http://10.2.7.x:5050", "icon": "💿", "cat": "tools"},
     {"name": "Media Dash", "url": "http://10.2.7.x:5051", "icon": "📋", "cat": "tools"},
@@ -244,15 +244,12 @@ text{font-family:'JetBrains Mono','Courier New',monospace;fill:#c0c0e0;font-size
 <text x="220" y="312" text-anchor="middle" class="label" font-size="9">CONTAINERS</text>
 <rect x="105" y="320" width="110" height="34" class="box3"/><text x="160" y="335" text-anchor="middle" font-size="10" class="infra">🤖 Hermes (100)</text><text x="160" y="348" text-anchor="middle" class="label">AI Agent · 10.2.7.x</text>
 <rect x="225" y="320" width="110" height="34" class="box3"/><text x="280" y="335" text-anchor="middle" font-size="10" class="mon">✅ Donetick (102)</text><text x="280" y="348" text-anchor="middle" class="label">Tasks · 10.2.7.x</text>
-<rect x="105" y="360" width="110" height="34" class="box3"/><text x="160" y="375" text-anchor="middle" font-size="10" class="sec">🛡 Wazuh (105)</text><text x="160" y="388" text-anchor="middle" class="label">SIEM · 10.2.7.x</text>
+<rect x="105" y="360" width="110" height="34" class="box3"/><text x="160" y="375" text-anchor="middle" font-size="10" class="arr">📚 Librarr (116)</text><text x="160" y="388" text-anchor="middle" class="label">Books · 10.2.7.x</text>
 <rect x="225" y="360" width="110" height="34" class="box3"/><text x="280" y="375" text-anchor="middle" font-size="10" class="mon">📊 Grafana (106)</text><text x="280" y="388" text-anchor="middle" class="label">Monitoring · 10.2.7.x</text>
 <rect x="105" y="400" width="110" height="34" class="box3"/><text x="160" y="415" text-anchor="middle" font-size="10" class="net">🚫 Pi-hole (107)</text><text x="160" y="428" text-anchor="middle" class="label">DNS · 10.2.7.x</text>
-<rect x="225" y="400" width="110" height="34" class="box3"/><text x="280" y="415" text-anchor="middle" font-size="10" class="infra">🐳 Portainer (108)</text><text x="280" y="428" text-anchor="middle" class="label">Docker Mgr</text>
-<rect x="105" y="440" width="110" height="34" class="box3"/><text x="160" y="455" text-anchor="middle" font-size="10" class="infra">📋 Heimdall (109)</text><text x="160" y="468" text-anchor="middle" class="label">Dashboard</text>
+<rect x="225" y="400" width="110" height="34" class="box3"/><text x="280" y="415" text-anchor="middle" font-size="10" class="tools">📜 Cheat.sh (117)</text><text x="280" y="428" text-anchor="middle" class="label">Cheat · 10.2.7.x</text>
 <rect x="225" y="440" width="110" height="34" class="box3"/><text x="280" y="455" text-anchor="middle" font-size="10" class="mon">❤️ Uptime Kuma</text><text x="280" y="468" text-anchor="middle" class="label">Uptime</text>
 <rect x="105" y="480" width="110" height="34" class="box3"/><text x="160" y="495" text-anchor="middle" font-size="10" class="media">📸 Immich (111)</text><text x="160" y="508" text-anchor="middle" class="label">Photos</text>
-<rect x="225" y="480" width="110" height="34" class="box3"/><text x="280" y="495" text-anchor="middle" font-size="10" class="ai">🧠 HO (113)</text><text x="280" y="508" text-anchor="middle" class="label">Ollama · 10.2.7.x</text>
-<rect x="105" y="520" width="110" height="34" class="box3"/><text x="160" y="535" text-anchor="middle" font-size="10" class="infra">🖥️ Cockpit (114)</text><text x="160" y="548" text-anchor="middle" class="label">Web Admin</text>
 <rect x="225" y="520" width="110" height="34" class="box3"/><text x="280" y="535" text-anchor="middle" font-size="10" class="infra">☁ Nextcloud (112)</text><text x="280" y="548" text-anchor="middle" class="label">File Sync · 10.2.7.x</text>
 <text x="220" y="610" text-anchor="middle" class="label">🔗 10.2.7.x/24 subnet</text>
 <!-- PVE2 -->
@@ -283,7 +280,7 @@ text{font-family:'JetBrains Mono','Courier New',monospace;fill:#c0c0e0;font-size
 <text x="550" y="640" text-anchor="middle" font-size="12" class="mon">💾 Storage Layout</text>
 <text x="550" y="656" text-anchor="middle" class="label">PVE1: 94GB SSD · PVE2: 4×2TB ZFS mirror (~2.63T used / 3.62T) · PBS: 3TB HDD</text>
 <rect x="200" y="690" width="700" height="30" class="box" stroke="#ff8800"/>
-<text x="550" y="710" text-anchor="middle" class="label" font-size="11">🔗 Tailscale mesh · ProtonVPN via Gluetun · Pi-hole DNS · Wazuh SIEM</text>
+<text x="550" y="710" text-anchor="middle" class="label" font-size="11">🔗 Tailscale mesh · ProtonVPN via Gluetun · Pi-hole DNS</text>
 <rect x="200" y="735" width="700" height="50" class="box2"/>
 <text x="230" y="752" class="label" font-size="9">Legend:</text>
 <rect x="290" y="743" width="10" height="10" rx="2" fill="#00f0ff"/><text x="305" y="752" font-size="9" fill="#00f0ff">Proxmox</text>

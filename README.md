@@ -17,13 +17,13 @@ This repository contains sanitized Docker Compose, monitoring, and reverse proxy
 | **Gateway/Firewall** | OPNsense | VLAN routing, firewall, DHCP |
 | **DNS Filter** | Pi-hole | Network-wide ad blocking, local DNS |
 | **Monitoring** | Prometheus, Grafana, cAdvisor, Blackbox, Uptime Kuma | Metrics, alerting, dashboards |
-| **Security Monitoring** | Wazuh SIEM + passive network IDS sensor | Host & network threat detection, log analysis |
+| **Identity & Helpdesk** | Keycloak SSO, Snipe-IT, osTicket | SSO, asset management, helpdesk |
 | **Source Control** | Gitea | Private git hosting |
-| **Photo Vault** | Immich (native install, CT111 on PVE2) | Self-hosted Google Photos alternative, PostgreSQL + pgvector |
-| **File Sync** | Nextcloud (native install, CT112 on PVE2) | Self-hosted file sync & share, Apache + MariaDB + Redis |
-| **Automation Agent** | Hermes (primary + local LLM) | AI orchestration, cron jobs, Discord gateway |
+| **Photo Vault** | Immich (bare-metal) | Self-hosted Google Photos alternative, PostgreSQL + pgvector |
+| **File Sync** | Nextcloud (TurnKey) | Self-hosted file sync & share, Apache + MariaDB + Redis |
+| **Automation Agent** | Hermes (primary) | AI orchestration, cron jobs, Discord gateway |
 | **Media Stack** | See below | Content ingestion, indexing, streaming |
-| **Office Stack** | Vaultwarden, OnlyOffice, LanguageTool, Actual Budget | Self-hosted productivity |
+| **Credential Vault** | Vaultwarden (in media stack) | Self-hosted password management |
 
 ## Media Stack — Enterprise Abstraction Reference
 
@@ -48,25 +48,24 @@ This repository contains sanitized Docker Compose, monitoring, and reverse proxy
 
 | Host | Type | Hardware | Containers |
 |------|------|----------|------------|
-| **Node A** (PVE 9.x) | Hypervisor | i5-7500, 32GB RAM, 930GB SSD | AI agent, DNS, monitoring, SIEM, dashboards, Portainer |
-| **Node B** (PVE 8.x) | Hypervisor | i7-2600K, 16GB RAM, 2.72TB ZFS pool | Media stack, Zeek sensor, Immich, Nextcloud |
+| **Node A** (PVE 9.x) | Hypervisor | i5-7500, 32GB RAM, 1TB SSD | AI agent, DNS, monitoring hub, identity, file/photo storage |
+| **Node B** (PVE 8.x) | Hypervisor | i7-2600K, 16GB RAM, 3.62TB ZFS pool | Media stack, ripping, transcoding/optimization |
 
 ## Active Container Reference
 
 | Role | Host | OS | Cores | RAM | Disk | Purpose |
 |------|------|-----|-------|-----|------|---------|
-| **AI Agent (primary)** | Node A | Debian 13 | 4 | 4GB | 30GB | Main automation agent, Discord gateway |
-| **Local LLM Agent** | Node A | Ubuntu 24.04 | 4 | 8GB | 40GB | Ollama-based cron execution (0 API credits) |
+| **AI Agent (primary)** | Node A | Debian 13 | 2 | 4GB | 20GB | Main automation agent, Discord gateway, cron orchestration |
+| **Monitoring / Identity Hub** | Node A | Debian 13 | 2 | 4GB | 30GB | Grafana, Prometheus, Gitea, Keycloak SSO, Snipe-IT, osTicket, Uptime Kuma — 17 Docker services |
 | **DNS Filter** | Node A | Debian 13 | 2 | 4GB | 4GB | Pi-hole network DNS & ad blocking |
-| **SIEM Manager** | Node A | Debian 12 | 2 | 8GB | 50GB | Wazuh security event management |
-| **Monitoring Hub** | Node A | Ubuntu 24.04 | 2 | 4GB | 30GB | Grafana, Prometheus, Gitea, 10 Docker services |
-| **Docker Management** | Node A | Debian 12 | 1 | 1GB | 10GB | Portainer UI across hosts |
-| **Service Dashboard** | Node A | Debian 13 | 1 | 512MB | 2GB | Heimdall bookmark dashboard |
-| **Network Alerting** | Node A | Debian 12 | 2 | 2GB | 10GB | PiAlert ARP-based device discovery |
-| **Network IDS Sensor** | Node B | Debian 12 | 2 | 2GB | 12GB | Zeek passive traffic analysis (port-mirror feed) |
-| **Media Stack** | Node B | Debian 13 | 4 | 8GB | 60GB | 13 Docker containers — VPN-protected media pipeline |
-| **Photo Vault** | Node B | Debian 13 | 2 | 4GB | 50GB | Immich photo management (native) |
-| **File Sync** | Node B | Debian 12 | 2 | 4GB | 50GB | Nextcloud with PostgreSQL |
+| **Photo Vault** | Node A | Debian 13 | 2 | 4GB | 14GB | Immich photo management (bare-metal source build) |
+| **File Sync** | Node A | Debian 12 | 2 | 2GB | 8GB | Nextcloud file sync & share (TurnKey) |
+| **Book/Manga Automation** | Node A | Debian 13 | 2 | 2GB | 50GB | Librarr book/audiobook/manga search + download |
+| **Media Stack** | Node B | Debian 13 | 4 | 4GB | 40GB + ZFS | 19 Docker containers — VPN-protected media pipeline (Gluetun, qBittorrent, Jellyfin, *arrs, NPM, Vaultwarden) |
+| **Ripping Station** | Node B | Debian 13 | 2 | 2GB | 8GB | DVD/Blu-ray ripping with Flask web UIs |
+| **Media Optimizer** | Node B | Debian 13 | 4 | 4GB | 30GB | Tdarr — audio-track trimming + x265 re-encode batch |
+
+> **Past deployments (retired 2026-08):** Wazuh SIEM manager, Zeek passive network IDS sensor, Portainer, Heimdall dashboard, PiAlert ARP discovery, local-LLM agent CT, Cockpit, Donetick, cheatsheet. SIEM/IDS functionality consolidated into the monitoring hub; container management via Portainer Agent endpoints.
 
 ## Prerequisites
 
@@ -123,34 +122,25 @@ docker compose -f media-stack.yml up -d                 # Media stack (prod)
 - **`.gitignore`** blocks `.env`, `.pem`, `.key`, `config/` directories, and more
 - **RFC1918 private IPs** only — no public WAN addresses exposed
 
-## Boot Order (Node A — dependency-aware)
+## Boot Order (Node A)
 
 ```
-1. OPNsense Gateway (network foundation — VLANs, DHCP, firewall)
-2. DNS Filter (DNS first — everything needs DNS)
-3. Monitoring Stack (Gitea, Uptime Kuma, Prometheus, Grafana)
-4. Network Alerting (PiAlert)
-5. Docker Management (Portainer)
-6. Local LLM Agent (HO / Ollama cron worker)
-7. Management Agent (Portainer)
-8. Photo Vault (Immich — PostgreSQL, pgvector)
-9. File Sync (Nextcloud — MariaDB, Redis, Apache)
-10. Service Dashboard (Heimdall)
-11. SIEM (Wazuh — manager + agents)
-12. AI Agent (Hermes — starts once infra is ready)
-13. Office Stack (Vaultwarden, OnlyOffice, LanguageTool, Actual Budget)
-14. Media Stack (starts last, depends on everything else)
+1. DNS Filter (Pi-hole — must boot first)
+2. Monitoring / Identity Hub (Grafana, Keycloak, Gitea, etc.)
+3. AI Agent (Hermes)
+4. Photo Vault (Immich)
+5. File Sync (Nextcloud)
+6. Book/Manga Automation (Librarr)
 ```
 
 ## Boot Order (Node B)
 
 ```
-1. Network IDS Sensor (Zeek — passive capture, no dependencies)
-2. Photo Vault (Immich)
-3. File Sync (Nextcloud)
-4. Media Stack (heaviest, starts last — 13 containers)
+1. Media Stack (heaviest, starts first — 19 containers)
+2. Ripping Station
+3. Media Optimizer (Tdarr — starts last, after media is up)
 ```
 
 ## Reference Documents
 
-- **[Security Monitoring](./security-monitoring.md)** — Passive network IDS (Zeek) + Wazuh SIEM architecture, deployment principles, and log reference
+- **[Security Monitoring](./security-monitoring.md)** — Passive network IDS (Zeek) + Wazuh SIEM architecture (deployment retired 2026-08; kept as reference)

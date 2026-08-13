@@ -9,46 +9,42 @@ stats_cache = {"data": None, "time": 0}
 CACHE_TTL = 60
 
 SERVICES = [
-    {"name": "Jellyfin", "url": "http://10.2.7.x:8096", "icon": "🎬", "cat": "media"},
-    {"name": "Radarr", "url": "http://10.2.7.x:7878", "icon": "🎥", "cat": "arr"},
-    {"name": "Sonarr", "url": "http://10.2.7.x:8989", "icon": "📺", "cat": "arr"},
-    {"name": "Lidarr", "url": "http://10.2.7.x:8686", "icon": "🎵", "cat": "arr"},
-    {"name": "Readarr", "url": "http://10.2.7.x:8787", "icon": "📖", "cat": "arr"},
-    {"name": "Librarr", "url": "http://10.2.7.x:5050", "icon": "📚", "cat": "arr"},
-    {"name": "Prowlarr", "url": "http://10.2.7.x:9696", "icon": "🔍", "cat": "arr"},
-    {"name": "Bazarr", "url": "http://10.2.7.x:6767", "icon": "💬", "cat": "arr"},
-    {"name": "Jellyseerr", "url": "http://10.2.7.x:5055", "icon": "📺", "cat": "request"},
-    {"name": "Mylar3", "url": "http://10.2.7.x:8090", "icon": "📚", "cat": "arr"},
-    {"name": "Manga Request", "url": "http://10.2.7.x:5000", "icon": "🎴", "cat": "request"},
-    {"name": "qBittorrent", "url": "http://10.2.7.x:8080", "icon": "⚡", "cat": "download"},
-    {"name": "Navidrome", "url": "http://10.2.7.x:4533", "icon": "🎶", "cat": "media"},
-    {"name": "Audiobookshelf", "url": "http://10.2.7.x:13378", "icon": "🎧", "cat": "media"},
-    {"name": "Requestrr", "url": "http://10.2.7.x:4545", "icon": "📝", "cat": "request"},
-    {"name": "Immich", "url": "http://10.2.7.x:2283", "icon": "📸", "cat": "media"},
-    {"name": "Nextcloud", "url": "http://10.2.7.x:80", "icon": "☁️", "cat": "infra"},
-    {"name": "NPM", "url": "http://10.2.7.x:81", "icon": "🔒", "cat": "infra"},
-    {"name": "Grafana", "url": "http://10.2.7.x:3000", "icon": "📊", "cat": "monitor"},
-    {"name": "Prometheus", "url": "http://10.2.7.x:9090", "icon": "📈", "cat": "monitor"},
-    {"name": "Uptime Kuma", "url": "http://10.2.7.x:3001", "icon": "❤️", "cat": "monitor"},
-    {"name": "Pi-hole", "url": "http://10.2.7.x/admin", "icon": "🚫", "cat": "network"},
-    {"name": "Gitea", "url": "http://10.2.7.x:3002", "icon": "🔧", "cat": "dev"},
-    {"name": "Keycloak", "url": "http://10.2.7.x:5252", "icon": "🔐", "cat": "auth"},
-    {"name": "Snipe-IT", "url": "http://10.2.7.x:8000", "icon": "🏷️", "cat": "helpdesk"},
-    {"name": "osTicket", "url": "http://10.2.7.x:8081", "icon": "🎫", "cat": "helpdesk"},
-    {"name": "Cheat.sh", "url": "http://10.2.7.x:8002", "icon": "📜", "cat": "tools"},
-    {"name": "Donetick", "url": "http://10.2.7.x:2021", "icon": "✅", "cat": "tools"},
-    {"name": "DVD Ripper", "url": "http://10.2.7.x:5050", "icon": "💿", "cat": "tools"},
-    {"name": "Media Dash", "url": "http://10.2.7.x:5051", "icon": "📋", "cat": "tools"},
-    {"name": "osTicket", "url": "http://10.2.7.x:8081", "icon": "🎫", "cat": "tools"},
-    {"name": "Snipe-IT", "url": "http://10.2.7.x:8000", "icon": "📦", "cat": "infra"},
-    {"name": "Keycloak", "url": "http://10.2.7.x:5252", "icon": "🔑", "cat": "security"},
-    {"name": "Homelab Panel", "url": "http://10.2.7.x:5052", "icon": "🏗️", "cat": "docs"},
+    {"name": "Jellyfin", "url": "http://10.2.7.109:8096", "icon": "🎬", "cat": "media"},
+    {"name": "Radarr", "url": "http://10.2.7.109:7878", "icon": "🎥", "cat": "arr"},
+    {"name": "Sonarr", "url": "http://10.2.7.109:8989", "icon": "📺", "cat": "arr"},
+    {"name": "Lidarr", "url": "http://10.2.7.109:8686", "icon": "🎵", "cat": "arr"},
+    {"name": "Readarr", "url": "http://10.2.7.109:8787", "icon": "📖", "cat": "arr"},
+    {"name": "Librarr", "url": "http://10.2.7.116:5050", "icon": "📚", "cat": "arr"},
+    {"name": "Prowlarr", "url": "http://10.2.7.109:9696", "icon": "🔍", "cat": "arr"},
+    {"name": "Bazarr", "url": "http://10.2.7.109:6767", "icon": "💬", "cat": "arr"},
+    {"name": "Jellyseerr", "url": "http://10.2.7.109:5055", "icon": "📺", "cat": "request"},
+    {"name": "Mylar3", "url": "http://10.2.7.109:8090", "icon": "📚", "cat": "arr"},
+    {"name": "Manga Request", "url": "http://10.2.7.109:5000", "icon": "🎴", "cat": "request"},
+    {"name": "qBittorrent", "url": "http://10.2.7.109:8080", "icon": "⚡", "cat": "download"},
+    {"name": "Navidrome", "url": "http://10.2.7.109:4533", "icon": "🎶", "cat": "media"},
+    {"name": "Audiobookshelf", "url": "http://10.2.7.109:13378", "icon": "🎧", "cat": "media"},
+    {"name": "Requestrr", "url": "http://10.2.7.109:4545", "icon": "📝", "cat": "request"},
+    {"name": "Immich", "url": "http://10.2.7.44:2283", "icon": "📸", "cat": "media"},
+    {"name": "Nextcloud", "url": "http://10.2.7.99:80", "icon": "☁️", "cat": "infra"},
+    {"name": "NPM", "url": "http://10.2.7.109:81", "icon": "🔒", "cat": "infra"},
+    {"name": "Grafana", "url": "http://10.2.7.108:3000", "icon": "📊", "cat": "monitor"},
+    {"name": "Prometheus", "url": "http://10.2.7.108:9090", "icon": "📈", "cat": "monitor"},
+    {"name": "Uptime Kuma", "url": "http://10.2.7.108:3001", "icon": "❤️", "cat": "monitor"},
+    {"name": "Pi-hole", "url": "http://10.2.7.2/admin", "icon": "🚫", "cat": "network"},
+    {"name": "Gitea", "url": "http://10.2.7.108:3002", "icon": "🔧", "cat": "dev"},
+    {"name": "Keycloak", "url": "http://10.2.7.108:5252", "icon": "🔐", "cat": "auth"},
+    {"name": "Snipe-IT", "url": "http://10.2.7.108:8000", "icon": "🏷️", "cat": "helpdesk"},
+    {"name": "osTicket", "url": "http://10.2.7.108:8081", "icon": "🎫", "cat": "helpdesk"},
+    {"name": "Tdarr", "url": "http://10.2.7.118:8265", "icon": "🎞️", "cat": "media"},
+    {"name": "DVD Ripper", "url": "http://10.2.7.245:5050", "icon": "💿", "cat": "tools"},
+    {"name": "Media Dash", "url": "http://10.2.7.245:5051", "icon": "📋", "cat": "tools"},
+    {"name": "Homelab Panel", "url": "http://10.2.7.245:5052", "icon": "🏗️", "cat": "docs"},
 ]
 
 PVE_PASSWORDS = {
-    "10.2.7.x": "2proxtheworld",
-    "10.2.7.x": "2proxtheworld",
-    "10.2.7.x": "2backuptheworld",
+    "10.2.7.64": "2proxtheworld",
+    "10.2.7.62": "2proxtheworld",
+    "10.2.7.65": "2backuptheworld",
 }
 
 def pve_api(host, endpoint, password):
@@ -189,9 +185,9 @@ def parse_pbs_status(host, label, password):
     return s
 
 def collect_stats():
-    pve1 = parse_node_status("10.2.7.x", "PVE1", PVE_PASSWORDS.get("10.2.7.x", ""))
-    pve2 = parse_node_status("10.2.7.x", "PVE2", PVE_PASSWORDS.get("10.2.7.x", ""))
-    pbs = parse_pbs_status("10.2.7.x", "PBS", PVE_PASSWORDS.get("10.2.7.x", ""))
+    pve1 = parse_node_status("10.2.7.64", "PVE1", PVE_PASSWORDS.get("10.2.7.64", ""))
+    pve2 = parse_node_status("10.2.7.62", "PVE2", PVE_PASSWORDS.get("10.2.7.62", ""))
+    pbs = parse_pbs_status("10.2.7.65", "PBS", PVE_PASSWORDS.get("10.2.7.65", ""))
     return {"pve1": pve1, "pve2": pve2, "pbs": pbs}
 
 ARCH_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 870" style="background:#08080f;width:100%;height:auto;max-width:1100px">
@@ -218,7 +214,7 @@ text{font-family:'JetBrains Mono','Courier New',monospace;fill:#c0c0e0;font-size
 </defs>
 <rect width="1100" height="870" fill="#08080f"/>
 <text x="550" y="30" text-anchor="middle" class="title">🏴 Piper Homelab Topology</text>
-<text x="550" y="46" text-anchor="middle" class="sub">Las Vegas · 10.2.7.x/24 · Proxmox Cluster</text>
+<text x="550" y="46" text-anchor="middle" class="sub">Las Vegas · 10.2.7.0/24 · Proxmox Cluster</text>
 <!-- INTERNET -->
 <rect x="450" y="60" width="200" height="36" class="box"/>
 <text x="550" y="77" text-anchor="middle" font-size="12" fill="#00ff41">🌐 Internet</text>
@@ -226,7 +222,7 @@ text{font-family:'JetBrains Mono','Courier New',monospace;fill:#c0c0e0;font-size
 <line x1="550" y1="96" x2="550" y2="118" class="line"/>
 <!-- OPNsense -->
 <rect x="400" y="120" width="300" height="44" class="box" stroke="#ff8800"/>
-<text x="550" y="140" text-anchor="middle" font-size="12" class="net">🛡 OPNsense — 10.2.7.x</text>
+<text x="550" y="140" text-anchor="middle" font-size="12" class="net">🛡 OPNsense — 10.2.7.1</text>
 <text x="550" y="155" text-anchor="middle" class="label">Firewall · VLANs · DHCP · NAT</text>
 <line x1="550" y1="164" x2="550" y2="182" class="line"/>
 <!-- Switch -->
@@ -238,32 +234,33 @@ text{font-family:'JetBrains Mono','Courier New',monospace;fill:#c0c0e0;font-size
 <line x1="880" y1="220" x2="880" y2="250" class="line"/>
 <!-- PVE1 -->
 <rect x="120" y="252" width="200" height="36" class="box" stroke="#00f0ff"/>
-<text x="220" y="269" text-anchor="middle" font-size="12" class="hl">🖥 PVE1 — 10.2.7.x</text>
+<text x="220" y="269" text-anchor="middle" font-size="12" class="hl">🖥 PVE1 — 10.2.7.64</text>
 <text x="220" y="282" text-anchor="middle" class="label">i5-7500 · 31GB RAM · 94GB SSD</text>
 <rect x="95" y="295" width="250" height="330" class="box2"/>
 <text x="220" y="312" text-anchor="middle" class="label" font-size="9">CONTAINERS</text>
-<rect x="105" y="320" width="110" height="34" class="box3"/><text x="160" y="335" text-anchor="middle" font-size="10" class="infra">🤖 Hermes (100)</text><text x="160" y="348" text-anchor="middle" class="label">AI Agent · 10.2.7.x</text>
-<rect x="225" y="320" width="110" height="34" class="box3"/><text x="280" y="335" text-anchor="middle" font-size="10" class="mon">✅ Donetick (102)</text><text x="280" y="348" text-anchor="middle" class="label">Tasks · 10.2.7.x</text>
-<rect x="105" y="360" width="110" height="34" class="box3"/><text x="160" y="375" text-anchor="middle" font-size="10" class="arr">📚 Librarr (116)</text><text x="160" y="388" text-anchor="middle" class="label">Books · 10.2.7.x</text>
-<rect x="225" y="360" width="110" height="34" class="box3"/><text x="280" y="375" text-anchor="middle" font-size="10" class="mon">📊 Grafana (106)</text><text x="280" y="388" text-anchor="middle" class="label">Monitoring · 10.2.7.x</text>
-<rect x="105" y="400" width="110" height="34" class="box3"/><text x="160" y="415" text-anchor="middle" font-size="10" class="net">🚫 Pi-hole (107)</text><text x="160" y="428" text-anchor="middle" class="label">DNS · 10.2.7.x</text>
-<rect x="225" y="400" width="110" height="34" class="box3"/><text x="280" y="415" text-anchor="middle" font-size="10" class="tools">📜 Cheat.sh (117)</text><text x="280" y="428" text-anchor="middle" class="label">Cheat · 10.2.7.x</text>
+<rect x="105" y="320" width="110" height="34" class="box3"/><text x="160" y="335" text-anchor="middle" font-size="10" class="infra">🤖 Hermes (100)</text><text x="160" y="348" text-anchor="middle" class="label">AI Agent · 10.2.7.107</text>
+<rect x="225" y="320" width="110" height="34" class="box3"/><text x="280" y="335" text-anchor="middle" font-size="10" class="dev">🤖 Ansible (117)</text><text x="280" y="348" text-anchor="middle" class="label">Config Mgmt · 10.2.7.117</text>
+<rect x="105" y="360" width="110" height="34" class="box3"/><text x="160" y="375" text-anchor="middle" font-size="10" class="arr">📚 Librarr (116)</text><text x="160" y="388" text-anchor="middle" class="label">Books · 10.2.7.116</text>
+<rect x="225" y="360" width="110" height="34" class="box3"/><text x="280" y="375" text-anchor="middle" font-size="10" class="mon">📊 Grafana (106)</text><text x="280" y="388" text-anchor="middle" class="label">Monitoring · 10.2.7.108</text>
+<rect x="105" y="400" width="110" height="34" class="box3"/><text x="160" y="415" text-anchor="middle" font-size="10" class="net">🚫 Pi-hole (107)</text><text x="160" y="428" text-anchor="middle" class="label">DNS · 10.2.7.2</text>
+<rect x="225" y="400" width="110" height="34" class="box3"/><text x="280" y="415" text-anchor="middle" font-size="10" class="sec">🔐 Keycloak (106)</text><text x="280" y="428" text-anchor="middle" class="label">Auth · 10.2.7.108</text>
 <rect x="225" y="440" width="110" height="34" class="box3"/><text x="280" y="455" text-anchor="middle" font-size="10" class="mon">❤️ Uptime Kuma</text><text x="280" y="468" text-anchor="middle" class="label">Uptime</text>
 <rect x="105" y="480" width="110" height="34" class="box3"/><text x="160" y="495" text-anchor="middle" font-size="10" class="media">📸 Immich (111)</text><text x="160" y="508" text-anchor="middle" class="label">Photos</text>
-<rect x="225" y="520" width="110" height="34" class="box3"/><text x="280" y="535" text-anchor="middle" font-size="10" class="infra">☁ Nextcloud (112)</text><text x="280" y="548" text-anchor="middle" class="label">File Sync · 10.2.7.x</text>
-<text x="220" y="610" text-anchor="middle" class="label">🔗 10.2.7.x/24 subnet</text>
+<rect x="225" y="520" width="110" height="34" class="box3"/><text x="280" y="535" text-anchor="middle" font-size="10" class="infra">☁ Nextcloud (112)</text><text x="280" y="548" text-anchor="middle" class="label">File Sync · 10.2.7.99</text>
+<text x="220" y="610" text-anchor="middle" class="label">🔗 10.2.7.0/24 subnet</text>
 <!-- PVE2 -->
 <rect x="450" y="252" width="200" height="36" class="box" stroke="#00f0ff"/>
-<text x="550" y="269" text-anchor="middle" font-size="12" class="hl">🖥 PVE2 — 10.2.7.x</text>
+<text x="550" y="269" text-anchor="middle" font-size="12" class="hl">🖥 PVE2 — 10.2.7.62</text>
 <text x="550" y="282" text-anchor="middle" class="label">i7-2600 · 31GB RAM · 3.62TB ZFS</text>
 <rect x="425" y="295" width="250" height="195" class="box2"/>
 <text x="550" y="312" text-anchor="middle" class="label" font-size="9">CONTAINERS</text>
 <rect x="555" y="320" width="110" height="34" class="box3"/><text x="610" y="335" text-anchor="middle" font-size="10" class="tools">💿 Ripper (103)</text><text x="610" y="348" text-anchor="middle" class="label">DVD Ripping</text>
 <rect x="435" y="360" width="150" height="34" class="box3"/><text x="510" y="375" text-anchor="middle" font-size="10" class="media">🎬 Media Stack (110)</text><text x="510" y="388" text-anchor="middle" class="label">Jellyfin + *arrs</text>
-<text x="550" y="480" text-anchor="middle" class="label">🔗 ZFS: media · 4×2TB mirror</text>
+<rect x="555" y="400" width="110" height="34" class="box3"/><text x="610" y="415" text-anchor="middle" font-size="10" class="media">🎞️ Tdarr (118)</text><text x="610" y="428" text-anchor="middle" class="label">Transcode · 10.2.7.118</text>
+<text x="550" y="480" text-anchor="middle" class="label">🔗 ZFS: media · 2×2-drive mirror</text>
 <!-- PBS -->
 <rect x="780" y="252" width="200" height="36" class="box" stroke="#ff00aa"/>
-<text x="880" y="269" text-anchor="middle" font-size="12" class="infra">💾 PBS — 10.2.7.x</text>
+<text x="880" y="269" text-anchor="middle" font-size="12" class="infra">💾 PBS — 10.2.7.65</text>
 <text x="880" y="282" text-anchor="middle" class="label">Xeon E3-1225 · 15GB · 3TB</text>
 <rect x="760" y="295" width="240" height="120" class="box2"/>
 <text x="880" y="315" text-anchor="middle" class="label" font-size="9">BACKUP SERVER</text>
@@ -273,11 +270,11 @@ text{font-family:'JetBrains Mono','Courier New',monospace;fill:#c0c0e0;font-size
 <text x="790" y="394" class="label">• Hitachi 3TB HDD</text>
 <!-- Bottom -->
 <rect x="200" y="560" width="700" height="44" class="box" stroke="#ffd700"/>
-<text x="550" y="578" text-anchor="middle" font-size="12" class="arr">📺 Media Stack — CT 110 (10.2.7.x)</text>
+<text x="550" y="578" text-anchor="middle" font-size="12" class="arr">📺 Media Stack — CT 110 (10.2.7.109)</text>
 <text x="550" y="594" text-anchor="middle" class="label">🎬 Jellyfin · 🎥 Radarr · 📺 Sonarr · 🔍 Prowlarr · ⚡ qBit · 🎶 Navidrome · 📝 Requestrr</text>
 <rect x="200" y="620" width="700" height="44" class="box" stroke="#00ff41"/>
 <text x="550" y="640" text-anchor="middle" font-size="12" class="mon">💾 Storage Layout</text>
-<text x="550" y="656" text-anchor="middle" class="label">PVE1: 94GB SSD · PVE2: 4×2TB ZFS mirror (~2.63T used / 3.62T) · PBS: 3TB HDD</text>
+<text x="550" y="656" text-anchor="middle" class="label">PVE1: 1TB SSD · PVE2: 3.62T ZFS mirror (~2.88T used) · PBS: 3TB HDD</text>
 <rect x="200" y="690" width="700" height="30" class="box" stroke="#ff8800"/>
 <text x="550" y="710" text-anchor="middle" class="label" font-size="11">🔗 Tailscale mesh · ProtonVPN via Gluetun · Pi-hole DNS</text>
 <rect x="200" y="735" width="700" height="50" class="box2"/>
@@ -289,7 +286,7 @@ text{font-family:'JetBrains Mono','Courier New',monospace;fill:#c0c0e0;font-size
 <rect x="620" y="743" width="10" height="10" rx="2" fill="#ff8800"/><text x="635" y="752" font-size="9" fill="#ff8800">Network</text>
 <rect x="710" y="743" width="10" height="10" rx="2" fill="#ff00aa"/><text x="725" y="752" font-size="9" fill="#ff00aa">Infra/Backup</text>
 <rect x="790" y="743" width="10" height="10" rx="2" fill="#aa66ff"/><text x="805" y="752" font-size="9" fill="#aa66ff">AI</text>
-<text x="550" y="778" text-anchor="middle" class="sub" font-size="9">Cyberpunk Homelab · Generated by Hermes Agent · v4 · Updated Aug 4 2026</text>
+<text x="550" y="778" text-anchor="middle" class="sub" font-size="9">Cyberpunk Homelab · Generated by Hermes Agent · v4 · Updated Aug 13 2026</text>
 </svg>"""
 
 HTML = """<!DOCTYPE html>
@@ -522,7 +519,7 @@ h1{
       <span class="header-icon">🏴</span>
       <div>
         <h1>PIPER HOMELAB</h1>
-        <div class="subtitle">Anthony Piper /* Las Vegas */ 10.2.7.x/24</div>
+        <div class="subtitle">Anthony Piper /* Las Vegas */ 10.2.7.0/24</div>
       </div>
     </div>
     <div class="header-right">
@@ -545,7 +542,7 @@ h1{
 
     <!-- PVE1 -->
     <div class="card">
-      <div class="card-title">🖥 PVE1 — 10.2.7.x</div>
+      <div class="card-title">🖥 PVE1 — 10.2.7.64</div>
       {% if p1.error %}<div class="error-msg">⚠ {{ p1.error[:100] }}</div>{% endif %}
       {% if p1.cpu %}<div class="stat-row"><span class="stat-label">CPU</span><span class="stat-value">{{ p1.cpu[:50] }}</span></div>{% endif %}
       <div class="stat-row"><span class="stat-label">Cores</span><span class="stat-value">{{ p1.cores or '—' }}</span></div>
@@ -570,7 +567,7 @@ h1{
 
     <!-- PVE2 -->
     <div class="card">
-      <div class="card-title">🖥 PVE2 — 10.2.7.x</div>
+      <div class="card-title">🖥 PVE2 — 10.2.7.62</div>
       {% if p2.error %}<div class="error-msg">⚠ {{ p2.error[:100] }}</div>{% endif %}
       {% if p2.cpu %}<div class="stat-row"><span class="stat-label">CPU</span><span class="stat-value">{{ p2.cpu[:50] }}</span></div>{% endif %}
       <div class="stat-row"><span class="stat-label">Cores</span><span class="stat-value">{{ p2.cores or '—' }}</span></div>
@@ -595,7 +592,7 @@ h1{
 
     <!-- PBS -->
     <div class="card">
-      <div class="card-title">💾 PBS — 10.2.7.x</div>
+      <div class="card-title">💾 PBS — 10.2.7.65</div>
       {% if pbs.error %}<div class="error-msg">⚠ {{ pbs.error[:100] }}</div>{% endif %}
       {% if pbs.cpu %}<div class="stat-row"><span class="stat-label">CPU</span><span class="stat-value">{{ pbs.cpu[:50] }}</span></div>{% endif %}
       <div class="stat-row"><span class="stat-label">Cores</span><span class="stat-value">{{ pbs.cores or '—' }}</span></div>
@@ -641,7 +638,7 @@ h1{
 </div>
 </div>
 
-<div class="footer">// POWERED BY HERMES AGENT · v4.0 · CT 100 (10.2.7.x) //</div>
+<div class="footer">// POWERED BY HERMES AGENT · v4.0 · CT 100 (10.2.7.107) //</div>
 </div>
 
 <script>

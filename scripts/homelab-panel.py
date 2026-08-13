@@ -32,9 +32,9 @@ SERVICES = [
     {"name": "Uptime Kuma", "url": "http://10.2.7.108:3001", "icon": "❤️", "cat": "monitor"},
     {"name": "Pi-hole", "url": "http://10.2.7.2/admin", "icon": "🚫", "cat": "network"},
     {"name": "Gitea", "url": "http://10.2.7.108:3002", "icon": "🔧", "cat": "dev"},
-    {"name": "Keycloak", "url": "http://10.2.7.108:5252", "icon": "🔐", "cat": "auth"},
-    {"name": "Snipe-IT", "url": "http://10.2.7.108:8000", "icon": "🏷️", "cat": "helpdesk"},
-    {"name": "osTicket", "url": "http://10.2.7.108:8081", "icon": "🎫", "cat": "helpdesk"},
+    {"name": "Keycloak", "url": "http://10.2.7.120:5252", "icon": "🔐", "cat": "auth"},
+    {"name": "Snipe-IT", "url": "http://10.2.7.121:8000", "icon": "🏷️", "cat": "helpdesk"},
+    {"name": "osTicket", "url": "http://10.2.7.122:8081", "icon": "🎫", "cat": "helpdesk"},
     {"name": "Tdarr", "url": "http://10.2.7.118:8265", "icon": "🎞️", "cat": "media"},
     {"name": "DVD Ripper", "url": "http://10.2.7.245:5050", "icon": "💿", "cat": "tools"},
     {"name": "Media Dash", "url": "http://10.2.7.245:5051", "icon": "📋", "cat": "tools"},
@@ -243,7 +243,9 @@ text{font-family:'JetBrains Mono','Courier New',monospace;fill:#c0c0e0;font-size
 <rect x="105" y="360" width="110" height="34" class="box3"/><text x="160" y="375" text-anchor="middle" font-size="10" class="arr">📚 Librarr (116)</text><text x="160" y="388" text-anchor="middle" class="label">Books · 10.2.7.116</text>
 <rect x="225" y="360" width="110" height="34" class="box3"/><text x="280" y="375" text-anchor="middle" font-size="10" class="mon">📊 Grafana (106)</text><text x="280" y="388" text-anchor="middle" class="label">Monitoring · 10.2.7.108</text>
 <rect x="105" y="400" width="110" height="34" class="box3"/><text x="160" y="415" text-anchor="middle" font-size="10" class="net">🚫 Pi-hole (107)</text><text x="160" y="428" text-anchor="middle" class="label">DNS · 10.2.7.2</text>
-<rect x="225" y="400" width="110" height="34" class="box3"/><text x="280" y="415" text-anchor="middle" font-size="10" class="sec">🔐 Keycloak (106)</text><text x="280" y="428" text-anchor="middle" class="label">Auth · 10.2.7.108</text>
+<rect x="225" y="400" width="110" height="34" class="box3"/><text x="280" y="415" text-anchor="middle" font-size="10" class="sec">🔐 Keycloak (120)</text><text x="280" y="428" text-anchor="middle" class="label">Auth · 10.2.7.120</text>
+<rect x="105" y="440" width="110" height="34" class="box3"/><text x="160" y="455" text-anchor="middle" font-size="10" class="helpdesk">🏷️ Snipe-IT (121)</text><text x="160" y="468" text-anchor="middle" class="label">Assets · 10.2.7.121</text>
+<rect x="225" y="480" width="110" height="34" class="box3"/><text x="280" y="495" text-anchor="middle" font-size="10" class="helpdesk">🎫 osTicket (122)</text><text x="280" y="508" text-anchor="middle" class="label">Tickets · 10.2.7.122</text>
 <rect x="225" y="440" width="110" height="34" class="box3"/><text x="280" y="455" text-anchor="middle" font-size="10" class="mon">❤️ Uptime Kuma</text><text x="280" y="468" text-anchor="middle" class="label">Uptime</text>
 <rect x="105" y="480" width="110" height="34" class="box3"/><text x="160" y="495" text-anchor="middle" font-size="10" class="media">📸 Immich (111)</text><text x="160" y="508" text-anchor="middle" class="label">Photos</text>
 <rect x="225" y="520" width="110" height="34" class="box3"/><text x="280" y="535" text-anchor="middle" font-size="10" class="infra">☁ Nextcloud (112)</text><text x="280" y="548" text-anchor="middle" class="label">File Sync · 10.2.7.99</text>

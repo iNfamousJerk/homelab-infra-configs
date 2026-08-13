@@ -75,8 +75,7 @@ scrape_configs:
           - http://10.2.7.x:81
           - http://10.2.7.x:8787
           - http://10.2.7.x:13378
-          # PVE2
-          - http://10.2.7.x:8006
+          # PVE2 web UI is TCP-probed below (self-signed TLS fails HTTP probe)
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target

@@ -13,17 +13,16 @@ SERVICES = [
     {"name": "Radarr", "url": "http://10.2.7.109:7878", "icon": "🎥", "cat": "arr"},
     {"name": "Sonarr", "url": "http://10.2.7.109:8989", "icon": "📺", "cat": "arr"},
     {"name": "Lidarr", "url": "http://10.2.7.109:8686", "icon": "🎵", "cat": "arr"},
-    {"name": "Readarr", "url": "http://10.2.7.109:8787", "icon": "📖", "cat": "arr"},
+    {"name": "Arr Dashboard", "url": "http://10.2.7.239:3000", "icon": "📊", "cat": "arr"},
     {"name": "Librarr", "url": "http://10.2.7.116:5050", "icon": "📚", "cat": "arr"},
     {"name": "Prowlarr", "url": "http://10.2.7.109:9696", "icon": "🔍", "cat": "arr"},
     {"name": "Bazarr", "url": "http://10.2.7.109:6767", "icon": "💬", "cat": "arr"},
-    {"name": "Jellyseerr", "url": "http://10.2.7.109:5055", "icon": "📺", "cat": "request"},
+    {"name": "Seerr", "url": "http://10.2.7.109:5055", "icon": "📺", "cat": "request"},
     {"name": "Mylar3", "url": "http://10.2.7.109:8090", "icon": "📚", "cat": "arr"},
     {"name": "Manga Request", "url": "http://10.2.7.109:5000", "icon": "🎴", "cat": "request"},
     {"name": "qBittorrent", "url": "http://10.2.7.109:8080", "icon": "⚡", "cat": "download"},
     {"name": "Navidrome", "url": "http://10.2.7.109:4533", "icon": "🎶", "cat": "media"},
     {"name": "Audiobookshelf", "url": "http://10.2.7.109:13378", "icon": "🎧", "cat": "media"},
-    {"name": "Requestrr", "url": "http://10.2.7.109:4545", "icon": "📝", "cat": "request"},
     {"name": "Immich", "url": "http://10.2.7.44:2283", "icon": "📸", "cat": "media"},
     {"name": "Nextcloud", "url": "http://10.2.7.99:80", "icon": "☁️", "cat": "infra"},
     {"name": "NPM", "url": "http://10.2.7.109:81", "icon": "🔒", "cat": "infra"},
@@ -273,7 +272,7 @@ text{font-family:'JetBrains Mono','Courier New',monospace;fill:#c0c0e0;font-size
 <!-- Bottom -->
 <rect x="200" y="560" width="700" height="44" class="box" stroke="#ffd700"/>
 <text x="550" y="578" text-anchor="middle" font-size="12" class="arr">📺 Media Stack — CT 110 (10.2.7.109)</text>
-<text x="550" y="594" text-anchor="middle" class="label">🎬 Jellyfin · 🎥 Radarr · 📺 Sonarr · 🔍 Prowlarr · ⚡ qBit · 🎶 Navidrome · 📝 Requestrr</text>
+<text x="550" y="594" text-anchor="middle" class="label">🎬 Jellyfin · 🎥 Radarr · 📺 Sonarr · 🔍 Prowlarr · ⚡ qBit · 🎶 Navidrome · 📊 Arr Dash</text>
 <rect x="200" y="620" width="700" height="44" class="box" stroke="#00ff41"/>
 <text x="550" y="640" text-anchor="middle" font-size="12" class="mon">💾 Storage Layout</text>
 <text x="550" y="656" text-anchor="middle" class="label">PVE1: 1TB SSD · PVE2: 3.62T ZFS mirror (~2.88T used) · PBS: 3TB HDD</text>

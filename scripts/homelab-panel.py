@@ -38,6 +38,8 @@ SERVICES = [
     {"name": "DVD Ripper", "url": "http://10.2.7.245:5050", "icon": "💿", "cat": "tools"},
     {"name": "Media Dash", "url": "http://10.2.7.245:5051", "icon": "📋", "cat": "tools"},
     {"name": "Homelab Panel", "url": "http://10.2.7.245:5052", "icon": "🏗️", "cat": "docs"},
+    {"name": "Suwayomi", "url": "http://10.2.7.130:4567", "icon": "📥", "cat": "download"},
+    {"name": "Komga", "url": "http://10.2.7.130:25600", "icon": "📖", "cat": "media"},
 ]
 
 PVE_PASSWORDS = {
@@ -248,6 +250,7 @@ text{font-family:'JetBrains Mono','Courier New',monospace;fill:#c0c0e0;font-size
 <rect x="225" y="440" width="110" height="34" class="box3"/><text x="280" y="455" text-anchor="middle" font-size="10" class="mon">❤️ Uptime Kuma</text><text x="280" y="468" text-anchor="middle" class="label">Uptime</text>
 <rect x="105" y="480" width="110" height="34" class="box3"/><text x="160" y="495" text-anchor="middle" font-size="10" class="media">📸 Immich (111)</text><text x="160" y="508" text-anchor="middle" class="label">Photos</text>
 <rect x="225" y="520" width="110" height="34" class="box3"/><text x="280" y="535" text-anchor="middle" font-size="10" class="infra">☁ Nextcloud (112)</text><text x="280" y="548" text-anchor="middle" class="label">File Sync · 10.2.7.99</text>
+<rect x="105" y="520" width="110" height="34" class="box3"/><text x="160" y="535" text-anchor="middle" font-size="10" class="media">📖 Manga (130)</text><text x="160" y="548" text-anchor="middle" class="label">Suwayomi+Komga</text>
 <text x="220" y="610" text-anchor="middle" class="label">🔗 10.2.7.0/24 subnet</text>
 <!-- PVE2 -->
 <rect x="450" y="252" width="200" height="36" class="box" stroke="#00f0ff"/>

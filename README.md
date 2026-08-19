@@ -37,12 +37,12 @@ This repository contains sanitized Docker Compose, monitoring, and reverse proxy
 | `data-indexer-service-2` | Lidarr | Audio content automation | 8686 |
 | `subtitle-enrichment-service` | Bazarr | Subtitle acquisition & management | 6767 |
 | `internal-streaming-microservice` | Jellyfin | Media streaming server | 8096 |
-| `media-request-gateway` | Requestrr | Discord-based content request management | 4545 |
-| `book-automation-service` | Readarr | Book/ebook content automation | 8787 |
+| `media-request-gateway` | Seerr (Jellyseerr) | Media request management & discovery | 5055 |
 | `audiobook-ebook-server` | Audiobookshelf | Audiobook & ebook streaming | 13378 |
 | `captcha-resolver` | FlareSolverr | Cloudflare challenge bypass | 8191 |
 | `credential-vault` | Vaultwarden | Password management | — |
 | `reverse-proxy` | Nginx Proxy Manager | SSL termination & domain routing | 80/443/81 |
+| `manga-request` | Manga Request | Manga acquisition requests | 5000 |
 
 ## Infrastructure Layout
 
@@ -56,15 +56,21 @@ This repository contains sanitized Docker Compose, monitoring, and reverse proxy
 | Role | Host | OS | Cores | RAM | Disk | Purpose |
 |------|------|-----|-------|-----|------|---------|
 | **AI Agent (primary)** | Node A | Debian 13 | 2 | 4GB | 20GB | Main automation agent, Discord gateway, cron orchestration |
-| **Monitoring / Identity Hub** | Node A | Debian 13 | 2 | 4GB | 30GB | Grafana, Prometheus, Gitea, Keycloak SSO, Snipe-IT, osTicket, Uptime Kuma — 17 Docker services |
+| **Monitoring Hub** | Node A | Debian 13 | 2 | 4GB | 30GB | Grafana, Prometheus, Alertmanager, Gitea, Uptime Kuma, exporters — 11 Docker services |
 | **DNS Filter** | Node A | Debian 13 | 2 | 4GB | 4GB | Pi-hole network DNS & ad blocking |
 | **Photo Vault** | Node A | Debian 13 | 2 | 4GB | 14GB | Immich photo management (bare-metal source build) |
 | **File Sync** | Node A | Debian 12 | 2 | 2GB | 8GB | Nextcloud file sync & share (TurnKey) |
+| **Identity (SSO)** | Node A | Debian 13 | 1 | 2GB | 10GB | Keycloak — centralized OpenID Connect / SAML identity provider |
+| **Asset Management** | Node A | Debian 13 | 1 | 2GB | 10GB | Snipe-IT — IT asset / license tracking (Docker) |
+| **Helpdesk** | Node A | Debian 13 | 1 | 2GB | 10GB | osTicket — ticketing / helpdesk system (Docker) |
+| **Service Dashboard** | Node A | Debian 13 | 1 | 1GB | 10GB | Arr Dashboard — unified media-stack UI (Docker) |
 | **Book/Manga Automation** | Node A | Debian 13 | 2 | 2GB | 50GB | Librarr book/audiobook/manga search + download |
-| **Media Stack** | Node B | Debian 13 | 4 | 4GB | 40GB + ZFS | 19 Docker containers — VPN-protected media pipeline (Gluetun, qBittorrent, Jellyfin, *arrs, NPM, Vaultwarden) |
+| **Manga Reader** | Node A | Debian 13 | 2 | 2GB | 20GB | Komga — manga/comic reader (bare-metal jar) |
+| **Media Stack** | Node B | Debian 13 | 4 | 4GB | 40GB + ZFS | 16 Docker containers — VPN-protected media pipeline (Gluetun, qBittorrent, Jellyfin, *arrs, NPM, Vaultwarden) |
 | **Ripping Station** | Node B | Debian 13 | 2 | 2GB | 8GB | DVD/Blu-ray ripping with Flask web UIs |
-| **Media Optimizer** | Node B | Debian 13 | 4 | 4GB | 30GB | Tdarr — audio-track trimming + x265 re-encode batch |
+| **Media Optimizer** | Node B | Debian 13 | 4 | 4GB | 30GB | Tdarr — audio-track trimming + x265 re-encode batch (currently paused) |
 
+> **14 total containers.** 11 on Node A, 3 on Node B.
 > **Past deployments (retired 2026-08):** Wazuh SIEM manager, Zeek passive network IDS sensor, Portainer, Heimdall dashboard, PiAlert ARP discovery, local-LLM agent CT, Cockpit, Donetick, cheatsheet. SIEM/IDS functionality consolidated into the monitoring hub; container management via Portainer Agent endpoints.
 
 ## Prerequisites

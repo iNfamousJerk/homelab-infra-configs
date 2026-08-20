@@ -150,3 +150,4 @@ docker compose -f media-stack.yml up -d                 # Media stack (prod)
 ## Reference Documents
 
 - **[Security Monitoring](./security-monitoring.md)** — Passive network IDS (Zeek) + Wazuh SIEM architecture (deployment retired 2026-08; kept as reference)
+- **[Client Portal + GPU Streaming](./client-portal-reference.md)** — Sanitized multi-tenant client portal reference: tenant-per-container isolation, all-VPN access (zero public exposure), GPU-accelerated transcoding, SSO per client

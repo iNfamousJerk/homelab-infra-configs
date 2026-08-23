@@ -30,7 +30,7 @@ SERVICES = [
     {"name": "Prometheus", "url": "http://10.2.7.108:9090", "icon": "📈", "cat": "monitor"},
     {"name": "Uptime Kuma", "url": "http://10.2.7.108:3001", "icon": "❤️", "cat": "monitor"},
     {"name": "Pi-hole", "url": "http://10.2.7.2/admin", "icon": "🚫", "cat": "network"},
-    {"name": "Gitea", "url": "http://10.2.7.108:3002", "icon": "🔧", "cat": "dev"},
+    {"name": "Gitea", "url": "http://10.2.7.125:3002", "icon": "🔧", "cat": "dev"},
     {"name": "Keycloak", "url": "http://10.2.7.120:5252", "icon": "🔐", "cat": "auth"},
     {"name": "Snipe-IT", "url": "http://10.2.7.121:8000", "icon": "🏷️", "cat": "helpdesk"},
     {"name": "osTicket", "url": "http://10.2.7.122:8081", "icon": "🎫", "cat": "helpdesk"},

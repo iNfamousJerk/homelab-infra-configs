@@ -239,15 +239,15 @@ services:
     restart: *restart
 
   # ─── Media Requests ────────────────────────────────────────
-  jellyseerr:
-    image: fallenbagel/jellyseerr:latest
-    container_name: jellyseerr
+  seerr:
+    image: ghcr.io/seerr-team/seerr:latest
+    container_name: seerr
+    init: true
     environment:
-      PUID: *puid
-      PGID: *pgid
       TZ: *tz
+      PORT: 5055
     volumes:
-      - ./config/jellyseerr:/config
+      - ./config/seerr:/config
     ports:
       - "5055:5055"
     <<: *apparmor

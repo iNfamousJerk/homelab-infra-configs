@@ -375,7 +375,7 @@ services:
   # approval gates, quota management, and notification workflows.
   # =============================================================================
   content-request-orchestrator:
-    image: "${ORCHESTRATOR_IMAGE:-fallenbagel/jellyseerr:latest}"
+    image: "${ORCHESTRATOR_IMAGE:-ghcr.io/seerr-team/seerr:latest}"
     container_name: "${COMPOSE_PROJECT_NAME:-data-pipeline}-request-orchestrator"
     environment:
       PUID: *puid

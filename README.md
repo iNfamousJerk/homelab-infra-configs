@@ -37,12 +37,11 @@ This repository contains sanitized Docker Compose, monitoring, and reverse proxy
 | `data-indexer-service-2` | Lidarr | Audio content automation | 8686 |
 | `subtitle-enrichment-service` | Bazarr | Subtitle acquisition & management | 6767 |
 | `internal-streaming-microservice` | Jellyfin | Media streaming server | 8096 |
-| `media-request-gateway` | Seerr (Jellyseerr) | Media request management & discovery | 5055 |
+| `media-request-gateway` | Seerr | Media request management & discovery | 5055 |
 | `audiobook-ebook-server` | Audiobookshelf | Audiobook & ebook streaming | 13378 |
 | `captcha-resolver` | FlareSolverr | Cloudflare challenge bypass | 8191 |
 | `credential-vault` | Vaultwarden | Password management | — |
 | `reverse-proxy` | Nginx Proxy Manager | SSL termination & domain routing | 80/443/81 |
-| `manga-request` | Manga Request | Manga acquisition requests | 5000 |
 
 ## Infrastructure Layout
 
@@ -66,7 +65,7 @@ This repository contains sanitized Docker Compose, monitoring, and reverse proxy
 | **Service Dashboard** | Node A | Debian 13 | 1 | 1GB | 10GB | Arr Dashboard — unified media-stack UI (Docker) |
 | **Book/Manga Automation** | Node A | Debian 13 | 2 | 2GB | 50GB | Librarr book/audiobook/manga search + download |
 | **Manga Reader** | Node A | Debian 13 | 2 | 2GB | 20GB | Komga — manga/comic reader (bare-metal jar) |
-| **Media Stack** | Node B | Debian 13 | 4 | 4GB | 40GB + ZFS | 16 Docker containers — VPN-protected media pipeline (Gluetun, qBittorrent, Jellyfin, *arrs, NPM, Vaultwarden) |
+| **Media Stack** | Node B | Debian 13 | 4 | 4GB | 40GB + ZFS | 8 Docker containers — VPN-protected media pipeline (Gluetun, qBittorrent, Jellyfin, Seerr, ABS, Navidrome, NPM, Vaultwarden) |
 | **Ripping Station** | Node B | Debian 13 | 2 | 2GB | 8GB | DVD/Blu-ray ripping with Flask web UIs |
 | **Media Optimizer** | Node B | Debian 13 | 4 | 4GB | 30GB | Tdarr — audio-track trimming + x265 re-encode batch (currently paused) |
 
@@ -142,7 +141,7 @@ docker compose -f media-stack.yml up -d                 # Media stack (prod)
 ## Boot Order (Node B)
 
 ```
-1. Media Stack (heaviest, starts first — 19 containers)
+1. Media Stack (heaviest, starts first — 8 containers)
 2. Ripping Station
 3. Media Optimizer (Tdarr — starts last, after media is up)
 ```

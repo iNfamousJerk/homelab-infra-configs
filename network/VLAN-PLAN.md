@@ -67,11 +67,11 @@ behind OPNsense (single firewall), and let TVs reach the media server.
 3. **Two Raspberry Pi (Pi-hole)** on the SERVICES/DNS path for **redundant DNS**,
    independent of PVE1 — so family streaming keeps resolving when the server is down.
    - Decommission CT107 Pi-hole once the Pis are live.
-4. **Move the media server CT onto the home WiFi VLAN** so TVs can still connect:
-   - Either place the media CT on **MEDIA (40)** directly, **or** keep it isolated and
-     open a single firewall rule: `CLIENT/MEDIA → media CT : allow TCP 8096 (+ Seerr port)`.
-   - The firewall-rule approach keeps the server segmented; the direct-placement
-     approach is simpler but shares the segment with family devices.
+4. **Move the media server CT** — **DECISION (2026-08-27): Option A — keep the media
+   CT isolated and open a firewall rule.** Do NOT move CT117 onto the MEDIA VLAN.
+   Add rule: `CLIENT/MEDIA → CT117 : allow TCP 8096 (Jellyfin) + 5055 (Seerr)`.
+   This keeps the server segmented from family streaming devices while letting
+   TVs reach it.
 
 ---
 

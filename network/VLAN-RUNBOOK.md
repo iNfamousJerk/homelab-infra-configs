@@ -63,6 +63,8 @@ make sure `opt1`–`opt7` map to `vlan01`–`vlan07`. Enable each interface.
 | 4 | CLIENT (50) | 10.2.50.0/24 | WAN | Any | ✅ Allow (internet) |
 | 5 | CLIENT (50) | 10.2.50.0/24 | MEDIA host | TCP 8096 | ✅ Allow (Jellyfin) |
 | 6 | CLIENT (50) | 10.2.50.0/24 | MEDIA host | TCP 5055 | ✅ Allow (Seerr) |
+| 6b | MEDIA (40) | 10.2.40.0/24 | MEDIA host | TCP 8096 | ✅ Allow (Jellyfin, Home-TV) |
+| 6c | MEDIA (40) | 10.2.40.0/24 | MEDIA host | TCP 5055 | ✅ Allow (Seerr, Home-TV) |
 | 7 | MEDIA (40) | 10.2.40.0/24 | WAN | Any | ✅ Allow (downloads) |
 | 8 | IOT (60) | 10.2.60.0/24 | WAN | Any | ✅ Allow (internet only) |
 | 9 | LAB (70) | 10.2.70.0/24 | WAN | Any | ✅ Allow (updates) |
@@ -182,15 +184,14 @@ The AP tags client traffic per SSID on its trunk uplink (switch port 7).
 
 ---
 
-## Phase 6 — Move media server CT (per §3 of VLAN-PLAN.md)
+## Phase 6 — Media server CT (DECISION 2026-08-27: **Option A**)
 
-**Option A — keep server isolated + firewall rule:**
-Keep CT117 on its current network; add rules #5/#6 (CLIENT/MEDIA → CT117 : TCP 8096/5055).
-TVs on Home-TV (40) reach Jellyfin via the firewall.
-
-**Option B — move CT onto MEDIA (40):**
-Set CT117's VLAN tag to 40. TVs on Home-TV (40) reach it directly (same segment).
-Simpler, but the media server shares the segment with family streaming devices.
+**Option A (SELECTED) — keep server isolated + firewall rule:**
+Keep CT117 on its current network. Add firewall rules #5/#6 from Phase 1c:
+`CLIENT (50) → CT117 : TCP 8096` (Jellyfin) and `TCP 5055` (Seerr). Also allow
+`MEDIA (40) → CT117 : TCP 8096/5055` so Home-TV devices reach it.
+TVs on Home-TV (40) reach Jellyfin through the firewall. The media server stays
+segmented from family devices — selected over Option B (moving CT117 onto MEDIA).
 
 ---
 

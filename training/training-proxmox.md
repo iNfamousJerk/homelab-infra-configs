@@ -58,22 +58,31 @@ When you log in, you'll see the **Datacenter view** — a tree on the left, pane
 | CT ID | Name | What It Does |
 |-------|------|-------------|
 | 100 | hermesagent | The AI assistant itself |
-| 102 | pialert | Network monitoring & alerts |
-| 105 | wazuh | SIEM security monitoring |
-| 106 | grafana | Metrics dashboards |
+| 101 | homarr | Service dashboard |
+| 106 | monitoring | Grafana / Prometheus dashboards |
 | 107 | pihole | DNS sinkhole & ad-blocking |
-| 108 | portainer | Docker management UI |
-| 109 | heimdall | Dashboard homepage |
-| 113 | hermes-ollama | Local LLM (AI model hosting) |
+| 111 | immich | Photo backup & management |
+| 112 | nextcloud | File sync & share |
+| 116 | arr-stack | Media automation (*arr + Librarr) |
+| 117 | media-server | Jellyfin streaming + Seerr |
+| 120 | keycloak | SSO / identity provider |
+| 121 | snipe-it | Asset management |
+| 122 | osticket | Helpdesk / ticketing |
+| 123 | arr-dash | Media-stack dashboard |
+| 125 | gitea | Private git hosting |
+| 130 | komga | Manga / comic reader |
+| 140 | postgres | Database (Keycloak) |
+| 141 | paperless-ngx | Document archiving |
+| 142 | nocodb | Low-code database app |
+| 143 | vaultwarden | Password management |
+| 144 | npm | Reverse proxy |
 
 **On PVE2:**
 | CT ID | Name | What It Does |
 |-------|------|-------------|
-| 101 | zeek | Network security monitoring |
 | 103 | ripper | Media ripping |
-| 110 | media-stack | Plex / *arr services |
-| 111 | immich | Photo backup & management |
-| 112 | nextcloud | File sync & share |
+| 110 | media-stack | VPN gateway + download client + books/music |
+| 118 | tdarr | Media optimization (re-encode) |
 
 ---
 

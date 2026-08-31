@@ -39,6 +39,8 @@
 | **dirb** | Classic directory brute-forcer | [v0re/dirb](https://github.com/v0re/dirb) |
 | **dirsearch** | Web path scanner (Python) | [maurosoria/dirsearch](https://github.com/maurosoria/dirsearch) |
 | **commix** | Automated command injection testing | [commixproject/commix](https://github.com/commixproject/commix) |
+| **nuclei** | Template-based vulnerability scanner (CVE templates) | [projectdiscovery/nuclei](https://github.com/projectdiscovery/nuclei) |
+| **wpscan** | WordPress vulnerability scanner | [wpscanteam/wpscan](https://github.com/wpscanteam/wpscan) |
 
 ## Active directory & network authentication
 
@@ -68,6 +70,15 @@
 | **Maltego** | GUI OSINT/data-mining graph tool | [paterva/Maltego](https://github.com/paterva/Maltego) |
 | **dnsrecon** | DNS enumeration | [darkoperator/dnsrecon](https://github.com/darkoperator/dnsrecon) |
 | **dnsenum** | Multithreaded DNS brute-forcing | [fwaeytens/dnsenum](https://github.com/fwaeytens/dnsenum) |
+| **subfinder** | Fast subdomain enumeration (passive) | [projectdiscovery/subfinder](https://github.com/projectdiscovery/subfinder) |
+| **amass** | Deep subdomain/asset enumeration | [owasp-amass/amass](https://github.com/owasp-amass/amass) |
+
+## Network attacks & shells
+
+| Tool | What it's for | Upstream GitHub |
+|------|--------------|-----------------|
+| **responder** | LLMNR/NBT-NS/mDNS poisoning — capture NTLMv2 hashes | [lgandx/Responder](https://github.com/lgandx/Responder) |
+| **pwncat** | Reverse/bind shell handler (post-exploitation) | [calebstewart/pwncat](https://github.com/calebstewart/pwncat) |
 
 ## Forensics & reverse engineering
 

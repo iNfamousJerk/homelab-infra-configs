@@ -1,6 +1,8 @@
 # Security Monitoring — Reference Architecture
 
-> Sanitized reference. Passive network IDS and SIEM architecture for a self-hosted infrastructure. No real addresses or identifying details.
+> Sanitized reference. SIEM + passive network IDS architecture for a self-hosted infrastructure. No real addresses or identifying details.
+>
+> **Status 2026-08-30:** The **Wazuh SIEM** portion is **LIVE** — deployed as a Docker single-node stack, with agents on every container + hypervisor host, and syslog ingestion from the firewall (UDP 514). The **passive Zeek network IDS sensor** described below remains a **roadmap/planned** enhancement (not yet deployed).
 
 ## Components
 

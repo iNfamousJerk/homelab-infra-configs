@@ -9,13 +9,13 @@ This repository contains sanitized Docker Compose, monitoring, and reverse proxy
 | Layer | Services | Purpose |
 |-------|----------|---------|
 | **Hypervisor** | Proxmox VE (×2 nodes) + PBS | Dual-node LXC container hosting, ZFS-backed backups |
-|| **Node A** — `10.2.7.x` | i5-7500, 32GB, 1TB SSD | Primary application node — identity, monitoring, storage apps, media automation/server (19 LXCs) |
+|| **Node A** — `10.2.7.x` | i5-7500, 32GB, 1TB SSD | Primary application node — identity, monitoring, storage apps, media automation/server (23 LXCs) |
 || **Node B** — `10.2.7.x` | i7-2600K, 32GB, ZFS pool (3.62TB) | Storage + media-download node — ZFS for media, photos, files (3 LXCs) |
-|| **ZFS Pool** `media` | 3.62T total, 2.48T used | Checksummed, portable storage for all bulk data |
+|| **ZFS Pool** `media` | 3.62T total, 2.70T used | Checksummed, portable storage for all bulk data |
 || **Monitoring** | Prometheus, Grafana, cAdvisor, Blackbox, Alertmanager, Uptime Kuma | Metrics, alerting, dashboards |
-|| **SIEM** | Wazuh (Docker) | Centralized security event monitoring, log ingestion, FIM, vulnerability scanning (resurrected 2026-08) |
-|| **Security Workbench** | Parrot OS (Xfce) | Dedicated security-testing desktop — pen-test toolset (offensive counterpart to the SIEM) |
-|| **Backup** | Proxmox Backup Server | Snapshot-based LXC/VM backups (Zstd compression) |
+| **SIEM** | Wazuh (Docker) | Centralized security event monitoring, log ingestion, FIM, vulnerability scanning (resurrected 2026-08) |
+| **Patch & Update Mgmt** | PatchMon + Tugtainer | Centralized Linux patch monitoring + Docker image update management |
+| **Backup** | Proxmox Backup Server | Snapshot-based LXC/VM backups (Zstd compression) |
 | **Gateway/Firewall** | OPNsense | VLAN routing, firewall, DHCP |
 | **DNS Filter** | Pi-hole | Network-wide ad blocking, local DNS |
 | **Identity & Helpdesk** | Keycloak SSO, Snipe-IT, osTicket | SSO, asset management, helpdesk |
@@ -27,7 +27,7 @@ This repository contains sanitized Docker Compose, monitoring, and reverse proxy
 | **Credential Vault** | Vaultwarden | Self-hosted password management |
 | **Reverse Proxy** | Nginx Proxy Manager | SSL termination & domain routing |
 
-## Node A (Application) — 21 Containers
+## Node A (Application) — 23 Containers
 
 | CT ID | Role | OS | Cores | RAM | Purpose |
 |-------|------|-----|-------|-----|---------|
@@ -51,7 +51,8 @@ This repository contains sanitized Docker Compose, monitoring, and reverse proxy
 | 142 | **Low-code DB** | Debian 13 | 1 | 1GB | NocoDB — spreadsheet-style database app |
 | 143 | **Credential Vault** | Debian 13 | 2 | 1GB | Vaultwarden — password management |
 | 144 | **Reverse Proxy** | Debian 13 | 2 | 1GB | Nginx Proxy Manager — SSL & domain routing |
-| 145 | **Security Workbench** | Debian 13 (Parrot) | 4 | 4GB | Parrot OS Security Edition — Xfce desktop, pen-test toolset (nmap, metasploit, hashcat, burpsuite). Privileged CT (TUN/TAP for VPN testing) |
+| 145 | **Patch Management** | Debian 13 | 2 | 4GB | PatchMon — centralized Linux patch monitoring for the fleet |
+| 146 | **Docker Update Mgmt** | Debian 13 | 2 | 2GB | Tugtainer — Docker image update manager, agents on all Docker hosts |
 
 ## Node B (Storage & Media Download) — 3 Containers
 
@@ -61,8 +62,8 @@ This repository contains sanitized Docker Compose, monitoring, and reverse proxy
 | 110 | **Media Ingress/Sync** | Debian 13 | 4 | 4GB | VPN gateway (Gluetun), download client (qBittorrent), Audiobookshelf, Navidrome |
 | 118 | **Media Optimizer** | Debian 13 | 4 | 6GB | Tdarr — audio-track trimming + x265 re-encode batch (currently paused) |
 
-> **24 total containers.** 21 on Node A, 3 on Node B.
-> **Retired 2026-08:** Zeek passive network IDS sensor, Portainer, Heimdall dashboard, PiAlert ARP discovery, local-LLM agent CT, Cockpit, Donetick, cheatsheet. **Wazuh SIEM** was retired 2026-08 but **resurrected 2026-08-30** as a Docker single-node stack (CT 105) + **Parrot OS** security workbench added (CT 145) — the security/IDS capability now lives in these two dedicated CTs (plus syslog ingestion from the firewall into Wazuh). Windows AD lab (VMs) decommissioned 2026-08-30 in favor of the SIEM + offensive-security pivot.
+> **26 total containers.** 23 on Node A, 3 on Node B.
+> **Retired 2026-08:** Zeek passive network IDS sensor, Portainer, Heimdall dashboard, PiAlert ARP discovery, local-LLM agent CT, Cockpit, Donetick, cheatsheet. **Wazuh SIEM** was retired 2026-08 but **resurrected 2026-08-30** as a Docker single-node stack (CT 105). Windows AD lab (VMs) decommissioned 2026-08-30 in favor of the SIEM security pivot.
 
 ## Media Stack — Enterprise Abstraction Reference
 
@@ -90,7 +91,7 @@ The media pipeline is **distributed across Node A and Node B** (ingress stays be
 
 | Host | Type | Hardware | Role |
 |------|------|----------|------|
-| **Node A** (PVE 9.x) | Hypervisor | i5-7500, 32GB RAM, 1TB SSD | 21 LXCs — application node (AI, DNS, monitoring, SIEM, security, storage apps, media automation/server) |
+| **Node A** (PVE 9.x) | Hypervisor | i5-7500, 32GB RAM, 1TB SSD | 23 LXCs — application node (AI, DNS, monitoring, SIEM, storage apps, media automation/server) |
 | **Node B** (PVE 6.x) | Hypervisor | i7-2600K, 32GB RAM, 3.62TB ZFS pool | 3 LXCs — storage + media download/ingress |
 | **Backup** | PBS | ZFS datastore | Nightly LXC/VM snapshots |
 

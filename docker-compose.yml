@@ -166,6 +166,10 @@ services:
   portainer-agent:
     image: portainer/agent:latest
     container_name: portainer_agent
+    # The agent serves the Portainer server on 9001. Without this the
+    # container ran but was unreachable, so the endpoint never connected.
+    ports:
+      - 9001:9001
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /var/lib/docker/volumes:/var/lib/docker/volumes
@@ -178,4 +182,3 @@ volumes:
   uptime_kuma_data:
   prometheus_data:
   grafana_data:
-  vaultwarden_data:

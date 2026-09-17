@@ -1,0 +1,13 @@
+# node_exporter inside the LXC containers. Copy to node_containers.yml.
+# The previous inline config listed eight identical "10.2.7.x:9100" entries,
+# so which CT each slot referred to had already been lost — fill in from the
+# Active Container Reference in README.md.
+- targets:
+    - "CT_IP:9100"
+    - "CT_IP:9100"
+    - "CT_IP:9100"
+    - "CT_IP:9100"
+    - "CT_IP:9100"
+    - "CT_IP:9100"
+    - "CT_IP:9100"
+    - "CT_IP:9100"

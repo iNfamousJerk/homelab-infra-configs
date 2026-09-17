@@ -67,3 +67,8 @@ temp/
 
 # Local runtime config directories (contain container IDs, passwords, etc.)
 config/
+
+# Prometheus file_sd target lists hold real host addresses. The tracked
+# targets/*.yml.example scaffolding is unaffected ("*.yml" does not match
+# a name ending in ".example").
+targets/*.yml

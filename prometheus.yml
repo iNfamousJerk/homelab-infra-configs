@@ -10,72 +10,67 @@ alerting:
 rule_files:
   - /etc/prometheus/homelab_alerts.yml
 
+# ──────────────────────────────────────────────────────────────────────
+# Targets live in /etc/prometheus/targets/*.yml, not inline here.
+#
+# Every target in this file used to be the literal placeholder "10.2.7.x"
+# — including eight identical entries under node_containers — so the
+# committed copy could not actually be deployed, which defeats the point
+# of keeping it in git as a rebuild reference.
+#
+# Real addresses now sit in targets/*.yml, which is gitignored. Each has a
+# tracked *.yml.example alongside it recording which CT is which, so the
+# structure stays reviewable while the addresses stay out of the repo.
+#
+# Rebuild:  cd targets && for f in *.yml.example; do cp "$f" "${f%.example}"; done
+#           then fill in the addresses.
+#
+# Prometheus re-reads these files on change — no restart needed to add a
+# target, unlike the previous inline form.
+# ──────────────────────────────────────────────────────────────────────
+
 scrape_configs:
   - job_name: 'prometheus'
     static_configs:
       - targets: ['localhost:9090']
 
   # ─── Node Exporters (System Metrics) ─────────────────────
+  # Job names are load-bearing: homelab_alerts.yml matches job=~"node_.*".
   - job_name: 'node_pve'
-    static_configs:
-      - targets:
-          - '10.2.7.x:9100'
-          - '10.2.7.x:9100'
+    file_sd_configs:
+      - files:
+          - /etc/prometheus/targets/node_pve.yml
 
   - job_name: 'node_containers'
-    static_configs:
-      - targets:
-          - '10.2.7.x:9100'
-          - '10.2.7.x:9100'
-          - '10.2.7.x:9100'
-          - '10.2.7.x:9100'
-          - '10.2.7.x:9100'
-          - '10.2.7.x:9100'
-          - '10.2.7.x:9100'
-          - '10.2.7.x:9100'
+    file_sd_configs:
+      - files:
+          - /etc/prometheus/targets/node_containers.yml
 
   # ─── Docker Metrics ──────────────────────────────────────
   - job_name: 'cadvisor'
-    static_configs:
-      - targets: ['10.2.7.x:8080']
+    file_sd_configs:
+      - files:
+          - /etc/prometheus/targets/cadvisor.yml
 
   # ─── Service & Infrastructure Probes ────────────────────
   - job_name: 'pihole'
-    static_configs:
-      - targets: ['10.2.7.x:9617']
+    file_sd_configs:
+      - files:
+          - /etc/prometheus/targets/pihole.yml
 
   - job_name: 'nut'
-    static_configs:
-      - targets: ['10.2.7.x:9999']
+    file_sd_configs:
+      - files:
+          - /etc/prometheus/targets/nut.yml
 
   # HTTP probes — web UIs that accept plain HTTP
   - job_name: 'blackbox_http'
     metrics_path: /probe
     params:
       module: [http_2xx]
-    static_configs:
-      - targets:
-          # CT 111 — Immich
-          - http://10.2.7.x:2283
-          # CT 102 — PiAlert
-          - http://10.2.7.x
-          # CT 107 — Pi-hole
-          - http://10.2.7.x
-          # CT 106 — Grafana
-          - http://10.2.7.x:3000
-          # CT 110 — Media Stack on PVE2
-          - http://10.2.7.x:8096
-          - http://10.2.7.x:7878
-          - http://10.2.7.x:8989
-          - http://10.2.7.x:8686
-          - http://10.2.7.x:9696
-          - http://10.2.7.x:6767
-          - http://10.2.7.x:5055
-          - http://10.2.7.x:8080
-          - http://10.2.7.x:81
-          - http://10.2.7.x:8787
-          - http://10.2.7.x:13378
-          # PVE2 web UI is TCP-probed below (self-signed TLS fails HTTP probe)
+    file_sd_configs:
+      - files:
+          - /etc/prometheus/targets/blackbox_http.yml
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target
@@ -89,32 +84,9 @@ scrape_configs:
     metrics_path: /probe
     params:
       module: [tcp_connect]
-    static_configs:
-      - targets:
-          # CT 100 — Hermes Agent
-          - 10.2.7.x:22
-          - 10.2.7.x:8642
-          # CT 110 — NPM
-          - 10.2.7.x:80
-          # CT 105 — Wazuh
-          - 10.2.7.x:443
-          - 10.2.7.x:55000
-          - 10.2.7.x:9200
-          # PVE1 / PBS
-          - 10.2.7.x:8006
-          - 10.2.7.x:22
-          # PVE2 / PBS
-          - 10.2.7.x:8006
-          - 10.2.7.x:22
-          - 10.2.7.x:8007
-          # CT 111 — Immich SSH
-          - 10.2.7.x:22
-          # CT 112 — Nextcloud SSH
-          - 10.2.7.x:22
-          # CT 110 — Media stack SSH
-          - 10.2.7.x:22
-          # Pi-hole DNS
-          - 10.2.7.x:53
+    file_sd_configs:
+      - files:
+          - /etc/prometheus/targets/blackbox_tcp.yml
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target

@@ -8,6 +8,7 @@ services:
       - prometheus_data:/prometheus
       - /opt/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - /opt/monitoring/homelab_alerts.yml:/etc/prometheus/homelab_alerts.yml:ro
+      - /opt/monitoring/targets/:/etc/prometheus/targets/:ro
     restart: unless-stopped
     mem_limit: 1g
     memswap_limit: 1g

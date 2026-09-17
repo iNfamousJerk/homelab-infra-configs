@@ -1,0 +1,3 @@
+# NUT/UPS exporter. Copy to nut.yml and fill in.
+- targets:
+    - "MONITORING_IP:9999"

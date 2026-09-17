@@ -1,0 +1,4 @@
+# node_exporter on the Proxmox hypervisors. Copy to node_pve.yml and fill in.
+- targets:
+    - "PVE1_IP:9100"    # PVE1
+    - "PVE2_IP:9100"    # PVE2

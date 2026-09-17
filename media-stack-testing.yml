@@ -55,10 +55,10 @@ services:
     image: lscr.io/linuxserver/qbittorrent:latest
     container_name: ingress-transport-node
     environment:
-      - PUID=*puid
-      - PGID=*pgid
-      - TZ=*tz
-      - UMASK=002
+      PUID: *puid
+      PGID: *pgid
+      TZ: *tz
+      UMASK: "002"
     volumes:
       - ./config/ingress-transport-node:/config
       - /mnt/data/ingestion:/mnt/data/ingestion
@@ -74,9 +74,9 @@ services:
     image: lscr.io/linuxserver/prowlarr:develop
     container_name: upstream-index-router
     environment:
-      - PUID=*puid
-      - PGID=*pgid
-      - TZ=*tz
+      PUID: *puid
+      PGID: *pgid
+      TZ: *tz
     volumes:
       - ./config/upstream-index-router:/config
     ports:
@@ -99,9 +99,9 @@ services:
     image: lscr.io/linuxserver/radarr:latest
     container_name: content-aggregator
     environment:
-      - PUID=*puid
-      - PGID=*pgid
-      - TZ=*tz
+      PUID: *puid
+      PGID: *pgid
+      TZ: *tz
     volumes:
       - ./config/content-aggregator:/config
       - /mnt/data/ingestion:/mnt/data/ingestion
@@ -115,9 +115,9 @@ services:
     image: lscr.io/linuxserver/sonarr:latest
     container_name: data-indexer-service
     environment:
-      - PUID=*puid
-      - PGID=*pgid
-      - TZ=*tz
+      PUID: *puid
+      PGID: *pgid
+      TZ: *tz
     volumes:
       - ./config/data-indexer-service:/config
       - /mnt/data/ingestion:/mnt/data/ingestion
@@ -131,9 +131,9 @@ services:
     image: lscr.io/linuxserver/lidarr:latest
     container_name: data-indexer-service-2
     environment:
-      - PUID=*puid
-      - PGID=*pgid
-      - TZ=*tz
+      PUID: *puid
+      PGID: *pgid
+      TZ: *tz
     volumes:
       - ./config/data-indexer-service-2:/config
       - /mnt/data/ingestion:/mnt/data/ingestion
@@ -147,9 +147,9 @@ services:
     image: lscr.io/linuxserver/bazarr:latest
     container_name: subtitle-enrichment-service
     environment:
-      - PUID=*puid
-      - PGID=*pgid
-      - TZ=*tz
+      PUID: *puid
+      PGID: *pgid
+      TZ: *tz
     volumes:
       - ./config/subtitle-enrichment-service:/config
       - /mnt/data/ingestion:/mnt/data/ingestion
@@ -163,9 +163,9 @@ services:
     image: lscr.io/linuxserver/jellyfin:latest
     container_name: internal-streaming-microservice
     environment:
-      - PUID=*puid
-      - PGID=*pgid
-      - TZ=*tz
+      PUID: *puid
+      PGID: *pgid
+      TZ: *tz
     volumes:
       - ./config/internal-streaming-microservice:/config
       - /mnt/storage/assets:/mnt/storage/assets
@@ -179,9 +179,9 @@ services:
     image: darkalfx/requestrr:latest
     container_name: requestrr
     environment:
-      - PUID=*puid
-      - PGID=*pgid
-      - TZ=*tz
+      PUID: *puid
+      PGID: *pgid
+      TZ: *tz
     volumes:
       - ./config/requestrr:/root/config
     ports:

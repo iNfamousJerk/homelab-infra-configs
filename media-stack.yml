@@ -43,34 +43,38 @@ services:
       - NET_ADMIN
     devices:
       - /dev/net/tun:/dev/net/tun
+    # Map form, not list form: `- TZ=*tz` would store the literal text
+    # "TZ=*tz" — YAML only resolves an alias when it is the whole node.
     environment:
       # Required: VPN credentials (set in .env file)
-      - VPN_SERVICE_PROVIDER=protonvpn
-      - VPN_TYPE=openvpn
-      - OPENVPN_USER=${VPN_USER:?set VPN_USER in .env}
-      - OPENVPN_PASSWORD=${VPN_PASSWORD:?set VPN_PASSWORD in .env}
+      VPN_SERVICE_PROVIDER: protonvpn
+      VPN_TYPE: openvpn
+      OPENVPN_USER: ${VPN_USER:?set VPN_USER in .env}
+      OPENVPN_PASSWORD: ${VPN_PASSWORD:?set VPN_PASSWORD in .env}
       # Server selection (optional — omit for auto)
-      # - SERVER_REGIONS=US  # e.g. US, NL, Iceland, Switzerland
-      # - SERVER_CITIES=US-CA#TOR
+      # SERVER_REGIONS: US  # e.g. US, NL, Iceland, Switzerland
+      # SERVER_CITIES: "US-CA#TOR"
       # WireGuard alternative (comment OpenVPN above, uncomment below):
-      # - VPN_TYPE=wireguard
-      # - WIREGUARD_PRIVATE_KEY=${WG_PRIVATE_KEY}
-      # - WIREGUARD_ADDRESSES=${WG_ADDRESSES}
+      # VPN_TYPE: wireguard
+      # WIREGUARD_PRIVATE_KEY: ${WG_PRIVATE_KEY}
+      # WIREGUARD_ADDRESSES: ${WG_ADDRESSES}
       # Port forwarding (ProtonVPN — only on P2P servers)
-      # - VPN_PORT_FORWARDING=on
-      # - VPN_PORT_FORWARDING_PROVIDER=protonvpn
+      # VPN_PORT_FORWARDING: "on"
+      # VPN_PORT_FORWARDING_PROVIDER: protonvpn
       # 🔒 Kill Switch (enabled by default — explicit for visibility)
       # Gluetun's iptables firewall blocks ALL non-VPN traffic.
       # If the VPN drops, the tunnel interface disappears and
       # qBittorrent (sharing Gluetun's network namespace) cannot
       # send or receive anything. No traffic leak possible.
-      - FIREWALL=on
-      # - FIREWALL_DEBUG=on  # uncomment to log firewall rules
+      # Quoted: bare `on` is a YAML 1.1 boolean and would reach Gluetun
+      # as "true", which it does not accept.
+      FIREWALL: "on"
+      # FIREWALL_DEBUG: "on"  # uncomment to log firewall rules
       # DNS
-      - DNS_PLAINTEXT_ADDRESS=1.1.1.1
-      - TZ=*tz
+      DNS_PLAINTEXT_ADDRESS: 1.1.1.1
+      TZ: *tz
       # Health check
-      - HEALTH_VPN_DURATION_INITIAL=30s
+      HEALTH_VPN_DURATION_INITIAL: 30s
     volumes:
       - ./config/gluetun:/gluetun
     ports:

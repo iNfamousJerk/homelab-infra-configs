@@ -129,27 +129,29 @@ services:
       - NET_ADMIN
     devices:
       - "${TUN_DEVICE:-/dev/net/tun}:/dev/net/tun"
+    # Map form, not list form: `- TZ=*tz` would store the literal text
+    # "TZ=*tz" — YAML only resolves an alias when it is the whole node.
     environment:
       # --- Provider Configuration ---
-      - VPN_SERVICE_PROVIDER=${VPN_SERVICE_PROVIDER}
-      - VPN_TYPE=${VPN_TYPE:-openvpn}
-      - OPENVPN_USER=${VPN_USER}
-      - OPENVPN_PASSWORD=${VPN_PASSWORD}
+      VPN_SERVICE_PROVIDER: ${VPN_SERVICE_PROVIDER}
+      VPN_TYPE: ${VPN_TYPE:-openvpn}
+      OPENVPN_USER: ${VPN_USER}
+      OPENVPN_PASSWORD: ${VPN_PASSWORD}
       # --- Server Selection (optional overrides) ---
-      # - SERVER_REGIONS=${VPN_SERVER_REGIONS:-US}
-      # - SERVER_CITIES=${VPN_SERVER_CITIES}
+      # SERVER_REGIONS: ${VPN_SERVER_REGIONS:-US}
+      # SERVER_CITIES: ${VPN_SERVER_CITIES}
       # --- WireGuard alternative ---
-      # - VPN_TYPE=wireguard
-      # - WIREGUARD_PRIVATE_KEY=${WG_PRIVATE_KEY}
-      # - WIREGUARD_ADDRESSES=${WG_ADDRESSES}
+      # VPN_TYPE: wireguard
+      # WIREGUARD_PRIVATE_KEY: ${WG_PRIVATE_KEY}
+      # WIREGUARD_ADDRESSES: ${WG_ADDRESSES}
       # --- Kill Switch ---
-      - FIREWALL=${VPN_FIREWALL:-on}
-      # - FIREWALL_DEBUG=${VPN_FIREWALL_DEBUG:-off}
+      FIREWALL: "${VPN_FIREWALL:-on}"
+      # FIREWALL_DEBUG: "${VPN_FIREWALL_DEBUG:-off}"
       # --- DNS ---
-      - DNS_PLAINTEXT_ADDRESS=${DNS_PRIMARY:-1.1.1.1}
-      - TZ=*tz
+      DNS_PLAINTEXT_ADDRESS: ${DNS_PRIMARY:-1.1.1.1}
+      TZ: *tz
       # --- Health Check ---
-      - HEALTH_VPN_DURATION_INITIAL=${VPN_HEALTH_INITIAL:-30s}
+      HEALTH_VPN_DURATION_INITIAL: ${VPN_HEALTH_INITIAL:-30s}
     volumes:
       - gateway_config:/gluetun
     ports:

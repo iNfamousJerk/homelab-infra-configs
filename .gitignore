@@ -10,6 +10,11 @@
 .env.production
 .env.development
 
+# ...but the placeholder templates MUST stay tracked. Negations have to come
+# after the rules above, otherwise `.env.*` swallows them.
+!.env.example
+!*.env.example
+
 # API keys, tokens, credentials
 *.pem
 *.key

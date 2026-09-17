@@ -9,7 +9,10 @@
 .env.local
 .env.production
 .env.development
-*.env.example
+
+# Negations must follow the rules above.
+!.env.example
+!*.env.example
 
 # TLS / SSL / Identity Material
 *.pem

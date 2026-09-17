@@ -47,8 +47,8 @@ services:
       # Required: VPN credentials (set in .env file)
       - VPN_SERVICE_PROVIDER=protonvpn
       - VPN_TYPE=openvpn
-      - OPENVPN_USER=${VPN_USER}
-      - OPENVPN_PASSWORD=${VPN_PASSWORD}
+      - OPENVPN_USER=${VPN_USER:?set VPN_USER in .env}
+      - OPENVPN_PASSWORD=${VPN_PASSWORD:?set VPN_PASSWORD in .env}
       # Server selection (optional — omit for auto)
       # - SERVER_REGIONS=US  # e.g. US, NL, Iceland, Switzerland
       # - SERVER_CITIES=US-CA#TOR
@@ -102,7 +102,7 @@ services:
       - SIGNUPS_ALLOWED=true
       - DOMAIN=https://vaultwarden.pirate.lan
       - WEBSOCKET_ENABLED=true
-      - ADMIN_TOKEN=${VAULTWARDEN_ADMIN_TOKEN:-CHANGEME_ADMIN_TOKEN}
+      - ADMIN_TOKEN=${VAULTWARDEN_ADMIN_TOKEN:?set VAULTWARDEN_ADMIN_TOKEN in .env}
     volumes:
       - ./config/vaultwarden:/data
     restart: *restart

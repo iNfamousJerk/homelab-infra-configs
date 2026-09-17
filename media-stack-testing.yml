@@ -45,7 +45,7 @@ services:
       - SIGNUPS_ALLOWED=true
       - DOMAIN=https://vault.services.internal.lan
       - WEBSOCKET_ENABLED=true
-      - ADMIN_TOKEN=${VAULTWARDEN_ADMIN_TOKEN:-CHANGEME_ADMIN_TOKEN}
+      - ADMIN_TOKEN=${VAULTWARDEN_ADMIN_TOKEN:?set VAULTWARDEN_ADMIN_TOKEN in .env}
     volumes:
       - ./config/vaultwarden:/data
     restart: *restart

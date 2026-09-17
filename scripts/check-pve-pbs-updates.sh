@@ -23,7 +23,7 @@
 # if it leaks. Print the probe to install with:  PRINT_PROBE=1 ./this-script
 #
 # ── Config ────────────────────────────────────────────────────────────
-# Required:  PVE_HOST, PVE2_HOST, PBS_HOST
+# Required:  PVE1_HOST, PVE2_HOST, PBS_HOST
 # Optional:  HEALTHCHECK_SSH_KEY  (default ~/.ssh/id_ed25519_healthcheck)
 #            HEALTHCHECK_SSH_USER (default root)
 #            SSH_STRICT           (default accept-new)
@@ -81,7 +81,8 @@ dpkg -s pve-manager 2>/dev/null | grep "^Version:" | cut -d" " -f2 || echo "unkn
 PROBE
 
 # Emits one "<dev> <size> <PASSED|FAILED|?> <model...>" line per disk.
-# $DISKS is substituted locally, so it must stay outside the quoted heredoc.
+# Unquoted heredoc: $section and $devices expand here, while \$d and friends
+# are escaped so they survive to be expanded remotely.
 probe_disks() {
   local section="$1" devices="$2"
   cat <<PROBE
@@ -153,7 +154,7 @@ if [ "${PRINT_PROBE:-0}" = "1" ]; then
   exit 0
 fi
 
-PVE_HOST="${PVE_HOST:?set PVE_HOST (see header)}"
+PVE1_HOST="${PVE1_HOST:?set PVE1_HOST (see header)}"
 PVE2_HOST="${PVE2_HOST:?set PVE2_HOST (see header)}"
 PBS_HOST="${PBS_HOST:?set PBS_HOST (see header)}"
 
@@ -178,7 +179,7 @@ collect() {
   fi
 }
 
-collect pve  "$PVE_HOST"  "$PROBE_PVE"
+collect pve  "$PVE1_HOST"  "$PROBE_PVE"
 collect pbs  "$PBS_HOST"  "$PROBE_PBS"
 collect pve2 "$PVE2_HOST" "$PROBE_PVE2"
 
@@ -267,7 +268,7 @@ echo
 
 # PVE1 — LVM system disk + containers
 if [ "$pve_exit" -eq 0 ]; then
-  render_header "🖥️" PVE "$PVE_HOST" "$pve_raw"
+  render_header "🖥️" PVE "$PVE1_HOST" "$pve_raw"
   echo
   echo "  **💾 Drive:** $(extract_line_after "$pve_raw" '===DISK-MODEL===') ($(extract_line_after "$pve_raw" '===DISK-SIZE==='))  |  SMART: $(extract_line_after "$pve_raw" '===SMART===')  |  $(extract_line_after "$pve_raw" '===DISK-ROOT===')"
   while IFS= read -r lv; do
@@ -284,7 +285,7 @@ if [ "$pve_exit" -eq 0 ]; then
   echo
   render_updates "$pve_raw"
 else
-  render_failure "🖥️" PVE "$PVE_HOST" "$pve_err"
+  render_failure "🖥️" PVE "$PVE1_HOST" "$pve_err"
 fi
 
 separator

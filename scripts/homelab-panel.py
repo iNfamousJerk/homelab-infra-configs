@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Piper Homelab — Cyberpunk Control Panel v4"""
-import re, os, time, json, urllib.request, ssl
+import re, os, sys, time, json, urllib.request, ssl
 from flask import Flask, render_template_string
 
 app = Flask(__name__)
@@ -42,35 +42,81 @@ SERVICES = [
     {"name": "Komga", "url": "http://10.2.7.130:25600", "icon": "📖", "cat": "media"},
 ]
 
-PVE_PASSWORDS = {
-    "10.2.7.64": "2proxtheworld",
-    "10.2.7.62": "2proxtheworld",
-    "10.2.7.65": "2backuptheworld",
-}
+# ─── Proxmox / PBS access ───────────────────────────────────────
+# API tokens, not root@pam passwords. This panel only reads, so the token can
+# be scoped to an audit role; it is revocable on its own without rotating the
+# root password, and it grants no shell. The passwords that used to be here
+# are in git history and must be treated as disclosed.
+#
+# Create a read-only token on each PVE node:
+#   pveum user token add root@pam panel --privsep 0
+#   pveum acl modify / --tokens 'root@pam!panel' --roles PVEAuditor
+# And on PBS:
+#   proxmox-backup-manager user generate-token root@pam panel
+#   proxmox-backup-manager acl update / Audit --auth-id 'root@pam!panel'
+#
+# Note the separator differs between the two products:
+#   PVE1_API_TOKEN=root@pam!panel=<uuid>    (PVE uses '=')
+#   PBS_API_TOKEN=root@pam!panel:<uuid>     (PBS uses ':')
 
-def pve_api(host, endpoint, password):
-    ctx = ssl.create_default_context()
-    ctx.check_hostname = False
-    ctx.verify_mode = ssl.CERT_NONE
+
+def _env(name, default=None):
+    val = os.environ.get(name, "").strip()
+    if not val:
+        if default is not None:
+            return default
+        sys.exit(f"[homelab-panel] missing required env var: {name} (see .env.example)")
+    return val
+
+
+PVE1_HOST = _env("PVE1_HOST")
+PVE2_HOST = _env("PVE2_HOST")
+PBS_HOST = _env("PBS_HOST")
+PVE1_TOKEN = _env("PVE1_API_TOKEN")
+PVE2_TOKEN = _env("PVE2_API_TOKEN")
+PBS_TOKEN = _env("PBS_API_TOKEN")
+
+
+def _build_ssl_ctx():
+    """TLS context for the PVE/PBS APIs.
+
+    Proxmox serves a self-signed certificate by default, so verification has
+    to be addressed one way or the other. Previously it was silently disabled
+    on every call; now the choice is explicit and made once at startup.
+    """
+    ca_bundle = os.environ.get("PVE_CA_BUNDLE", "").strip()
+    if ca_bundle:
+        return ssl.create_default_context(cafile=ca_bundle)
+    if os.environ.get("PVE_TLS_INSECURE", "").strip().lower() in ("1", "true", "yes"):
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        return ctx
+    sys.exit(
+        "[homelab-panel] TLS not configured: set PVE_CA_BUNDLE to the node's CA "
+        "file (/etc/pve/pve-root-ca.pem), or PVE_TLS_INSECURE=1 to accept "
+        "self-signed certificates"
+    )
+
+
+SSL_CTX = _build_ssl_ctx()
+
+
+def pve_api(host, endpoint, token):
+    # Token auth is a single request with an Authorization header — no
+    # ticket/CSRF round trip, which also halves the calls this panel makes.
     base = f"https://{host}:8006/api2/json"
     try:
-        auth_data = urllib.parse.urlencode({"username": "root@pam", "password": password}).encode()
-        req = urllib.request.Request(f"{base}/access/ticket", data=auth_data, method="POST")
-        resp = urllib.request.urlopen(req, context=ctx, timeout=10)
-        ticket_data = json.loads(resp.read())
-        ticket = ticket_data["data"]["ticket"]
-        csrf = ticket_data["data"]["CSRFPreventionToken"]
-        req2 = urllib.request.Request(f"{base}{endpoint}")
-        req2.add_header("Cookie", f"PVEAuthCookie={ticket}")
-        req2.add_header("CSRFPreventionToken", csrf)
-        resp2 = urllib.request.urlopen(req2, context=ctx, timeout=10)
-        return json.loads(resp2.read())["data"]
+        req = urllib.request.Request(f"{base}{endpoint}")
+        req.add_header("Authorization", f"PVEAPIToken={token}")
+        resp = urllib.request.urlopen(req, context=SSL_CTX, timeout=10)
+        return json.loads(resp.read())["data"]
     except Exception as e:
         return {"error": str(e)}
 
-def parse_node_status(host, label, password):
+def parse_node_status(host, label, token):
     s = {"host": host, "label": label}
-    status_data = pve_api(host, "/nodes/localhost/status", password)
+    status_data = pve_api(host, "/nodes/localhost/status", token)
     if isinstance(status_data, dict) and "error" in status_data:
         s["error"] = status_data["error"]
         return s
@@ -98,10 +144,10 @@ def parse_node_status(host, label, password):
             ci = status_data["cpuinfo"]
             if not s.get("cpu"): s["cpu"] = ci.get("model", "—").strip()
             if not s.get("cores"): s["cores"] = ci.get("cpus", "—")
-        cpuinfo = pve_api(host, "/nodes/localhost/hardware/cpu", password)
+        cpuinfo = pve_api(host, "/nodes/localhost/hardware/cpu", token)
         if isinstance(cpuinfo, list) and len(cpuinfo) > 0:
             s["cpu"] = cpuinfo[0].get("model", "").strip()
-        ct_data = pve_api(host, "/nodes/localhost/lxc", password)
+        ct_data = pve_api(host, "/nodes/localhost/lxc", token)
         cts = []
         if isinstance(ct_data, list):
             for r in ct_data:
@@ -111,22 +157,14 @@ def parse_node_status(host, label, password):
         s["cts"] = cts
     return s
 
-def parse_pbs_status(host, label, password):
+def parse_pbs_status(host, label, token):
     s = {"host": host, "label": label}
-    ctx = ssl.create_default_context()
-    ctx.check_hostname = False
-    ctx.verify_mode = ssl.CERT_NONE
     base = f"https://{host}:8007/api2/json"
     try:
-        auth_data = urllib.parse.urlencode({"username": "root@pam", "password": password}).encode()
-        req = urllib.request.Request(f"{base}/access/ticket", data=auth_data, method="POST")
-        resp = urllib.request.urlopen(req, context=ctx, timeout=10)
-        ticket_data = json.loads(resp.read())
-        ticket = ticket_data["data"]["ticket"]
         def pbs_get(path):
             r = urllib.request.Request(f"{base}{path}")
-            r.add_header("Cookie", f"PBSAuthCookie={ticket}")
-            return json.loads(urllib.request.urlopen(r, context=ctx, timeout=10).read())["data"]
+            r.add_header("Authorization", f"PBSAPIToken={token}")
+            return json.loads(urllib.request.urlopen(r, context=SSL_CTX, timeout=10).read())["data"]
         version_data = pbs_get("/version")
         if isinstance(version_data, dict):
             s["version"] = version_data.get("version", "—")
@@ -186,9 +224,9 @@ def parse_pbs_status(host, label, password):
     return s
 
 def collect_stats():
-    pve1 = parse_node_status("10.2.7.64", "PVE1", PVE_PASSWORDS.get("10.2.7.64", ""))
-    pve2 = parse_node_status("10.2.7.62", "PVE2", PVE_PASSWORDS.get("10.2.7.62", ""))
-    pbs = parse_pbs_status("10.2.7.65", "PBS", PVE_PASSWORDS.get("10.2.7.65", ""))
+    pve1 = parse_node_status(PVE1_HOST, "PVE1", PVE1_TOKEN)
+    pve2 = parse_node_status(PVE2_HOST, "PVE2", PVE2_TOKEN)
+    pbs = parse_pbs_status(PBS_HOST, "PBS", PBS_TOKEN)
     return {"pve1": pve1, "pve2": pve2, "pbs": pbs}
 
 ARCH_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 870" style="background:#08080f;width:100%;height:auto;max-width:1100px">

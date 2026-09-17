@@ -120,7 +120,7 @@ services:
       PGID: *pgid
       TZ: *tz
       UMASK: "002"
-      WEBUI_PASSWORD: adminadmin
+      WEBUI_PASSWORD: ${QBITTORRENT_WEBUI_PASSWORD:?set QBITTORRENT_WEBUI_PASSWORD in .env}
     volumes:
       - ./config/qbittorrent:/config
       - /data:/data

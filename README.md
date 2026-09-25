@@ -8,9 +8,10 @@ This repository contains sanitized Docker Compose, monitoring, and reverse proxy
 
 | Layer | Services | Purpose |
 |-------|----------|---------|
-| **Hypervisor** | Proxmox VE (×2 nodes) + PBS | Dual-node LXC container hosting, ZFS-backed backups |
-|| **Node A** — `10.2.7.x` | i5-7500, 32GB, 1TB SSD | Primary application node — identity, monitoring, storage apps, media automation/server (23 LXCs) |
-|| **Node B** — `10.2.7.x` | i7-2600K, 32GB, ZFS pool (3.62TB) | Storage + media-download node — ZFS for media, photos, files (3 LXCs) |
+| **Hypervisor** | Proxmox VE (×3 nodes) + PBS | Multi-node LXC container hosting, ZFS-backed backups |
+|| **Node A** — `10.2.7.64` | i5-7500, 32GB, 1TB SSD | Primary application node — AI, identity, monitoring, DNS, media automation/server (14 LXCs) |
+|| **Node B** — `10.2.7.62` | i7-2600K, 32GB, ZFS pool (3.62TB) | Storage + media-download node — ZFS for media, photos, files (3 LXCs) |
+|| **Node C** — `10.2.7.15` | Dell i5-6500, 16GB (max) | Identity, helpdesk, source control, DB, SIEM/security — co-hosts app & security services (14 LXCs)
 || **ZFS Pool** `media` | 3.62T total, 2.70T used | Checksummed, portable storage for all bulk data |
 || **Monitoring** | Prometheus, Grafana, cAdvisor, Blackbox, Alertmanager, Uptime Kuma | Metrics, alerting, dashboards |
 | **SIEM** | Wazuh (Docker) | Centralized security event monitoring, log ingestion, FIM, vulnerability scanning (resurrected 2026-08) |
@@ -27,43 +28,54 @@ This repository contains sanitized Docker Compose, monitoring, and reverse proxy
 | **Credential Vault** | Vaultwarden | Self-hosted password management |
 | **Reverse Proxy** | Nginx Proxy Manager | SSL termination & domain routing |
 
-## Node A (Application) — 23 Containers
+
+## Node A (Application) — 10.2.7.64 (14 Containers)
 
 | CT ID | Role | OS | Cores | RAM | Purpose |
 |-------|------|-----|-------|-----|---------|
 | 100 | **AI Agent (primary)** | Debian 13 | 2 | 4GB | Main automation agent, Discord gateway, cron orchestration |
 | 101 | **Service Dashboard** | Debian 13 | 2 | 1GB | Homarr — unified dashboard UI |
-| 105 | **SIEM** | Debian 13 | 4 | 8GB | Wazuh (Docker single-node) — security event monitoring, log ingestion, FIM, vulnerability scanning (resurrected 2026-08) |
-| 106 | **Monitoring Hub** | Ubuntu 24.04 | 2 | 4GB | Grafana, Prometheus, Alertmanager, Uptime Kuma, exporters (10 Docker services) |
+| 105 | **SIEM** | Debian 13 | 4 | 8GB | Wazuh (Docker single-node) — security event monitoring, FIM, vuln scanning |
+| 106 | **Monitoring Hub** | Ubuntu 24.04 | 2 | 4GB | Grafana, Prometheus, Alertmanager, Uptime Kuma, exporters |
 | 107 | **DNS Filter** | Debian 13 | 2 | 4GB | Pi-hole network DNS & ad blocking |
 | 111 | **Photo Vault** | Debian 13 | 2 | 4GB | Immich photo management |
-| 112 | **File Sync** | Debian 13 | 2 | 2GB | Nextcloud file sync & share (TurnKey) |
-| 116 | **Media Automation** | Debian 13 | 4 | 4GB | *Arr stack + Librarr: indexer, download automation, book/manga search (8 Docker services) |
+| 112 | **File Sync** | Debian 13 | 2 | 2GB | Nextcloud file sync & share |
+| 116 | **Media Automation** | Debian 13 | 4 | 4GB | *Arr stack + Librarr: indexer, download automation, book/manga search |
 | 117 | **Media Server** | Debian 13 | 4 | 4GB | Jellyfin streaming + Seerr media requests |
-| 120 | **Identity (SSO)** | Debian 13 | 2 | 2GB | Keycloak — centralized OpenID Connect / SAML identity provider |
-| 121 | **Asset Management** | Debian 13 | 2 | 2GB | Snipe-IT — IT asset / license tracking |
-| 122 | **Helpdesk** | Debian 13 | 2 | 2GB | osTicket — ticketing / helpdesk |
-| 123 | **Arr Dashboard** | Debian 13 | 2 | 4GB | Unified media-stack UI |
-| 125 | **Source Control** | Ubuntu 24.04 | 2 | 2GB | Gitea — private git hosting |
-| 130 | **Manga Reader** | Ubuntu 24.04 | 2 | 2GB | Komga — manga/comic reader (bare-metal jar) |
-| 140 | **Database** | Debian 13 | 2 | 2GB | PostgreSQL — supports Keycloak & co |
-| 141 | **Document Mgmt** | Debian 13 | 2 | 2GB | Paperless-ngx — document archiving & OCR |
-| 142 | **Low-code DB** | Debian 13 | 1 | 1GB | NocoDB — spreadsheet-style database app |
-| 143 | **Credential Vault** | Debian 13 | 2 | 1GB | Vaultwarden — password management |
+| 126 | **Smart Home** | Debian 13 | 2 | 2GB | Home Assistant — home automation |
+| 130 | **Manga Reader** | Ubuntu 24.04 | 2 | 2GB | Komga — manga/comic reader |
 | 144 | **Reverse Proxy** | Debian 13 | 2 | 1GB | Nginx Proxy Manager — SSL & domain routing |
-| 145 | **Patch Management** | Debian 13 | 2 | 4GB | PatchMon — centralized Linux patch monitoring for the fleet |
-| 146 | **Docker Update Mgmt** | Debian 13 | 2 | 2GB | Tugtainer — Docker image update manager, agents on all Docker hosts |
+| 149 | **Media/Music** | Debian 13 | 2 | 2GB | Navidrome + Audiobookshelf (music/audio) |
+| 150 | **AI Agent (secondary)** | Debian 13 | 2 | 2GB | Claude Code / auxiliary automation |
 
-## Node B (Storage & Media Download) — 3 Containers
+## Node B (Storage & Media Download) — 10.2.7.62 (3 Containers)
+
+| CT ID | Role | OS | Cores | RAM | Purpose |
+|-------|------|-----|-------|-----|---------|
+| 110 | **Media Ingress/Sync** | Debian 13 | 4 | 4GB | VPN gateway (Gluetun), download client (qBittorrent) |
+| 118 | **Media Optimizer** | Debian 13 | 4 | 6GB | Tdarr — audio-track trimming + x265 re-encode batch |
+| 148 | **Bot** | Debian 13 | 1 | 1GB | Discord mediabot / automation |
+
+## Node C (Identity/Security) — 10.2.7.15 (14 Containers)
 
 | CT ID | Role | OS | Cores | RAM | Purpose |
 |-------|------|-----|-------|-----|---------|
 | 103 | **Ripping Station** | Debian 13 | 2 | 2GB | DVD/Blu-ray ripping with Flask web UIs |
-| 110 | **Media Ingress/Sync** | Debian 13 | 4 | 4GB | VPN gateway (Gluetun), download client (qBittorrent), Audiobookshelf, Navidrome |
-| 118 | **Media Optimizer** | Debian 13 | 4 | 6GB | Tdarr — audio-track trimming + x265 re-encode batch (currently paused) |
+| 120 | **Identity (SSO)** | Debian 13 | 2 | 2GB | Keycloak — OpenID Connect / SAML identity provider |
+| 121 | **Asset Management** | Debian 13 | 2 | 2GB | Snipe-IT — IT asset / license tracking |
+| 122 | **Helpdesk** | Debian 13 | 2 | 2GB | osTicket — ticketing / helpdesk |
+| 125 | **Source Control** | Ubuntu 24.04 | 2 | 2GB | Gitea — private git hosting (serves :3002) |
+| 140 | **Database** | Debian 13 | 2 | 2GB | PostgreSQL — supports Keycloak & co |
+| 141 | **Document Mgmt** | Debian 13 | 2 | 2GB | Paperless-ngx — document archiving & OCR |
+| 142 | **Low-code DB** | Debian 13 | 1 | 1GB | NocoDB — spreadsheet-style database app |
+| 143 | **Credential Vault** | Debian 13 | 2 | 1GB | Vaultwarden — password management |
+| 145 | **Patch Management** | Debian 13 | 2 | 4GB | PatchMon — centralized Linux patch monitoring |
+| 146 | **Docker Update Mgmt** | Debian 13 | 2 | 2GB | Tugtainer — Docker image update manager |
+| 147 | **Bot** | Debian 13 | 1 | 1GB | Discord helpdesk / automation |
+| 201 | **LAB target** | Debian 13 | 2 | 2GB | SOC practice range — target host |
+| 202 | **LAB sensor** | Debian 13 | 2 | 2GB | SOC practice range — Zeek sensor |
 
-> **26 total containers.** 23 on Node A, 3 on Node B.
-> **Retired 2026-08:** Zeek passive network IDS sensor, Portainer, Heimdall dashboard, PiAlert ARP discovery, local-LLM agent CT, Cockpit, Donetick, cheatsheet. **Wazuh SIEM** was retired 2026-08 but **resurrected 2026-08-30** as a Docker single-node stack (CT 105). Windows AD lab (VMs) decommissioned 2026-08-30 in favor of the SIEM security pivot.
+> **31 total containers: 14 on Node A, 3 on Node B, 14 on Node C.**
 
 ## Media Stack — Enterprise Abstraction Reference
 
@@ -91,8 +103,9 @@ The media pipeline is **distributed across Node A and Node B** (ingress stays be
 
 | Host | Type | Hardware | Role |
 |------|------|----------|------|
-| **Node A** (PVE 9.x) | Hypervisor | i5-7500, 32GB RAM, 1TB SSD | 23 LXCs — application node (AI, DNS, monitoring, SIEM, storage apps, media automation/server) |
+| **Node A** (PVE 9.x) | Hypervisor | i5-7500, 32GB RAM, 1TB SSD | 14 LXCs — application node (AI, DNS, monitoring, SIEM, media automation/server) |
 | **Node B** (PVE 6.x) | Hypervisor | i7-2600K, 32GB RAM, 3.62TB ZFS pool | 3 LXCs — storage + media download/ingress |
+| **Node C** (PVE 9.x) | Hypervisor | Dell i5-6500, 16GB RAM (max) | 14 LXCs — identity, helpdesk, source control, DB, security/LAB |
 | **Backup** | PBS | ZFS datastore | Nightly LXC/VM snapshots |
 
 ## Prerequisites
@@ -145,7 +158,7 @@ docker compose -f media-stack.yml up -d                 # Media stack (prod)
 ├── training/                       # Beginner training manuals per service
 └── scripts/
     ├── pre-commit-secret-scan.py   # Pre-commit hook for secret detection
-    ├── check-pve-pbs-updates.sh    # Multi-node health check (PVE×2 + PBS)
+    ├── check-pve-pbs-updates.sh    # Multi-node health check (PVE×3 + PBS)
     └── ...                         # Deployment / utility scripts
 ```
 

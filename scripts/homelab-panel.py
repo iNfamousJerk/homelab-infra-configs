@@ -9,23 +9,20 @@ stats_cache = {"data": None, "time": 0}
 CACHE_TTL = 60
 
 SERVICES = [
-    {"name": "Jellyfin", "url": "http://10.2.7.109:8096", "icon": "🎬", "cat": "media"},
-    {"name": "Radarr", "url": "http://10.2.7.109:7878", "icon": "🎥", "cat": "arr"},
-    {"name": "Sonarr", "url": "http://10.2.7.109:8989", "icon": "📺", "cat": "arr"},
-    {"name": "Lidarr", "url": "http://10.2.7.109:8686", "icon": "🎵", "cat": "arr"},
-    {"name": "Arr Dashboard", "url": "http://10.2.7.239:3000", "icon": "📊", "cat": "arr"},
+    {"name": "Jellyfin", "url": "http://10.2.7.117:8096", "icon": "🎬", "cat": "media"},
+    {"name": "Radarr", "url": "http://10.2.7.116:7878", "icon": "🎥", "cat": "arr"},
+    {"name": "Sonarr", "url": "http://10.2.7.116:8989", "icon": "📺", "cat": "arr"},
+    {"name": "Lidarr", "url": "http://10.2.7.116:8686", "icon": "🎵", "cat": "arr"},
     {"name": "Librarr", "url": "http://10.2.7.116:5050", "icon": "📚", "cat": "arr"},
-    {"name": "Prowlarr", "url": "http://10.2.7.109:9696", "icon": "🔍", "cat": "arr"},
-    {"name": "Bazarr", "url": "http://10.2.7.109:6767", "icon": "💬", "cat": "arr"},
-    {"name": "Seerr", "url": "http://10.2.7.109:5055", "icon": "📺", "cat": "request"},
-    {"name": "Mylar3", "url": "http://10.2.7.109:8090", "icon": "📚", "cat": "arr"},
-    {"name": "Manga Request", "url": "http://10.2.7.109:5000", "icon": "🎴", "cat": "request"},
-    {"name": "qBittorrent", "url": "http://10.2.7.109:8080", "icon": "⚡", "cat": "download"},
-    {"name": "Navidrome", "url": "http://10.2.7.109:4533", "icon": "🎶", "cat": "media"},
-    {"name": "Audiobookshelf", "url": "http://10.2.7.109:13378", "icon": "🎧", "cat": "media"},
+    {"name": "Prowlarr", "url": "http://10.2.7.116:9696", "icon": "🔍", "cat": "arr"},
+    {"name": "Bazarr", "url": "http://10.2.7.116:6767", "icon": "💬", "cat": "arr"},
+    {"name": "Seerr", "url": "http://10.2.7.117:5055", "icon": "📺", "cat": "request"},
+    {"name": "qBittorrent", "url": "http://10.2.7.110:8080", "icon": "⚡", "cat": "download"},
+    {"name": "Navidrome", "url": "http://10.2.7.149:4533", "icon": "🎶", "cat": "media"},
+    {"name": "Audiobookshelf", "url": "http://10.2.7.149:13378", "icon": "🎧", "cat": "media"},
     {"name": "Immich", "url": "http://10.2.7.44:2283", "icon": "📸", "cat": "media"},
     {"name": "Nextcloud", "url": "http://10.2.7.99:80", "icon": "☁️", "cat": "infra"},
-    {"name": "NPM", "url": "http://10.2.7.109:81", "icon": "🔒", "cat": "infra"},
+    {"name": "NPM", "url": "http://10.2.7.144:81", "icon": "🔒", "cat": "infra"},
     {"name": "Grafana", "url": "http://10.2.7.108:3000", "icon": "📊", "cat": "monitor"},
     {"name": "Prometheus", "url": "http://10.2.7.108:9090", "icon": "📈", "cat": "monitor"},
     {"name": "Uptime Kuma", "url": "http://10.2.7.108:3001", "icon": "❤️", "cat": "monitor"},
@@ -312,7 +309,7 @@ text{font-family:'JetBrains Mono','Courier New',monospace;fill:#c0c0e0;font-size
 <text x="790" y="394" class="label">• Hitachi 3TB HDD</text>
 <!-- Bottom -->
 <rect x="200" y="560" width="700" height="44" class="box" stroke="#ffd700"/>
-<text x="550" y="578" text-anchor="middle" font-size="12" class="arr">📺 Media Stack — CT 110 (10.2.7.109)</text>
+<text x="550" y="578" text-anchor="middle" font-size="12" class="arr">📺 Media Stack — CT 116 (10.2.7.116)</text>
 <text x="550" y="594" text-anchor="middle" class="label">🎬 Jellyfin · 🎥 Radarr · 📺 Sonarr · 🔍 Prowlarr · ⚡ qBit · 🎶 Navidrome · 📊 Arr Dash</text>
 <rect x="200" y="620" width="700" height="44" class="box" stroke="#00ff41"/>
 <text x="550" y="640" text-anchor="middle" font-size="12" class="mon">💾 Storage Layout</text>

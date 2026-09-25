@@ -155,9 +155,9 @@ services:
     environment:
       - USER_UID=1000
       - USER_GID=1000
-      - GITEA__server__DOMAIN=gitea.home.lan
+      - GITEA__server__DOMAIN=10.2.7.125
       - GITEA__server__HTTP_PORT=3000
-      - GITEA__server__ROOT_URL=http://gitea.home.lan
+      - GITEA__server__ROOT_URL=http://10.2.7.125:3002
       - GITEA__server__SSH_PORT=2222
     restart: unless-stopped
     mem_limit: 1g

@@ -45,13 +45,19 @@ migrated yet** — every subnet contains only its `.1` gateway.
 
 | VLAN | Name | Devices |
 |------|------|---------|
-| 10 | MGMT | PVE1, PVE2, OPNsense mgmt, managed switch, PBS |
-| 20 | SERVICES | Pi-hole (CT107 + 2× Pi), Gitea, Grafana, NPM, Uptime Kuma |
-| 30 | SECURITY | Wazuh, Zeek, SIEM/dashboard |
-| 40 | MEDIA | Jellyfin (CT117), Seerr, Immich, media stack — **also home WiFi media** |
-| 50 | CLIENT | Gaming PC, wired desktops, phones/laptops on home SSID |
-| 60 | IOT | Smart home, guest WiFi, Omada AP guest SSID |
-| 70 | LAB | DC-2025, WIN-CLIENT, training VMs |
+| 10 | MGMT | PVE1 (.64), PVE2 (.62), PVE3 (.15), PBS (.65), OPNsense mgmt, managed switch |
+| 20 | SERVICES | NPM CT144 ✅, Pi-hole CT107 (.2), Gitea CT125, Grafana+misc CT108, Uptime Kuma, osTicket CT122, Snipe-IT, Paperless CT121, Homarr CT101, Keycloak CT120, Vaultwarden, PatchMon CT145, Discord/helpdesk bots CT147 |
+| 30 | SECURITY | Wazuh CT105 ✅ (at 10.2.30.105), Zeek sensor, SIEM/dashboard |
+| 40 | MEDIA | [media server stays on flat LAN per §3 decision] Jellyfin CT117, Seerr, Immich, Tdarr CT118, Navidrome CT149, Audiobookshelf CT149, Komga, ErsatzTV, mediabot CT148 + home-WiFi media devices |
+| 50 | CLIENT | **Deferred** — clients/WiFi stay on flat LAN for now (AP at 10.2.7.3); move onto vlan05 later if desired |
+| 60 | IOT | Home Assistant CT126, smart-home/guest devices |
+| 70 | LAB | Kali VM, Zeek sensor, target VMs (DC-2025, WIN-CLIENT) — **no NPM / external exposure** |
+
+> **Migration status (2026-09-27):** VLANs bound + gateways live; inter-VLAN firewall
+> rules set (default-deny last on each VLAN). **SECURITY live** (Wazuh on 10.2.30.105),
+> **SERVICES live** (NPM at 10.2.20.144). LAB range isolated (outbound internet only).
+> **Clients remain on the flat LAN** (AP bridged at 10.2.7.3) — CLIENT VLAN deferred until
+> services finish migrating off 10.2.7.x. Kea DHCP serving CLIENT + SERVICES scopes.
 
 ---
 

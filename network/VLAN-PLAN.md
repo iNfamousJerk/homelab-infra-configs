@@ -51,7 +51,7 @@ migrated yet** — every subnet contains only its `.1` gateway.
 | 40 | MEDIA | [media server stays on flat LAN per §3 decision] Jellyfin CT117, Seerr, Immich, Tdarr CT118, Navidrome CT149, Audiobookshelf CT149, Komga, ErsatzTV, mediabot CT148 + home-WiFi media devices |
 | 50 | CLIENT | **Deferred** — clients/WiFi stay on flat LAN for now (AP at 10.2.7.3); move onto vlan05 later if desired |
 | 60 | IOT | Home Assistant CT126, smart-home/guest devices |
-| 70 | LAB | Kali VM, Zeek sensor, target VMs (DC-2025, WIN-CLIENT) — **no NPM / external exposure** |
+| 70 | LAB | Kali VM 200 (10.2.70.10), target CT 201 (10.2.70.20), Zeek sensor CT 202 (10.2.70.30) — see `training/training-kali.md` — **no NPM / external exposure** |
 
 > **Migration status (2026-09-27):** VLANs bound + gateways live; inter-VLAN firewall
 > rules set (default-deny last on each VLAN). **SECURITY live** (Wazuh on 10.2.30.105),

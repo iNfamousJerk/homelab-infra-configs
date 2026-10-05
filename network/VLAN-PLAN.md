@@ -45,7 +45,7 @@ config but are **not assigned/up** yet — `ifconfig` shows `vlan: 0 parent: <no
 |------|------|---------|
 | 10 | MGMT | PVE1, PVE2, OPNsense mgmt, managed switch, PBS |
 | 20 | SERVICES | Pi-hole (CT107 + 2× Pi), Gitea, Grafana, NPM, Uptime Kuma |
-| 30 | SECURITY | Wazuh, Zeek, SIEM/dashboard |
+| 30 | SECURITY | osquery/Fleet, SIEM/dashboard |
 | 40 | MEDIA | Jellyfin (CT117), Seerr, Immich, media stack — **also home WiFi media** |
 | 50 | CLIENT | Gaming PC, wired desktops, phones/laptops on home SSID |
 | 60 | IOT | Smart home, guest WiFi, Omada AP guest SSID |

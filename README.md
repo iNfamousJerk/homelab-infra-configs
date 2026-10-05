@@ -13,7 +13,6 @@ This repository contains sanitized Docker Compose, monitoring, and reverse proxy
 || **Node B** — `10.2.7.x` | i7-2600K, 32GB, ZFS pool (3.62TB) | Storage + media-download node — ZFS for media, photos, files (3 LXCs) |
 || **ZFS Pool** `media` | 3.62T total, 2.70T used | Checksummed, portable storage for all bulk data |
 || **Monitoring** | Prometheus, Grafana, cAdvisor, Blackbox, Alertmanager, Uptime Kuma | Metrics, alerting, dashboards |
-| **SIEM** | Wazuh (Docker) | Centralized security event monitoring, log ingestion, FIM, vulnerability scanning (resurrected 2026-08) |
 | **Patch & Update Mgmt** | PatchMon + Tugtainer | Centralized Linux patch monitoring + Docker image update management |
 | **Backup** | Proxmox Backup Server | Snapshot-based LXC/VM backups (Zstd compression) |
 | **Gateway/Firewall** | OPNsense | VLAN routing, firewall, DHCP |
@@ -33,7 +32,6 @@ This repository contains sanitized Docker Compose, monitoring, and reverse proxy
 |-------|------|-----|-------|-----|---------|
 | 100 | **AI Agent (primary)** | Debian 13 | 2 | 4GB | Main automation agent, Discord gateway, cron orchestration |
 | 101 | **Service Dashboard** | Debian 13 | 2 | 1GB | Homarr — unified dashboard UI |
-| 105 | **SIEM** | Debian 13 | 4 | 8GB | Wazuh (Docker single-node) — security event monitoring, log ingestion, FIM, vulnerability scanning (resurrected 2026-08) |
 | 106 | **Monitoring Hub** | Ubuntu 24.04 | 2 | 4GB | Grafana, Prometheus, Alertmanager, Uptime Kuma, exporters (10 Docker services) |
 | 107 | **DNS Filter** | Debian 13 | 2 | 4GB | Pi-hole network DNS & ad blocking |
 | 111 | **Photo Vault** | Debian 13 | 2 | 4GB | Immich photo management |
@@ -63,7 +61,7 @@ This repository contains sanitized Docker Compose, monitoring, and reverse proxy
 | 118 | **Media Optimizer** | Debian 13 | 4 | 6GB | Tdarr — audio-track trimming + x265 re-encode batch (currently paused) |
 
 > **26 total containers.** 23 on Node A, 3 on Node B.
-> **Retired 2026-08:** Zeek passive network IDS sensor, Portainer, Heimdall dashboard, PiAlert ARP discovery, local-LLM agent CT, Cockpit, Donetick, cheatsheet. **Wazuh SIEM** was retired 2026-08 but **resurrected 2026-08-30** as a Docker single-node stack (CT 105). Windows AD lab (VMs) decommissioned 2026-08-30 in favor of the SIEM security pivot.
+> **Retired:** Zeek passive network IDS sensor, Wazuh SIEM (scrapped 2026-10, replaced by osquery+Fleet), Portainer, Heimdall dashboard, PiAlert ARP discovery, local-LLM agent CT, Cockpit, Donetick, cheatsheet. Windows AD lab (VMs) decommissioned 2026-08-30 in favor of the SIEM security pivot.
 
 ## Media Stack — Enterprise Abstraction Reference
 
@@ -140,7 +138,6 @@ docker compose -f media-stack.yml up -d                 # Media stack (prod)
 ├── homelab_alerts.yml              # Prometheus alerting rules
 ├── .env.example                    # Environment variable template
 ├── CREDENTIALS-TEMPLATE.md         # Credential tracking template (NEVER commit real creds)
-├── security-monitoring.md          # Retired SIEM/IDS reference architecture
 ├── client-portal-reference.md      # Sanitized multi-tenant client portal reference
 ├── training/                       # Beginner training manuals per service
 └── scripts/
@@ -179,6 +176,5 @@ docker compose -f media-stack.yml up -d                 # Media stack (prod)
 
 ## Reference Documents
 
-- **[Security Monitoring](./security-monitoring.md)** — SIEM (Wazuh, **live**) + passive network IDS (Zeek, planned) reference architecture
 - **[Client Portal + GPU Streaming](./client-portal-reference.md)** — Sanitized multi-tenant client portal reference: tenant-per-container isolation, all-VPN access (zero public exposure), GPU-accelerated transcoding, SSO per client
 - **[Enterprise Blueprint](./enterprise-blueprint/README.md)** — Abstracted larger-scale reference architecture (content pipeline, catalog storage, egress/ingress networking)

@@ -122,7 +122,7 @@ iface vmbr0.10 inet static
 In PVE web UI → each VM/CT → Network → set **VLAN Tag** per the device map:
 - MGMT (10): PVE hosts, PBS
 - SERVICES (20): Pi-hole, Gitea, Grafana, NPM, Uptime Kuma, osTicket
-- SECURITY (30): Wazuh, Zeek
+- SECURITY (30): osquery/Fleet
 - MEDIA (40): Jellyfin/Seerr (CT117), Immich, media CT
 - CLIENT (50): — (physical devices)
 - IOT (60): — (WiFi)
@@ -137,7 +137,7 @@ In PVE web UI → each VM/CT → Network → set **VLAN Tag** per the device map
 |------|--------|------|-----------------|------|
 | 1 | SPARE | — | — | — |
 | 2 | OPNsense | Trunk | Tagged: 10,20,30,40,50,60,70 | 10 |
-| 3 | Zeek (mirror) | Trunk | Tagged: 10,20,30,40,50,60,70 | — |
+| 3 | SPARE | — | — | — |
 | 4 | PBS | Trunk | Tagged: 10,20,30,40,50,60,70 | 10 |
 | 5 | PVE2 | Trunk | Tagged: 10,20,30,40,50,60,70 | 10 |
 | 6 | Gaming PC | Access | Untagged: 50 | 50 |
@@ -149,8 +149,7 @@ In PVE web UI → each VM/CT → Network → set **VLAN Tag** per the device map
 2. Create each VLAN ID (10,20,30,40,50,60,70) with port membership (Tagged/Untagged/Not Member) per table above
 3. **VLAN → 802.1Q PVID Setting** — set each port's PVID per table
 4. Apply
-5. **Port 3 (Zeek mirror):** MUST be a **tagged member of ALL VLANs** or the VLAN filter drops frames before mirroring
-6. **Omada AP (port 7):** trunk — it does its own per-SSID tagging (Home→50, Media→40, Guest→60)
+5. **Omada AP (port 7):** trunk — it does its own per-SSID tagging (Home→50, Media→40, Guest→60)
 
 > **If you're not using the TL-SG108E**, the switch's web UI varies but the concepts
 > are identical: enable 802.1Q, create VLANs, set trunk/access ports + PVIDs.
@@ -205,7 +204,6 @@ segmented from family devices — selected over Option B (moving CT117 onto MEDI
 - [ ] IoT cannot ping any internal device
 - [ ] Gaming PC (CLIENT) reaches internet + Pi-hole only
 - [ ] Jellyfin reachable from CLIENT/MEDIA (port 8096)
-- [ ] Zeek conn.log shows 802.1Q tagged frames
 - [ ] Switch web UI reachable on MGMT
 
 ---

@@ -608,18 +608,6 @@
         <maxfilesize/>
       </general>
       <destinations>
-        <destination uuid="10bd65d7-86b8-4de2-a2aa-5d33d5a6826b">
-          <enabled>1</enabled>
-          <transport>udp4</transport>
-          <program/>
-          <level>info</level>
-          <facility/>
-          <hostname>10.2.7.110</hostname>
-          <certificate/>
-          <port>514</port>
-          <rfc5424>0</rfc5424>
-          <description>Wazuh SIEM</description>
-        </destination>
       </destinations>
     </Syslog>
     <Hostwatch version="1.0.0" persisted_at="1776809757.75" description="Host discovery">

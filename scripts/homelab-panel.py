@@ -9,37 +9,37 @@ stats_cache = {"data": None, "time": 0}
 CACHE_TTL = 60
 
 SERVICES = [
-    {"name": "Jellyfin", "url": "http://10.2.7.109:8096", "icon": "🎬", "cat": "media"},
-    {"name": "Radarr", "url": "http://10.2.7.109:7878", "icon": "🎥", "cat": "arr"},
-    {"name": "Sonarr", "url": "http://10.2.7.109:8989", "icon": "📺", "cat": "arr"},
-    {"name": "Lidarr", "url": "http://10.2.7.109:8686", "icon": "🎵", "cat": "arr"},
+    {"name": "Jellyfin", "url": "http://10.2.40.110:8096", "icon": "🎬", "cat": "media"},
+    {"name": "Radarr", "url": "http://10.2.40.110:7878", "icon": "🎥", "cat": "arr"},
+    {"name": "Sonarr", "url": "http://10.2.40.110:8989", "icon": "📺", "cat": "arr"},
+    {"name": "Lidarr", "url": "http://10.2.40.110:8686", "icon": "🎵", "cat": "arr"},
     {"name": "Arr Dashboard", "url": "http://10.2.7.239:3000", "icon": "📊", "cat": "arr"},
-    {"name": "Librarr", "url": "http://10.2.7.116:5050", "icon": "📚", "cat": "arr"},
-    {"name": "Prowlarr", "url": "http://10.2.7.109:9696", "icon": "🔍", "cat": "arr"},
-    {"name": "Bazarr", "url": "http://10.2.7.109:6767", "icon": "💬", "cat": "arr"},
-    {"name": "Seerr", "url": "http://10.2.7.109:5055", "icon": "📺", "cat": "request"},
-    {"name": "Mylar3", "url": "http://10.2.7.109:8090", "icon": "📚", "cat": "arr"},
-    {"name": "Manga Request", "url": "http://10.2.7.109:5000", "icon": "🎴", "cat": "request"},
-    {"name": "qBittorrent", "url": "http://10.2.7.109:8080", "icon": "⚡", "cat": "download"},
-    {"name": "Navidrome", "url": "http://10.2.7.109:4533", "icon": "🎶", "cat": "media"},
-    {"name": "Audiobookshelf", "url": "http://10.2.7.109:13378", "icon": "🎧", "cat": "media"},
+    {"name": "Librarr", "url": "http://10.2.40.116:5050", "icon": "📚", "cat": "arr"},
+    {"name": "Prowlarr", "url": "http://10.2.40.110:9696", "icon": "🔍", "cat": "arr"},
+    {"name": "Bazarr", "url": "http://10.2.40.110:6767", "icon": "💬", "cat": "arr"},
+    {"name": "Seerr", "url": "http://10.2.40.110:5055", "icon": "📺", "cat": "request"},
+    {"name": "Mylar3", "url": "http://10.2.40.110:8090", "icon": "📚", "cat": "arr"},
+    {"name": "Manga Request", "url": "http://10.2.40.110:5000", "icon": "🎴", "cat": "request"},
+    {"name": "qBittorrent", "url": "http://10.2.40.110:8080", "icon": "⚡", "cat": "download"},
+    {"name": "Navidrome", "url": "http://10.2.40.110:4533", "icon": "🎶", "cat": "media"},
+    {"name": "Audiobookshelf", "url": "http://10.2.40.110:13378", "icon": "🎧", "cat": "media"},
     {"name": "Immich", "url": "http://10.2.7.44:2283", "icon": "📸", "cat": "media"},
     {"name": "Nextcloud", "url": "http://10.2.7.99:80", "icon": "☁️", "cat": "infra"},
-    {"name": "NPM", "url": "http://10.2.7.109:81", "icon": "🔒", "cat": "infra"},
-    {"name": "Grafana", "url": "http://10.2.7.108:3000", "icon": "📊", "cat": "monitor"},
-    {"name": "Prometheus", "url": "http://10.2.7.108:9090", "icon": "📈", "cat": "monitor"},
-    {"name": "Uptime Kuma", "url": "http://10.2.7.108:3001", "icon": "❤️", "cat": "monitor"},
-    {"name": "Pi-hole", "url": "http://10.2.7.2/admin", "icon": "🚫", "cat": "network"},
-    {"name": "Gitea", "url": "http://10.2.7.125:3002", "icon": "🔧", "cat": "dev"},
-    {"name": "Keycloak", "url": "http://10.2.7.120:5252", "icon": "🔐", "cat": "auth"},
-    {"name": "Snipe-IT", "url": "http://10.2.7.121:8000", "icon": "🏷️", "cat": "helpdesk"},
-    {"name": "osTicket", "url": "http://10.2.7.122:8081", "icon": "🎫", "cat": "helpdesk"},
-    {"name": "Tdarr", "url": "http://10.2.7.118:8265", "icon": "🎞️", "cat": "media"},
+    {"name": "NPM", "url": "http://10.2.40.110:81", "icon": "🔒", "cat": "infra"},
+    {"name": "Grafana", "url": "http://10.2.30.106:3000", "icon": "📊", "cat": "monitor"},
+    {"name": "Prometheus", "url": "http://10.2.30.106:9090", "icon": "📈", "cat": "monitor"},
+    {"name": "Uptime Kuma", "url": "http://10.2.30.106:3001", "icon": "❤️", "cat": "monitor"},
+    {"name": "Pi-hole", "url": "http://10.2.10.2/admin", "icon": "🚫", "cat": "network"},
+    {"name": "Gitea", "url": "http://10.2.20.125:3002", "icon": "🔧", "cat": "dev"},
+    {"name": "Keycloak", "url": "http://10.2.20.120:5252", "icon": "🔐", "cat": "auth"},
+    {"name": "Snipe-IT", "url": "http://10.2.20.121:8000", "icon": "🏷️", "cat": "helpdesk"},
+    {"name": "osTicket", "url": "http://10.2.20.122:8081", "icon": "🎫", "cat": "helpdesk"},
+    {"name": "Tdarr", "url": "http://10.2.40.118:8265", "icon": "🎞️", "cat": "media"},
     {"name": "DVD Ripper", "url": "http://10.2.7.245:5050", "icon": "💿", "cat": "tools"},
     {"name": "Media Dash", "url": "http://10.2.7.245:5051", "icon": "📋", "cat": "tools"},
     {"name": "Homelab Panel", "url": "http://10.2.7.245:5052", "icon": "🏗️", "cat": "docs"},
-    {"name": "Suwayomi", "url": "http://10.2.7.130:4567", "icon": "📥", "cat": "download"},
-    {"name": "Komga", "url": "http://10.2.7.130:25600", "icon": "📖", "cat": "media"},
+    {"name": "Suwayomi", "url": "http://10.2.40.130:4567", "icon": "📥", "cat": "download"},
+    {"name": "Komga", "url": "http://10.2.40.130:25600", "icon": "📖", "cat": "media"},
 ]
 
 PVE_PASSWORDS = {
@@ -240,13 +240,13 @@ text{font-family:'JetBrains Mono','Courier New',monospace;fill:#c0c0e0;font-size
 <rect x="95" y="295" width="250" height="330" class="box2"/>
 <text x="220" y="312" text-anchor="middle" class="label" font-size="9">CONTAINERS</text>
 <rect x="105" y="320" width="110" height="34" class="box3"/><text x="160" y="335" text-anchor="middle" font-size="10" class="infra">🤖 Hermes (100)</text><text x="160" y="348" text-anchor="middle" class="label">AI Agent · 10.2.7.107</text>
-<rect x="225" y="320" width="110" height="34" class="box3"/><text x="280" y="335" text-anchor="middle" font-size="10" class="dev">🤖 Ansible (117)</text><text x="280" y="348" text-anchor="middle" class="label">Config Mgmt · 10.2.7.117</text>
-<rect x="105" y="360" width="110" height="34" class="box3"/><text x="160" y="375" text-anchor="middle" font-size="10" class="arr">📚 Librarr (116)</text><text x="160" y="388" text-anchor="middle" class="label">Books · 10.2.7.116</text>
-<rect x="225" y="360" width="110" height="34" class="box3"/><text x="280" y="375" text-anchor="middle" font-size="10" class="mon">📊 Grafana (106)</text><text x="280" y="388" text-anchor="middle" class="label">Monitoring · 10.2.7.108</text>
-<rect x="105" y="400" width="110" height="34" class="box3"/><text x="160" y="415" text-anchor="middle" font-size="10" class="net">🚫 Pi-hole (107)</text><text x="160" y="428" text-anchor="middle" class="label">DNS · 10.2.7.2</text>
-<rect x="225" y="400" width="110" height="34" class="box3"/><text x="280" y="415" text-anchor="middle" font-size="10" class="sec">🔐 Keycloak (120)</text><text x="280" y="428" text-anchor="middle" class="label">Auth · 10.2.7.120</text>
-<rect x="105" y="440" width="110" height="34" class="box3"/><text x="160" y="455" text-anchor="middle" font-size="10" class="helpdesk">🏷️ Snipe-IT (121)</text><text x="160" y="468" text-anchor="middle" class="label">Assets · 10.2.7.121</text>
-<rect x="225" y="480" width="110" height="34" class="box3"/><text x="280" y="495" text-anchor="middle" font-size="10" class="helpdesk">🎫 osTicket (122)</text><text x="280" y="508" text-anchor="middle" class="label">Tickets · 10.2.7.122</text>
+<rect x="225" y="320" width="110" height="34" class="box3"/><text x="280" y="335" text-anchor="middle" font-size="10" class="dev">🤖 Ansible (117)</text><text x="280" y="348" text-anchor="middle" class="label">Config Mgmt · 10.2.40.117</text>
+<rect x="105" y="360" width="110" height="34" class="box3"/><text x="160" y="375" text-anchor="middle" font-size="10" class="arr">📚 Librarr (116)</text><text x="160" y="388" text-anchor="middle" class="label">Books · 10.2.40.116</text>
+<rect x="225" y="360" width="110" height="34" class="box3"/><text x="280" y="375" text-anchor="middle" font-size="10" class="mon">📊 Grafana (106)</text><text x="280" y="388" text-anchor="middle" class="label">Monitoring · 10.2.30.106</text>
+<rect x="105" y="400" width="110" height="34" class="box3"/><text x="160" y="415" text-anchor="middle" font-size="10" class="net">🚫 Pi-hole (107)</text><text x="160" y="428" text-anchor="middle" class="label">DNS · 10.2.10.2</text>
+<rect x="225" y="400" width="110" height="34" class="box3"/><text x="280" y="415" text-anchor="middle" font-size="10" class="sec">🔐 Keycloak (120)</text><text x="280" y="428" text-anchor="middle" class="label">Auth · 10.2.20.120</text>
+<rect x="105" y="440" width="110" height="34" class="box3"/><text x="160" y="455" text-anchor="middle" font-size="10" class="helpdesk">🏷️ Snipe-IT (121)</text><text x="160" y="468" text-anchor="middle" class="label">Assets · 10.2.20.121</text>
+<rect x="225" y="480" width="110" height="34" class="box3"/><text x="280" y="495" text-anchor="middle" font-size="10" class="helpdesk">🎫 osTicket (122)</text><text x="280" y="508" text-anchor="middle" class="label">Tickets · 10.2.20.122</text>
 <rect x="225" y="440" width="110" height="34" class="box3"/><text x="280" y="455" text-anchor="middle" font-size="10" class="mon">❤️ Uptime Kuma</text><text x="280" y="468" text-anchor="middle" class="label">Uptime</text>
 <rect x="105" y="480" width="110" height="34" class="box3"/><text x="160" y="495" text-anchor="middle" font-size="10" class="media">📸 Immich (111)</text><text x="160" y="508" text-anchor="middle" class="label">Photos</text>
 <rect x="225" y="520" width="110" height="34" class="box3"/><text x="280" y="535" text-anchor="middle" font-size="10" class="infra">☁ Nextcloud (112)</text><text x="280" y="548" text-anchor="middle" class="label">File Sync · 10.2.7.99</text>
@@ -260,7 +260,7 @@ text{font-family:'JetBrains Mono','Courier New',monospace;fill:#c0c0e0;font-size
 <text x="550" y="312" text-anchor="middle" class="label" font-size="9">CONTAINERS</text>
 <rect x="555" y="320" width="110" height="34" class="box3"/><text x="610" y="335" text-anchor="middle" font-size="10" class="tools">💿 Ripper (103)</text><text x="610" y="348" text-anchor="middle" class="label">DVD Ripping</text>
 <rect x="435" y="360" width="150" height="34" class="box3"/><text x="510" y="375" text-anchor="middle" font-size="10" class="media">🎬 Media Stack (110)</text><text x="510" y="388" text-anchor="middle" class="label">Jellyfin + *arrs</text>
-<rect x="555" y="400" width="110" height="34" class="box3"/><text x="610" y="415" text-anchor="middle" font-size="10" class="media">🎞️ Tdarr (118)</text><text x="610" y="428" text-anchor="middle" class="label">Transcode · 10.2.7.118</text>
+<rect x="555" y="400" width="110" height="34" class="box3"/><text x="610" y="415" text-anchor="middle" font-size="10" class="media">🎞️ Tdarr (118)</text><text x="610" y="428" text-anchor="middle" class="label">Transcode · 10.2.40.118</text>
 <text x="550" y="480" text-anchor="middle" class="label">🔗 ZFS: media · 2×2-drive mirror</text>
 <!-- PBS -->
 <rect x="780" y="252" width="200" height="36" class="box" stroke="#ff00aa"/>
@@ -274,7 +274,7 @@ text{font-family:'JetBrains Mono','Courier New',monospace;fill:#c0c0e0;font-size
 <text x="790" y="394" class="label">• Hitachi 3TB HDD</text>
 <!-- Bottom -->
 <rect x="200" y="560" width="700" height="44" class="box" stroke="#ffd700"/>
-<text x="550" y="578" text-anchor="middle" font-size="12" class="arr">📺 Media Stack — CT 110 (10.2.7.109)</text>
+<text x="550" y="578" text-anchor="middle" font-size="12" class="arr">📺 Media Stack — CT 110 (10.2.40.110)</text>
 <text x="550" y="594" text-anchor="middle" class="label">🎬 Jellyfin · 🎥 Radarr · 📺 Sonarr · 🔍 Prowlarr · ⚡ qBit · 🎶 Navidrome · 📊 Arr Dash</text>
 <rect x="200" y="620" width="700" height="44" class="box" stroke="#00ff41"/>
 <text x="550" y="640" text-anchor="middle" font-size="12" class="mon">💾 Storage Layout</text>

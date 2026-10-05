@@ -86,7 +86,7 @@
       <reboot>0</reboot>
       <aux>0</aux>
     </firmware>
-    <dnsserver>10.2.7.2</dnsserver>
+    <dnsserver>10.2.10.2</dnsserver>
     <language>en_US</language>
     <dns1gw>none</dns1gw>
     <dns2gw>none</dns2gw>

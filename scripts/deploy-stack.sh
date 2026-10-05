@@ -11,7 +11,7 @@
 #       docker compose pull -> up -d -> ps
 #
 # No secrets in this file. Export GITEA_BASE with credentials before running:
-#   export GITEA_BASE="http://InfamousJerk:PASSWORD@10.2.7.108:3002"
+#   export GITEA_BASE="http://InfamousJerk:PASSWORD@10.2.30.106:3002"
 set -euo pipefail
 
 REPO="${1:?usage: deploy-stack.sh <repo-name> [target-dir]}"

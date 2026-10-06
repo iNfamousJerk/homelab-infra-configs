@@ -1,0 +1,3 @@
+# pihole-exporter. Copy to pihole.yml and fill in.
+- targets:
+    - "MONITORING_IP:9617"

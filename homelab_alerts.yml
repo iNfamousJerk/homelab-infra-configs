@@ -12,13 +12,18 @@ groups:
           description: "{{ $labels.job }} target {{ $labels.instance }} unreachable for over 1 minute."
 
       - alert: NodeExporterMissing
-        expr: absent(up{job=~"node_.*"}) or count(up{job=~"node_.*"} == 1) < 2
+        # Fleet-level check: fires when the scrape job is gone entirely, or
+        # when more than 20% of node_exporter targets stop reporting. The
+        # previous `< 2` was a fixed count against 10 configured targets, so
+        # it only fired once 8 of 10 were already down. Individual hosts are
+        # covered by InstanceDown.
+        expr: absent(up{job=~"node_.*"}) or ((count(up{job=~"node_.*"} == 1) or vector(0)) / count(up{job=~"node_.*"})) < 0.8
         for: 2m
         labels:
           severity: critical
         annotations:
-          summary: "Node exporter missing"
-          description: "One or more node_exporter targets not reporting."
+          summary: "node_exporter fleet degraded"
+          description: "More than 20% of node_exporter targets are not reporting - check the scrape config or for a downed node."
 
       - alert: HighDiskUsage
         expr: (1 - (node_filesystem_avail_bytes{fstype!="tmpfs",fstype!="overlay",fstype!="devtmpfs",fstype!="zfs"} / node_filesystem_size_bytes{fstype!="tmpfs",fstype!="overlay",fstype!="devtmpfs",fstype!="zfs"})) * 100 > 90
@@ -27,7 +32,7 @@ groups:
           severity: warning
         annotations:
           summary: "Disk >90% on {{ $labels.instance }}"
-          description: "{{ $labels.mountpoint }} is {{ $value | humanizePercentage }} full"
+          description: "{{ $labels.mountpoint }} is {{ $value | printf \"%.1f\" }}% full"
 
       - alert: DiskAlmostFull
         expr: (1 - (node_filesystem_avail_bytes{fstype!="tmpfs",fstype!="overlay",fstype!="devtmpfs",fstype!="zfs"} / node_filesystem_size_bytes{fstype!="tmpfs",fstype!="overlay",fstype!="devtmpfs",fstype!="zfs"})) * 100 > 95
@@ -36,7 +41,7 @@ groups:
           severity: critical
         annotations:
           summary: "DISK CRITICAL on {{ $labels.instance }}"
-          description: "{{ $labels.mountpoint }} is {{ $value | humanizePercentage }} full - act now!"
+          description: "{{ $labels.mountpoint }} is {{ $value | printf \"%.1f\" }}% full - act now!"
 
       - alert: HighMemoryUsage
         expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 90
@@ -45,7 +50,7 @@ groups:
           severity: warning
         annotations:
           summary: "RAM >90% on {{ $labels.instance }}"
-          description: "Memory at {{ $value | humanizePercentage }}"
+          description: "Memory at {{ $value | printf \"%.1f\" }}%"
 
       - alert: CriticalMemoryUsage
         expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 97
@@ -54,7 +59,7 @@ groups:
           severity: critical
         annotations:
           summary: "RAM CRITICAL on {{ $labels.instance }}"
-          description: "Memory at {{ $value | humanizePercentage }} - OOM risk!"
+          description: "Memory at {{ $value | printf \"%.1f\" }}% - OOM risk!"
 
       - alert: HighCPUUsage
         expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 90
@@ -63,7 +68,7 @@ groups:
           severity: warning
         annotations:
           summary: "CPU >90% on {{ $labels.instance }}"
-          description: "CPU at {{ $value | humanizePercentage }} for 10+ min"
+          description: "CPU at {{ $value | printf \"%.1f\" }}% for 10+ min"
 
       - alert: HighLoadAverage
         expr: node_load1 > count(node_cpu_seconds_total{mode="idle"}) by(instance) * 2
@@ -101,7 +106,7 @@ groups:
           severity: info
         annotations:
           summary: "Container {{ $labels.name }} >900MB RAM"
-          description: "{{ $labels.name }} using {{ $value | humanize1024 }}"
+          description: "{{ $labels.name }} using {{ $value | printf \"%.0f\" }} MB (limit 1g)"
 
       - alert: ContainerHighCPU
         expr: rate(container_cpu_usage_seconds_total{name!=""}[5m]) > 0.8
@@ -119,7 +124,7 @@ groups:
           severity: warning
         annotations:
           summary: "Container {{ $labels.name }} disk >90%"
-          description: "{{ $labels.name }} filesystem {{ $value | humanizePercentage }} full"
+          description: "{{ $labels.name }} filesystem {{ $value | printf \"%.1f\" }}% full"
 
       - alert: ContainerNetworkErrors
         expr: rate(container_network_receive_errors_total{name!=""}[5m]) > 0 or rate(container_network_transmit_errors_total{name!=""}[5m]) > 0
@@ -157,8 +162,8 @@ groups:
         labels:
           severity: info
         annotations:
-          summary: "Pi-hole blocking low ({{ $value | humanizePercentage }})"
-          description: "Ads blocked today is only {{ $value | humanizePercentage }}"
+          summary: "Pi-hole blocking low ({{ $value | printf \"%.1f\" }}%)"
+          description: "Ads blocked today is only {{ $value | printf \"%.1f\" }}%"
 
       - alert: ServiceHTTPDown
         expr: probe_success{job="blackbox_http"} == 0
@@ -198,7 +203,7 @@ groups:
           severity: critical
         annotations:
           summary: "UPS ON BATTERY!"
-          description: "UPS running on battery! Runtime: {{ $labels.instance }}"
+          description: "UPS {{ $labels.instance }} is running on battery - see UPSLowRuntime for remaining runtime."
 
       - alert: UPSBatteryLow
         expr: nut_battery_charge < 15 and nut_battery_charge >= 0

@@ -1,0 +1,18 @@
+# TCP probe targets — host:port, rewritten to the blackbox exporter by the
+# relabel_configs in prometheus.yml. Copy to blackbox_tcp.yml and fill in.
+- targets:
+    - "CT100_IP:22"      # CT 100 — Hermes agent, SSH
+    - "CT100_IP:8642"    # CT 100 — Hermes agent
+    - "CT110_IP:80"      # CT 110 — NPM
+    - "CT105_IP:443"     # CT 105 — Wazuh
+    - "CT105_IP:55000"   # CT 105 — Wazuh API
+    - "CT105_IP:9200"    # CT 105 — Wazuh indexer
+    - "PVE1_IP:8006"     # PVE1 web UI
+    - "PVE1_IP:22"       # PVE1 SSH
+    - "PVE2_IP:8006"     # PVE2 web UI (self-signed TLS — TCP only)
+    - "PVE2_IP:22"       # PVE2 SSH
+    - "PBS_IP:8007"      # PBS web UI
+    - "CT111_IP:22"      # CT 111 — Immich SSH
+    - "CT112_IP:22"      # CT 112 — Nextcloud SSH
+    - "CT110_IP:22"      # CT 110 — media stack SSH
+    - "PIHOLE_IP:53"     # Pi-hole DNS

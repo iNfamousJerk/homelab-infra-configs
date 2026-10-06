@@ -10,7 +10,7 @@ services:
       - SIGNUPS_ALLOWED=false
       - DOMAIN=https://vault.services.internal.lan
       - WEBSOCKET_ENABLED=true
-      - ADMIN_TOKEN=${VAULTWARDEN_ADMIN_TOKEN}
+      - ADMIN_TOKEN=${VAULTWARDEN_ADMIN_TOKEN:?set VAULTWARDEN_ADMIN_TOKEN in .env}
     volumes:
       - ./vaultwarden/data:/data
     ports:
@@ -23,7 +23,7 @@ services:
     container_name: document-server
     environment:
       - JWT_ENABLED=true
-      - JWT_SECRET=${ONLYOFFICE_JWT_SECRET}
+      - JWT_SECRET=${ONLYOFFICE_JWT_SECRET:?set ONLYOFFICE_JWT_SECRET in .env}
     volumes:
       - ./onlyoffice/logs:/var/log/onlyoffice
       - ./onlyoffice/data:/var/www/onlyoffice/Data

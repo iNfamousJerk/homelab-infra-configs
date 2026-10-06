@@ -1,10 +1,12 @@
 # OPNsense VLAN Segmentation — Live Config & Plan
 
-> **Source of truth:** Scanned directly from OPNsense `config.xml` on 2026-08-27.
-> VLANs are **defined** in OPNsense but **not yet in service** — no DHCP scopes,
-> no inter-VLAN firewall rules, and the VLAN sub-interfaces are not bound to a
-> parent NIC (`vlan01`–`vlan07` show `parent: <none>`). This doc records the
-> intended scheme and what remains to wire up.
+> **Source of truth:** Scanned directly from OPNsense `config.xml` on 2026-08-27,
+> with live gateways verified 2026-09-24.
+> VLANs are **bound and live** — all 7 gateways (10.2.10.1–10.2.70.1) answer on
+> their sub-interfaces. They do **not yet provide isolation**: no hosts have
+> migrated (each subnet contains only its `.1` gateway), no DHCP scopes, and
+> no inter-VLAN firewall rules. VLANs currently route with **no isolation**.
+> This doc records the scheme and what remains to wire up.
 
 ---
 
@@ -17,25 +19,25 @@
 | LAN | `lan` | `igc0` | 10.2.7.1/24 | Main homelab subnet (currently flat) |
 | Loopback | `lo0` | `lo0` | — | Management |
 
-### VLANs — Defined but NOT yet bound
-All VLAN sub-interfaces (`vlan01`–`vlan07`) are created on parent NIC **`re0`**
-(Intel i210 — a separate LAN port, currently not carrying any IP). They exist in
-config but are **not assigned/up** yet — `ifconfig` shows `vlan: 0 parent: <none>`.
+### VLANs — Bound and live (gateways up)
+All 7 VLAN sub-interfaces (`vlan01`–`vlan07`) are bound to parent NIC **`re0`** and
+assigned. Each gateway (10.2.10.1–10.2.70.1) answers as OPNsense. **No hosts have
+migrated yet** — every subnet contains only its `.1` gateway.
 
 | VLAN ID | OPNsense iface | Name | Gateway/Subnet | Parent NIC | Status |
 |---------|----------------|------|----------------|------------|--------|
-| 10 | `vlan01` / `opt1` | MGMT | 10.2.10.1/24 | `re0` | Defined, not bound |
-| 20 | `vlan02` / `opt2` | SERVICES | 10.2.20.1/24 | `re0` | Defined, not bound |
-| 30 | `vlan03` / `opt3` | SECURITY | 10.2.30.1/24 | `re0` | Defined, not bound |
-| 40 | `vlan04` / `opt4` | MEDIA | 10.2.40.1/24 | `re0` | Defined, not bound |
-| 50 | `vlan05` / `opt5` | CLIENT | 10.2.50.1/24 | `re0` | Defined, not bound |
-| 60 | `vlan06` / `opt6` | IOT | 10.2.60.1/24 | `re0` | Defined, not bound |
-| 70 | `vlan07` / `opt7` | LAB | 10.2.70.1/24 | `re0` | Defined, not bound |
+| 10 | `vlan01` / `opt1` | MGMT | 10.2.10.1/24 | `re0` | Bound, gateway live |
+| 20 | `vlan02` / `opt2` | SERVICES | 10.2.20.1/24 | `re0` | Bound, gateway live |
+| 30 | `vlan03` / `opt3` | SECURITY | 10.2.30.1/24 | `re0` | Bound, gateway live |
+| 40 | `vlan04` / `opt4` | MEDIA | 10.2.40.1/24 | `re0` | Bound, gateway live |
+| 50 | `vlan05` / `opt5` | CLIENT | 10.2.50.1/24 | `re0` | Bound, gateway live |
+| 60 | `vlan06` / `opt6` | IOT | 10.2.60.1/24 | `re0` | Bound, gateway live |
+| 70 | `vlan07` / `opt7` | LAB | 10.2.70.1/24 | `re0` | Bound, gateway live |
 
 ### What is NOT configured yet
 - ❌ **DHCP scopes** — `dhcpd` has no `<range>` per VLAN; nothing hands out IPs yet
-- ❌ **Firewall rules** — zero `<rule>` entries; no inter-VLAN allow/deny logic
-- ❌ **VLAN binding** — sub-interfaces not attached to `re0` parent yet
+- ❌ **Firewall rules** — zero `<rule>` (committed config); VLANs route with no isolation
+- ⚠️ **Management exposure** — OPNsense web/SSH (22/443) listen on every VLAN interface (see VLAN-RUNBOOK Phase 1c)
 
 ---
 
@@ -75,13 +77,13 @@ behind OPNsense (single firewall), and let TVs reach the media server.
 
 ---
 
-## 4. Remaining Work (to make VLANs live)
+## 4. Remaining Work (to make VLANs provide isolation)
 
-1. **Bind VLAN sub-interfaces** to `re0` parent in OPNsense
-   (Interfaces → Other Types → VLAN → set parent `re0` for each; they're staged).
+1. ✅ **Bind VLAN sub-interfaces** to `re0` parent — **DONE** (all 7 gateways live).
 2. **Add DHCP scopes** per VLAN (MGMT 10, SERVICES 20, SECURITY 30, MEDIA 40,
    CLIENT 50, IOT 60, LAB 70). DNS = the two Pi-hole addresses.
-3. **Write inter-VLAN firewall rules** (default deny, allow specific):
+3. **Write inter-VLAN firewall rules** (default deny, allow specific) — see
+   VLAN-RUNBOOK Phase 1c for the rule set and ordering:
    - MGMT → any: allow (admin access)
    - All VLANs → SERVICES : allow UDP 53 (DNS to Pi-hole)
    - CLIENT/MEDIA → MEDIA host : allow TCP 8096 (Jellyfin), + Seerr port

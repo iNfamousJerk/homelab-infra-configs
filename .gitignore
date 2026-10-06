@@ -10,6 +10,11 @@
 .env.production
 .env.development
 
+# ...but the placeholder templates MUST stay tracked. Negations have to come
+# after the rules above, otherwise `.env.*` swallows them.
+!.env.example
+!*.env.example
+
 # API keys, tokens, credentials
 *.pem
 *.key
@@ -62,3 +67,8 @@ temp/
 
 # Local runtime config directories (contain container IDs, passwords, etc.)
 config/
+
+# Prometheus file_sd target lists hold real host addresses. The tracked
+# targets/*.yml.example scaffolding is unaffected ("*.yml" does not match
+# a name ending in ".example").
+targets/*.yml

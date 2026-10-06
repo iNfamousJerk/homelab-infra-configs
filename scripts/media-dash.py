@@ -1,19 +1,32 @@
 #!/usr/bin/env python3
 """Media Dashboard — Jellyfin recently added + request movies, TV, music, books via *arr APIs"""
 
-import os, json, urllib.request, urllib.parse, time, re
+import os, sys, json, urllib.request, urllib.parse, time, re
 from flask import Flask, render_template_string, request
 
 app = Flask(__name__)
 
-# ─── Config ─────────────────────────────────────────────────────
-MEDIA_HOST = "10.2.7.x"
 
-# API keys
-RADARR_KEY = "7d50365cc0934669b0aac6f9f7415688"
-SONARR_KEY = "40e5a97c2c7c47c8a13ad6fa7d9324fa"
-LIDARR_KEY = "935c193b61e640898c520a7e1c5bb5a6"
-READARR_KEY = "ad9edb79876f4107a9de7472259e212b"
+# ─── Config ─────────────────────────────────────────────────────
+def _env(name):
+    """Read a required setting from the environment, or exit with a clear error.
+
+    Nothing here has a default on purpose: a silent fallback would just mean
+    every *arr call 401s at runtime instead of failing at startup.
+    """
+    val = os.environ.get(name, "").strip()
+    if not val:
+        sys.exit(f"[media-dash] missing required env var: {name} (see .env.example)")
+    return val
+
+
+MEDIA_HOST = _env("MEDIA_HOST")
+
+# API keys — each app's Settings > General > API Key, supplied via .env
+RADARR_KEY = _env("RADARR_KEY")
+SONARR_KEY = _env("SONARR_KEY")
+LIDARR_KEY = _env("LIDARR_KEY")
+READARR_KEY = _env("READARR_KEY")
 
 # Ports
 RADARR_PORT = 7878

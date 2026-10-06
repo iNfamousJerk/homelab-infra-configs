@@ -10,9 +10,9 @@
 
 | Layer | State |
 |-------|-------|
-| OPNsense VLANs 10–70 | ✅ Defined on `re0`, gateways 10.2.x.1/24 — but sub-interfaces show `parent: <none>`, **not bound/UP** |
+| OPNsense VLANs 10–70 | ✅ Bound on `re0`, gateways 10.2.10.1–10.2.70.1 **all live/UP** (verified 2026-09-24). Subnets contain only their `.1` gateway — **no hosts migrated yet, no isolation** |
 | OPNsense DHCP | ❌ No scopes configured |
-| OPNsense firewall | ❌ Zero rules |
+| OPNsense firewall | ❌ Zero rules (committed config) — VLANs route unfiltered; OPNsense mgmt (22/443) listens on every VLAN interface |
 | PVE1 bridge | 🟡 `vmbr0` has `bridge-vlan-aware yes` + `bridge-vids 2-4094`, but flat IP still on vmbr0 (no sub-interface) |
 | PVE2 bridge | ❌ Not VLAN-aware (plain static `vmbr0`) |
 | Managed switch | ⏳ Not located / not pinging (assume 802.1Q DISABLED / flat) |
@@ -52,6 +52,10 @@ make sure `opt1`–`opt7` map to `vlan01`–`vlan07`. Enable each interface.
 > static IPs. Update after Pi deployment. DNS to Pi-hole lives on SERVICES (20).
 
 ### 1c. Firewall rules (Firewall → Rules → [each VLAN], floating rules option)
+
+> See **[VLAN-FIREWALL-RULES.md](./VLAN-FIREWALL-RULES.md)** for the concrete,
+> evaluation-ordered default-deny ruleset and the management (22/443) restriction
+> with anti-lockout rule. Summary below.
 
 **Default stance: block all inter-VLAN. Add only these:**
 
@@ -115,8 +119,10 @@ iface vmbr0.10 inet static
         address 10.2.10.64/24
         gateway 10.2.10.1
 ```
-> ⚠️ **Cluster quorum:** 2-node cluster. Reboot nodes ONE at a time, wait for full
-> recovery before the next, or temporarily `pvecm delnode` to avoid the frozen UI.
+> ⚠️ **Cluster quorum:** 3-node cluster (10.2.7.64 / `.62` / `.15`). The older
+> "2-node cluster, reboot one at a time" warning is **stale** — a 3-node cluster
+> keeps quorum with one node down. Still reboot nodes ONE at a time and wait for
+> full recovery; a lone node cannot act (no quorum).
 
 ### 2c. Assign VLAN tags to CTs/VMs
 In PVE web UI → each VM/CT → Network → set **VLAN Tag** per the device map:

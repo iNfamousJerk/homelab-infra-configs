@@ -1,0 +1,23 @@
+# HTTP probe targets — full URLs, rewritten to the blackbox exporter by the
+# relabel_configs in prometheus.yml. Copy to blackbox_http.yml and fill in.
+#
+# PVE2's web UI is deliberately absent: it serves self-signed TLS, which fails
+# an http_2xx probe. It is covered by blackbox_tcp on :8006 instead (see
+# 3362ce8 — this previously caused a false ServiceHTTPDown critical).
+- targets:
+    - "http://CT111_IP:2283"     # CT 111 — Immich
+    - "http://CT102_IP"          # CT 102 — PiAlert
+    - "http://CT107_IP"          # CT 107 — Pi-hole
+    - "http://CT106_IP:3000"     # CT 106 — Grafana
+    # CT 110 — media stack on PVE2
+    - "http://CT110_IP:8096"     # Jellyfin
+    - "http://CT110_IP:7878"     # Radarr
+    - "http://CT110_IP:8989"     # Sonarr
+    - "http://CT110_IP:8686"     # Lidarr
+    - "http://CT110_IP:9696"     # Prowlarr
+    - "http://CT110_IP:6767"     # Bazarr
+    - "http://CT110_IP:5055"     # Seerr
+    - "http://CT110_IP:8080"     # qBittorrent
+    - "http://CT110_IP:81"       # NPM admin
+    - "http://CT110_IP:8787"     # Readarr
+    - "http://CT110_IP:13378"    # Audiobookshelf

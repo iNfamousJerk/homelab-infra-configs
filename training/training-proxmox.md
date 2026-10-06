@@ -107,7 +107,6 @@ How long since the container was last started. If a container keeps showing low 
 **Daily (30 seconds):**
 1. Log into PVE1 (10.x.x.xxx:8006)
 2. Glance at the Summary page — any CT showing red CPU/MEM? Any alert icons?
-3. If you see CT105 (Wazuh), that's fine — we'll check that elsewhere.
 
 **Weekly (2 minutes):**
 1. Log into both PVE1 and PVE2

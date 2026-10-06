@@ -84,9 +84,28 @@ scrape_configs:
     metrics_path: /probe
     params:
       module: [tcp_connect]
-    file_sd_configs:
-      - files:
-          - /etc/prometheus/targets/blackbox_tcp.yml
+    static_configs:
+      - targets:
+          # CT 100 — Hermes Agent
+          - 10.2.7.x:22
+          - 10.2.7.x:8642
+          # CT 110 — NPM
+          - 10.2.7.x:80
+          # PVE1 / PBS
+          - 10.2.7.x:8006
+          - 10.2.7.x:22
+          # PVE2 / PBS
+          - 10.2.7.x:8006
+          - 10.2.7.x:22
+          - 10.2.7.x:8007
+          # CT 111 — Immich SSH
+          - 10.2.7.x:22
+          # CT 112 — Nextcloud SSH
+          - 10.2.7.x:22
+          # CT 110 — Media stack SSH
+          - 10.2.7.x:22
+          # Pi-hole DNS
+          - 10.2.7.x:53
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target

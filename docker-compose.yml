@@ -1,6 +1,30 @@
+# Homelab monitoring / infrastructure stack
+#
+# ---------------------------------------------------------------------------
+# WHY EVERY SERVICE CARRIES `apparmor:unconfined`
+# ---------------------------------------------------------------------------
+# This stack runs inside an unprivileged LXC container. Docker in that
+# environment cannot load its own "docker-default" AppArmor profile, so any
+# container that does NOT explicitly opt out fails to start with:
+#
+#   docker: Error response from daemon: AppArmor enabled on system but the
+#   docker-default profile could not be loaded: ... apparmor_parser: Unable to
+#   replace "docker-default". apparmor_parser: Access denied. You need policy
+#   admin privileges to manage profiles. error: exit status 243
+#
+# Verified on the production host: removing these entries breaks every service.
+# They are a hard requirement of the LXC environment, not a stylistic choice.
+# The fix would be host-side (allow the container to manage AppArmor profiles);
+# until then, keep them.
+#
+# All image tags are pinned to the versions verified in production (never
+# :latest). One rolling-`latest` image (pihole-exporter) has no matching
+# release tag upstream, so it is pinned by digest instead.
+# ---------------------------------------------------------------------------
+
 services:
   prometheus:
-    image: prom/prometheus:latest
+    image: prom/prometheus:v3.14.0
     container_name: prometheus
     ports:
       - 9090:9090
@@ -16,7 +40,15 @@ services:
       - apparmor:unconfined
 
   cadvisor:
-    image: gcr.io/cadvisor/cadvisor:latest
+    # Runs WITHOUT privileged: on this host the documented host-mount approach is
+    # sufficient and yields an identical set of container metric series to the
+    # previous privileged container (verified: equal container_cpu_usage_seconds_total
+    # series count). `apparmor:unconfined` is mandatory here — without it the
+    # container cannot start at all.
+    # NOTE: the `/dev/kmsg` device is intentionally absent. It does not exist in
+    # the LXC userland and Docker can only attach it when the container is
+    # privileged; leaving it in would break startup.
+    image: gcr.io/cadvisor/cadvisor:v0.55.1
     container_name: cadvisor
     ports:
       - 8080:8080
@@ -26,15 +58,14 @@ services:
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
       - /dev/disk/:/dev/disk:ro
-    devices:
-      - /dev/kmsg
-    privileged: true
     restart: unless-stopped
     mem_limit: 1g
     memswap_limit: 1g
+    security_opt:
+      - apparmor:unconfined
 
   blackbox-exporter:
-    image: prom/blackbox-exporter:latest
+    image: prom/blackbox-exporter:v0.28.0
     container_name: blackbox-exporter
     ports:
       - 9115:9115
@@ -49,7 +80,7 @@ services:
       - apparmor:unconfined
 
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana:13.2.2
     container_name: grafana
     ports:
       - 3000:3000
@@ -59,6 +90,12 @@ services:
       - grafana_data:/var/lib/grafana
       - /opt/monitoring/provisioning/:/etc/grafana/provisioning/:ro
       - /opt/monitoring/dashboards/:/var/lib/grafana/dashboards:ro
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
     restart: unless-stopped
     mem_limit: 1g
     memswap_limit: 1g
@@ -66,7 +103,9 @@ services:
       - apparmor:unconfined
 
   pihole-exporter:
-    image: ekofr/pihole-exporter:latest
+    # Pinned by digest: upstream's rolling `latest` is newer than its newest
+    # release tag (v1.2.0), so no version tag matches this build.
+    image: ekofr/pihole-exporter@sha256:a890cc731a39da719ba19cfd717427d93366cd36307f069d495f37a1373ccffc
     container_name: pihole-exporter
     ports:
       - 9617:9617
@@ -82,7 +121,7 @@ services:
       - apparmor:unconfined
 
   nut-exporter:
-    image: python:3-alpine
+    image: python:3.14-alpine
     container_name: nut-exporter
     ports:
       - 9999:9999
@@ -101,7 +140,7 @@ services:
       - apparmor:unconfined
 
   alertmanager:
-    image: prom/alertmanager:latest
+    image: prom/alertmanager:v0.34.0
     container_name: alertmanager
     ports:
       - 9093:9093
@@ -114,7 +153,7 @@ services:
       - apparmor:unconfined
 
   webhook:
-    image: python:3-alpine
+    image: python:3.14-alpine
     container_name: webhook
     ports:
       - 5000:5000
@@ -128,7 +167,7 @@ services:
       - apparmor:unconfined
 
   uptime-kuma:
-    image: louislam/uptime-kuma:1
+    image: louislam/uptime-kuma:1.23.17
     container_name: uptime-kuma
     security_opt:
       - apparmor:unconfined
@@ -136,12 +175,19 @@ services:
       - 3001:3001
     volumes:
       - uptime_kuma_data:/app/data
+    healthcheck:
+      # Matches the healthcheck shipped in the upstream image.
+      test: ["CMD-SHELL", "extra/healthcheck"]
+      interval: 60s
+      timeout: 30s
+      retries: 5
+      start_period: 180s
     restart: unless-stopped
     mem_limit: 1g
     memswap_limit: 1g
 
   gitea:
-    image: gitea/gitea:latest
+    image: gitea/gitea:1.27.3
     container_name: gitea
     security_opt:
       - apparmor:unconfined
@@ -155,16 +201,22 @@ services:
     environment:
       - USER_UID=1000
       - USER_GID=1000
-      - GITEA__server__DOMAIN=10.2.7.125
+      - GITEA__server__DOMAIN=${GITEA_DOMAIN:-gitea.example.lan}
       - GITEA__server__HTTP_PORT=3000
-      - GITEA__server__ROOT_URL=http://10.2.7.125:3002
+      - GITEA__server__ROOT_URL=${GITEA_ROOT_URL:-http://gitea.example.lan}
       - GITEA__server__SSH_PORT=2222
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:3000/api/healthz || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
     restart: unless-stopped
     mem_limit: 1g
     memswap_limit: 1g
 
   portainer-agent:
-    image: portainer/agent:latest
+    image: portainer/agent:2.45.1
     container_name: portainer_agent
     # The agent serves the Portainer server on 9001. Without this the
     # container ran but was unreachable, so the endpoint never connected.
@@ -173,6 +225,9 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /var/lib/docker/volumes:/var/lib/docker/volumes
+    # Required for the same reason as every other service above.
+    security_opt:
+      - apparmor:unconfined
     restart: unless-stopped
     mem_limit: 256m
     memswap_limit: 256m

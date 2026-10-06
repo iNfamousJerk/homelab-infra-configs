@@ -77,9 +77,6 @@ OPNsense is configured to forward all DNS requests to **Pi-hole** at 10.x.x.xxx.
 3. Pi-hole checks its blocklist and either returns the real IP or blocks it if it's an ad/tracker
 4. Pi-hole asks **Unbound** (its own recursive resolver on port 5335) if the answer isn't cached
 
-### Port Mirror to Zeek
-OPNsense sends a copy of ALL traffic to **Zeek** (CT101 on PVE2) for security monitoring. This is done via port mirroring — Zeek sees everything but can't interfere. Think of it as a security camera watching the lobby.
-
 ---
 
 ## 5. A Beginner Routine
@@ -121,7 +118,6 @@ OPNsense sends a copy of ALL traffic to **Zeek** (CT101 on PVE2) for security mo
 | Block a specific device | Firewall → Rules → [Interface] → Add "Block" rule with its IP |
 | Update OPNsense | System → Firmware → Check for updates |
 | Restart the firewall | System → Power → Reboot |
-| See what Zeek is monitoring | You can't from here — check Zeek on PVE2 CT101 |
 | Pause ad-blocking temporarily | Log into Pi-hole at http://10.x.x.xxx/admin → Disable |
 | Check VPN status | VPN → [Your VPN type] → Status |
 

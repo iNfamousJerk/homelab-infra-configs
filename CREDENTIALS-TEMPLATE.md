@@ -24,11 +24,9 @@
 | CT ID | Hostname | IP | Password |
 |-------|----------|----|----------|
 | 100 | hermesagent | `10.x.x.100` | SSH key only |
-| 101 | zeek | `10.x.x.101` | `${CT_101_ROOT_PASSWORD}` |
 | 102 | pialert | `10.x.x.102` | `${CT_102_ROOT_PASSWORD}` |
 | 103 | ripper | `10.x.x.103` | `${CT_103_ROOT_PASSWORD}` |
 | 104 | micromd | `10.x.x.104` | `${CT_104_ROOT_PASSWORD}` |
-| 105 | wazuh | `10.x.x.105` | `${CT_105_ROOT_PASSWORD}` |
 | 106 | grafana | `10.x.x.106` | `${CT_106_ROOT_PASSWORD}` |
 | 107 | pihole | `10.x.x.107` | `${CT_107_ROOT_PASSWORD}` |
 | 108 | portainer | `10.x.x.108` | `${CT_108_ROOT_PASSWORD}` |
@@ -68,12 +66,11 @@
 |---------|-----|----------|--------------------|
 | **Monitoring Dashboard (Grafana)** | http://10.x.x.x:3000 | `admin` | `${GRAFANA_ADMIN_PASSWORD}` |
 | **DNS Filter (Pi-hole)** | http://10.x.x.x/admin | `admin` | `${DNS_FILTER_PASSWORD}` |
-| **SIEM Dashboard (Wazuh)** | https://10.x.x.x:443 | `admin` | `${SIEM_ADMIN_PASSWORD}` |
 | **Uptime Monitor (Kuma)** | http://10.x.x.x:3001 | *(set during setup)* | *(set during setup)* |
 | **Git Server (Gitea)** | http://10.x.x.x:3002 | `${GITEA_ADMIN_USER}` | *(set during setup)* |
 | **IT Asset Management (Snipe-IT)** | http://10.x.x.x:8000 | `admin` | `${SNIPEIT_ADMIN_PASSWORD}` |
 | **MDM Server (MicroMDM)** | https://10.x.x.x:8443 | *(API key)* | `${MICROMD_API_KEY}` |
-| **Patch Monitoring (PatchMon)** | http://10.x.x.x:3000 | *(via Wazuh)* | *(set during setup)* |
+| **Patch Monitoring (PatchMon)** | http://10.x.x.x:3000 | *(set during setup)* | *(set during setup)* |
 | **Container Management (Portainer)** | http://10.x.x.x:9000 | `admin` | `${PORTAINER_ADMIN_PASSWORD}` |
 | **Service Dashboard (Heimdall)** | http://10.x.x.x | *(set during setup)* | *(set during setup)* |
 | **Photo Management (Immich)** | http://10.x.x.x:2283 | *(set during setup)* | *(set during setup)* |
@@ -88,7 +85,6 @@ Cockpit is installed on most containers for centralized management. Access via p
 |-------|----------|-------------|
 | 100 | hermesagent | https://10.x.x.x:9090 |
 | 102 | pialert | https://10.x.x.x:9090 |
-| 105 | wazuh | https://10.x.x.x:9090 |
 | 106 | grafana | https://10.x.x.x:9090 |
 | 107 | pihole | https://10.x.x.x:9090 |
 | 111 | immich | https://10.x.x.x:9090 |
@@ -157,7 +153,6 @@ All services on the media stack use the same admin password:
  4. CT 108 — Container Management (Portainer)
  5. CT 113 — Local LLM Inference (Ollama)
  6. CT 109 — Service Dashboard (Heimdall)
- 7. CT 105 — SIEM Manager (Wazuh)
  8. CT 100 — AI Orchestration Agent (Hermes)
  9. CT 114 — Centralized Management (Cockpit)
 ```
@@ -165,8 +160,7 @@ All services on the media stack use the same admin password:
 ### Node B
 
 ```
- 1. CT 101 — Network IDS Sensor (Zeek) — passive, no dependencies
- 2. CT 111 — Photo Management (Immich)
+ 1. CT 111 — Photo Management (Immich)
  3. CT 112 — File Sync & Share (Nextcloud)
  4. CT 104 — MDM Server (MicroMDM)
  5. CT 110 — Media Stack Host (18 containers, starts last)
@@ -185,11 +179,9 @@ All services on the media stack use the same admin password:
 | Proxmox Backup Server | 10.x.x.4 | Physical | HP Z230, Xeon E3-1225 v3, 16GB |
 | Pi-hole DNS | 10.x.x.5 | — | Primary DNS for all LAN (runs on CT 107) |
 | CT 100 — hermesagent | 10.x.x.100 | Node A | AI Orchestration Agent |
-| CT 101 — zeek | 10.x.x.101 | Node B | Network IDS Sensor |
 | CT 102 — pialert | 10.x.x.102 | Node A | Network Alerting |
 | CT 103 — ripper | 10.x.x.103 | Node B | Media Automation |
 | CT 104 — micromd | 10.x.x.104 | Node B | MDM Server |
-| CT 105 — wazuh | 10.x.x.105 | Node A | SIEM Manager |
 | CT 106 — grafana | 10.x.x.106 | Node A | Monitoring Hub |
 | CT 107 — pihole | 10.x.x.107 | Node A | DNS Filter |
 | CT 108 — portainer | 10.x.x.108 | Node A | Container Management |

@@ -65,7 +65,7 @@ done
 ```
 
 > **Gitea note:** Gitea's `GITEA__server__ROOT_URL` is currently
-> `http://10.2.7.125:3002` (corrected in this repo's `docker-compose.yml`).
+> `http://10.0.7.125:3002` (corrected in this repo's `docker-compose.yml`).
 > When you proxy it over https it must become **`https://gitea.lan`** or Gitea
 > will generate http redirects/links. Edit its env + restart the container.
 

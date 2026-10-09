@@ -119,12 +119,12 @@ SECRET_PATTERNS = [
 # keys are addresses and the secret is the value:
 #
 #     PVE_PASSWORDS = {
-#         "10.2.7.64": "<the-real-password-was-here>",
+#         "10.0.7.64": "<the-real-password-was-here>",
 #     }
 #
 SECRET_CONTAINER_OPEN = re.compile(rf'(?i)\b{_SECRET_NAME}\s*[:=]\s*[{{\[]')
 # Inside such a container, flag values introduced by ':' or '=' only. Matching
-# bare comma-separated items too would flag the "10.2.7.64" keys as secrets.
+# bare comma-separated items too would flag the "10.0.7.64" keys as secrets.
 CONTAINER_VALUE = re.compile(rf'[:=]\s*["\'](?P<secret>[^"\'\s]{{{_MIN_VALUE},}})["\']')
 
 # Applied to the captured secret only. A value is treated as safe if it is a

@@ -86,7 +86,7 @@
       <reboot>0</reboot>
       <aux>0</aux>
     </firmware>
-    <dnsserver>10.2.10.2</dnsserver>
+    <dnsserver>10.0.10.2</dnsserver>
     <language>en_US</language>
     <dns1gw>none</dns1gw>
     <dns2gw>none</dns2gw>
@@ -166,7 +166,7 @@
     <lan>
       <enable>1</enable>
       <if>igc0</if>
-      <ipaddr>10.2.7.1</ipaddr>
+      <ipaddr>10.0.7.1</ipaddr>
       <subnet>24</subnet>
       <ipaddrv6>idassoc6</ipaddrv6>
       <subnetv6>64</subnetv6>
@@ -196,7 +196,7 @@
       <descr>MGMT</descr>
       <enable>1</enable>
       <spoofmac/>
-      <ipaddr>10.2.10.1</ipaddr>
+      <ipaddr>10.0.10.1</ipaddr>
       <subnet>24</subnet>
       <lock>0</lock>
     </opt1>
@@ -205,7 +205,7 @@
       <descr>SERVICES</descr>
       <enable>1</enable>
       <spoofmac/>
-      <ipaddr>10.2.20.1</ipaddr>
+      <ipaddr>10.0.20.1</ipaddr>
       <subnet>24</subnet>
       <lock>0</lock>
     </opt2>
@@ -214,7 +214,7 @@
       <descr>SECURITY</descr>
       <enable>1</enable>
       <spoofmac/>
-      <ipaddr>10.2.30.1</ipaddr>
+      <ipaddr>10.0.30.1</ipaddr>
       <subnet>24</subnet>
       <lock>0</lock>
     </opt3>
@@ -223,7 +223,7 @@
       <descr>MEDIA</descr>
       <enable>1</enable>
       <spoofmac/>
-      <ipaddr>10.2.40.1</ipaddr>
+      <ipaddr>10.0.40.1</ipaddr>
       <subnet>24</subnet>
       <lock>0</lock>
     </opt4>
@@ -232,7 +232,7 @@
       <descr>CLIENT</descr>
       <enable>1</enable>
       <spoofmac/>
-      <ipaddr>10.2.50.1</ipaddr>
+      <ipaddr>10.0.50.1</ipaddr>
       <subnet>24</subnet>
       <lock>0</lock>
     </opt5>
@@ -241,7 +241,7 @@
       <descr>IOT</descr>
       <enable>1</enable>
       <spoofmac/>
-      <ipaddr>10.2.60.1</ipaddr>
+      <ipaddr>10.0.60.1</ipaddr>
       <subnet>24</subnet>
       <lock>0</lock>
     </opt6>
@@ -250,7 +250,7 @@
       <descr>LAB</descr>
       <enable>1</enable>
       <spoofmac/>
-      <ipaddr>10.2.70.1</ipaddr>
+      <ipaddr>10.0.70.1</ipaddr>
       <subnet>24</subnet>
       <lock>0</lock>
     </opt7>
@@ -297,7 +297,7 @@
       <host>Proxmox</host>
       <domain/>
       <local>0</local>
-      <ip>10.2.7.64</ip>
+      <ip>10.0.7.64</ip>
       <cnames/>
       <client_id>01:c8:d3:ff:a3:76:83</client_id>
       <hwaddr>c8:d3:ff:a3:76:83</hwaddr>
@@ -312,7 +312,7 @@
       <host>iNfamousPC</host>
       <domain/>
       <local>0</local>
-      <ip>10.2.7.123</ip>
+      <ip>10.0.7.123</ip>
       <cnames/>
       <client_id>01:18:c0:4d:ae:f8:d4</client_id>
       <hwaddr>18:c0:4d:ae:f8:d4</hwaddr>
@@ -326,8 +326,8 @@
     <dhcp_ranges uuid="7be43e16-0f9c-4cfc-a6e4-68e059d4bb58">
       <interface>lan</interface>
       <set_tag/>
-      <start_addr>10.2.7.41</start_addr>
-      <end_addr>10.2.7.245</end_addr>
+      <start_addr>10.0.7.41</start_addr>
+      <end_addr>10.0.7.245</end_addr>
       <subnet_mask/>
       <constructor/>
       <mode/>
@@ -346,8 +346,8 @@
     <dhcp_ranges uuid="2ba379ab-2369-4899-aa9c-fae6dc5d1199">
       <interface>opt5</interface>
       <set_tag/>
-      <start_addr>10.2.50.100</start_addr>
-      <end_addr>10.2.50.200</end_addr>
+      <start_addr>10.0.50.100</start_addr>
+      <end_addr>10.0.50.200</end_addr>
       <subnet_mask/>
       <constructor/>
       <mode/>
@@ -366,8 +366,8 @@
     <dhcp_ranges uuid="2f05d7f2-ee77-4cef-be94-fb98712ee095">
       <interface>opt1</interface>
       <set_tag/>
-      <start_addr>10.2.10.100</start_addr>
-      <end_addr>10.2.10.200</end_addr>
+      <start_addr>10.0.10.100</start_addr>
+      <end_addr>10.0.10.200</end_addr>
       <subnet_mask/>
       <constructor/>
       <mode/>
@@ -386,8 +386,8 @@
     <dhcp_ranges uuid="4a664d48-8515-4684-851c-de21a82bb172">
       <interface>opt2</interface>
       <set_tag/>
-      <start_addr>10.2.20.100</start_addr>
-      <end_addr>10.2.20.200</end_addr>
+      <start_addr>10.0.20.100</start_addr>
+      <end_addr>10.0.20.200</end_addr>
       <subnet_mask/>
       <constructor/>
       <mode/>
@@ -406,8 +406,8 @@
     <dhcp_ranges uuid="6f04f21c-772a-40f8-8897-2b9662ed71c0">
       <interface>opt3</interface>
       <set_tag/>
-      <start_addr>10.2.30.100</start_addr>
-      <end_addr>10.2.30.200</end_addr>
+      <start_addr>10.0.30.100</start_addr>
+      <end_addr>10.0.30.200</end_addr>
       <subnet_mask/>
       <constructor/>
       <mode/>
@@ -426,8 +426,8 @@
     <dhcp_ranges uuid="722e6b78-6412-4f2d-a775-23ee50689bca">
       <interface>opt4</interface>
       <set_tag/>
-      <start_addr>10.2.40.100</start_addr>
-      <end_addr>10.2.40.200</end_addr>
+      <start_addr>10.0.40.100</start_addr>
+      <end_addr>10.0.40.200</end_addr>
       <subnet_mask/>
       <constructor/>
       <mode/>
@@ -446,8 +446,8 @@
     <dhcp_ranges uuid="855aba54-e25f-41b7-b31f-1cf227095fdd">
       <interface>opt6</interface>
       <set_tag/>
-      <start_addr>10.2.60.100</start_addr>
-      <end_addr>10.2.60.200</end_addr>
+      <start_addr>10.0.60.100</start_addr>
+      <end_addr>10.0.60.200</end_addr>
       <subnet_mask/>
       <constructor/>
       <mode/>
@@ -466,8 +466,8 @@
     <dhcp_ranges uuid="d731cff2-ffcc-4a2d-af5c-5be6f978b852">
       <interface>opt7</interface>
       <set_tag/>
-      <start_addr>10.2.70.100</start_addr>
-      <end_addr>10.2.70.200</end_addr>
+      <start_addr>10.0.70.100</start_addr>
+      <end_addr>10.0.70.200</end_addr>
       <subnet_mask/>
       <constructor/>
       <mode/>
@@ -531,12 +531,12 @@
         <any>1</any>
       </destination>
       <updated>
-        <username>root@10.2.7.157</username>
+        <username>root@10.0.7.157</username>
         <time>1783826516.71</time>
         <description>/firewall_rules_edit.php made changes</description>
       </updated>
       <created>
-        <username>root@10.2.7.157</username>
+        <username>root@10.0.7.157</username>
         <time>1783826516.71</time>
         <description>/firewall_rules_edit.php made changes</description>
       </created>
@@ -546,7 +546,7 @@
     <prefer>0.opnsense.pool.ntp.org</prefer>
   </ntpd>
   <revision>
-    <username>root@10.2.7.7</username>
+    <username>root@10.0.7.7</username>
     <description>/system_advanced_misc.php made changes</description>
     <time>1787381120.59</time>
   </revision>
@@ -1370,7 +1370,7 @@
       </blazerser>
       <netclient>
         <enable>1</enable>
-        <address>10.2.7.64</address>
+        <address>10.0.7.64</address>
         <port>3493</port>
         <user>monitor</user>
         <password>[REDACTED]</password>

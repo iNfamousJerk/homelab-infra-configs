@@ -22,7 +22,7 @@ All three identity/helpdesk services send mail through **Gmail SMTP**
 
 ## Where the credentials live (rotation checklist)
 
-### 1. Snipe-IT — CT 121 `10.2.20.121`
+### 1. Snipe-IT — CT 121 `10.0.20.121`
 - **File:** `/opt/snipe-it/.env` (on CT121)
 - **Vars:** `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`,
   `MAIL_FROM_ADDR`, `MAIL_FROM_NAME`
@@ -33,7 +33,7 @@ All three identity/helpdesk services send mail through **Gmail SMTP**
   ```
   (env_file only loads on container *creation*, not restart)
 
-### 2. osTicket — CT 122 `10.2.20.122`
+### 2. osTicket — CT 122 `10.0.20.122`
 - **File:** `/etc/msmtp` **inside** the `osticket-app` container
   (managed at `/opt/osticket/docker-compose.yml` via `SMTP_*` env vars)
 - **Vars (compose):** `SMTP_HOST`, `SMTP_PORT`, `SMTP_FROM`, `SMTP_USER`,
@@ -43,7 +43,7 @@ All three identity/helpdesk services send mail through **Gmail SMTP**
   `docker compose up -d` and re-copy `/etc/msmtp` into the container
   (`docker cp`) or restart the container so its entrypoint re-populates it.
 
-### 3. Keycloak — CT 120 `10.2.20.120`
+### 3. Keycloak — CT 120 `10.0.20.120`
 - **Location:** realm `master` → `smtpServer` (set via admin REST API, not kcadm)
 - **Keys:** `host`, `port`, `from`, `fromDisplayName`, `starttls`, `auth`,
   `user`, `password`

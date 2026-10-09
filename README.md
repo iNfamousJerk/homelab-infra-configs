@@ -9,9 +9,9 @@ This repository contains sanitized Docker Compose, monitoring, and reverse proxy
 | Layer | Services | Purpose |
 |-------|----------|---------|
 | **Hypervisor** | Proxmox VE (×3 nodes) + PBS | Multi-node LXC container hosting, ZFS-backed backups |
-|| **Node A** — `10.2.7.64` | i5-7500, 32GB, 1TB SSD | Primary application node — AI, identity, monitoring, DNS, media automation/server (14 LXCs) |
-|| **Node B** — `10.2.7.62` | i7-2600K, 32GB, ZFS pool (3.62TB) | Storage + media-download node — ZFS for media, photos, files (3 LXCs) |
-|| **Node C** — `10.2.7.15` | Dell i5-6500, 16GB (max) | Identity, helpdesk, source control, DB, SIEM/security — co-hosts app & security services (14 LXCs)
+|| **Node A** — `10.0.7.64` | i5-7500, 32GB, 1TB SSD | Primary application node — AI, identity, monitoring, DNS, media automation/server (14 LXCs) |
+|| **Node B** — `10.0.7.62` | i7-2600K, 32GB, ZFS pool (3.62TB) | Storage + media-download node — ZFS for media, photos, files (3 LXCs) |
+|| **Node C** — `10.0.7.15` | Dell i5-6500, 16GB (max) | Identity, helpdesk, source control, DB, SIEM/security — co-hosts app & security services (14 LXCs)
 || **ZFS Pool** `media` | 3.62T total, 2.70T used | Checksummed, portable storage for all bulk data |
 || **Monitoring** | Prometheus, Grafana, cAdvisor, Blackbox, Alertmanager, Uptime Kuma | Metrics, alerting, dashboards |
 | **Patch & Update Mgmt** | PatchMon + Tugtainer | Centralized Linux patch monitoring + Docker image update management |
@@ -28,7 +28,7 @@ This repository contains sanitized Docker Compose, monitoring, and reverse proxy
 | **Reverse Proxy** | Nginx Proxy Manager | SSL termination & domain routing |
 
 
-## Node A (Application) — 10.2.7.64 (14 Containers)
+## Node A (Application) — 10.0.7.64 (14 Containers)
 
 | CT ID | Role | OS | Cores | RAM | Purpose |
 |-------|------|-----|-------|-----|---------|
@@ -46,7 +46,7 @@ This repository contains sanitized Docker Compose, monitoring, and reverse proxy
 | 149 | **Media/Music** | Debian 13 | 2 | 2GB | Navidrome + Audiobookshelf (music/audio) |
 | 150 | **AI Agent (secondary)** | Debian 13 | 2 | 2GB | Claude Code / auxiliary automation |
 
-## Node B (Storage & Media Download) — 10.2.7.62 (3 Containers)
+## Node B (Storage & Media Download) — 10.0.7.62 (3 Containers)
 
 | CT ID | Role | OS | Cores | RAM | Purpose |
 |-------|------|-----|-------|-----|---------|
@@ -54,7 +54,7 @@ This repository contains sanitized Docker Compose, monitoring, and reverse proxy
 | 118 | **Media Optimizer** | Debian 13 | 4 | 6GB | Tdarr — audio-track trimming + x265 re-encode batch |
 | 148 | **Bot** | Debian 13 | 1 | 1GB | Discord mediabot / automation |
 
-## Node C (Identity/Security) — 10.2.7.15 (14 Containers)
+## Node C (Identity/Security) — 10.0.7.15 (14 Containers)
 
 | CT ID | Role | OS | Cores | RAM | Purpose |
 |-------|------|-----|-------|-----|---------|

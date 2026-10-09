@@ -24,16 +24,16 @@ interface OPNsense listens on (LAN + each VLAN).
 
 | # | Interface | Source | Destination | Port | Action | Note |
 |---|-----------|--------|-------------|------|--------|------|
-| M1 | LAN (10.2.7.0/24) | `10.2.7.0/24` | OPNsense IPs | 22,443 | **Allow** | **Anti-lockout**: keeps your current vantage reachable *during* the change |
-| M2 | LAN (10.2.7.0/24) | `10.2.10.0/24` (MGMT) | OPNsense IPs | 22,443 | **Allow** | Intended permanent admin path |
-| M3 | VLAN 10 MGMT | `10.2.10.0/24` | OPNsense IPs | 22,443 | **Allow** | Management inside its own VLAN |
+| M1 | LAN (10.0.7.0/24) | `10.0.7.0/24` | OPNsense IPs | 22,443 | **Allow** | **Anti-lockout**: keeps your current vantage reachable *during* the change |
+| M2 | LAN (10.0.7.0/24) | `10.0.10.0/24` (MGMT) | OPNsense IPs | 22,443 | **Allow** | Intended permanent admin path |
+| M3 | VLAN 10 MGMT | `10.0.10.0/24` | OPNsense IPs | 22,443 | **Allow** | Management inside its own VLAN |
 | M4 | (all other VLANs) | Any | OPNsense IPs | 22,443 | **Deny** | Lock mgmt off SERVICES/IOT/CLIENT/etc. |
 | M5 | (any) | Any | OPNsense IPs | Any | **Deny** | Belt-and-braces: nothing else reaches the firewall |
 
 **⚠️ Lockout risk & anti-lockout:** the **M1 rule is your anti-lockout** — it must
 exist *below* nothing (it is the highest-priority allow) and must be in place
 BEFORE M4/M5 are added. If you are currently reaching OPNsense from a device
-outside `10.2.7.0/24` or `10.2.10.0/24`, add an explicit per-IP allow for that
+outside `10.0.7.0/24` or `10.0.10.0/24`, add an explicit per-IP allow for that
 source first. If you get locked out, recover via **console/VGA on OPNsense**
 (Firewall → Rules → temporarily disable the mgmt rule) — plan that access path
 before you click Apply.
@@ -51,17 +51,17 @@ the posture does not depend on OPNsense's implicit policy:
 
 | # | Interface (source) | Source | Destination | Port/Proto | Action | Purpose |
 |---|--------------------|--------|-------------|-----------|--------|---------|
-| R1 | MGMT (10) | `10.2.10.0/24` | Any | Any | **Allow** | Admin can go anywhere |
-| R2 | SERVICES (20) | `10.2.20.0/24` | Any | Any | **Allow** | Services reach out (updates, GitHub, indexers) |
-| R3 | Any VLAN | Any | Pi-hole `10.2.20.53` / `10.2.20.54` | UDP 53 | **Allow** | DNS for all VLANs |
-| R4 | CLIENT (50) | `10.2.50.0/24` | WAN | Any | **Allow** | Internet |
-| R5 | CLIENT (50) | `10.2.50.0/24` | MEDIA host | TCP 8096 | **Allow** | Jellyfin |
-| R6 | CLIENT (50) | `10.2.50.0/24` | MEDIA host | TCP 5055 | **Allow** | Seerr |
-| R7 | MEDIA (40) | `10.2.40.0/24` | MEDIA host | TCP 8096 | **Allow** | Jellyfin (Home-TV) |
-| R8 | MEDIA (40) | `10.2.40.0/24` | MEDIA host | TCP 5055 | **Allow** | Seerr (Home-TV) |
-| R9 | MEDIA (40) | `10.2.40.0/24` | WAN | Any | **Allow** | Downloads |
-| R10 | IOT (60) | `10.2.60.0/24` | WAN | Any | **Allow** | Internet only — **no LAN** |
-| R11 | LAB (70) | `10.2.70.0/24` | WAN | Any | **Allow** | Updates (isolated range) |
+| R1 | MGMT (10) | `10.0.10.0/24` | Any | Any | **Allow** | Admin can go anywhere |
+| R2 | SERVICES (20) | `10.0.20.0/24` | Any | Any | **Allow** | Services reach out (updates, GitHub, indexers) |
+| R3 | Any VLAN | Any | Pi-hole `10.0.20.53` / `10.0.20.54` | UDP 53 | **Allow** | DNS for all VLANs |
+| R4 | CLIENT (50) | `10.0.50.0/24` | WAN | Any | **Allow** | Internet |
+| R5 | CLIENT (50) | `10.0.50.0/24` | MEDIA host | TCP 8096 | **Allow** | Jellyfin |
+| R6 | CLIENT (50) | `10.0.50.0/24` | MEDIA host | TCP 5055 | **Allow** | Seerr |
+| R7 | MEDIA (40) | `10.0.40.0/24` | MEDIA host | TCP 8096 | **Allow** | Jellyfin (Home-TV) |
+| R8 | MEDIA (40) | `10.0.40.0/24` | MEDIA host | TCP 5055 | **Allow** | Seerr (Home-TV) |
+| R9 | MEDIA (40) | `10.0.40.0/24` | WAN | Any | **Allow** | Downloads |
+| R10 | IOT (60) | `10.0.60.0/24` | WAN | Any | **Allow** | Internet only — **no LAN** |
+| R11 | LAB (70) | `10.0.70.0/24` | WAN | Any | **Allow** | Updates (isolated range) |
 | R12 | *(every interface)* | Any | Any | Any | **Deny** | **Default deny — last rule everywhere** |
 | R13 | `floating` | Any | Any | established | **Allow** | Stateful return traffic |
 
@@ -87,6 +87,6 @@ the posture does not depend on OPNsense's implicit policy:
    VLANs become isolated. Verify IoT still reaches WAN but cannot ping any LAN host.
 6. Do **not** add the mgmt-denies before the mgmt-allows are confirmed working.
 
-> **Real-device order:** keep devices on the flat 10.2.7.0/24 until the mgmt
+> **Real-device order:** keep devices on the flat 10.0.7.0/24 until the mgmt
 > allows (step 3) are verified. The named targets above (Pi-hole, MEDIA host)
 > assume they exist at the documented IPs; confirm before applying.

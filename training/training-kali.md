@@ -12,7 +12,7 @@
 
 Everything else on the homelab is production — your media stack, family-facing
 SSO, monitoring. Practicing real attacks there would be reckless (and could
-take down family Jellyfin/Immich). The LAB VLAN (10.2.70.0/24) gives you a
+take down family Jellyfin/Immich). The LAB VLAN (10.0.70.0/24) gives you a
 firewalled sandbox where an active attack, a misconfig, or a cone of silence
 affects only the lab. It's the same reasoning as the passive Zeek sensor: the
 blast radius of a mistake is zero.
@@ -21,13 +21,13 @@ blast radius of a mistake is zero.
 
 | Host | ID | IP (VLAN 70) | Role |
 |------|-----|--------------|------|
-| Kali | VM 200 | 10.2.70.10 | Attacker / analyst box — your daily driver for the lab |
-| Target | CT 201 | 10.2.70.20 | Vulnerable target (DC-2025 / WIN-CLIENT style) |
-| Sensor | CT 202 | 10.2.70.30 | Passive Zeek network sensor |
+| Kali | VM 200 | 10.0.70.10 | Attacker / analyst box — your daily driver for the lab |
+| Target | CT 201 | 10.0.70.20 | Vulnerable target (DC-2025 / WIN-CLIENT style) |
+| Sensor | CT 202 | 10.0.70.30 | Passive Zeek network sensor |
 
-- **Gateway:** 10.2.70.1 (OPNsense, `vlan07` / opt7)
-- **DNS:** 10.2.7.2 (Pi-hole)
-- **Network:** 10.2.70.0/24, 802.1Q tag 70
+- **Gateway:** 10.0.70.1 (OPNsense, `vlan07` / opt7)
+- **DNS:** 10.0.7.2 (Pi-hole)
+- **Network:** 10.0.70.0/24, 802.1Q tag 70
 
 ## Access
 
@@ -35,7 +35,7 @@ Kali uses cloud-init: user `kali`, SSH key auth from the hermes agent key.
 From any host that holds the key:
 
 ```
-ssh kali@10.2.70.10
+ssh kali@10.0.70.10
 ```
 
 The lab is only reachable from inside the lab VLAN (target/sensor) — you
@@ -54,7 +54,7 @@ that from theory into reps. Every session should be an attack-observed loop:
 
 ```sh
 # capture a specific host pair for study
-sudo tcpdump -i eth0 -nn -s0 host 10.2.70.20 -w /tmp/capture.pcap
+sudo tcpdump -i eth0 -nn -s0 host 10.0.70.20 -w /tmp/capture.pcap
 
 # read it back cleanly
 sudo tcpdump -nn -r /tmp/capture.pcap

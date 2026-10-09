@@ -2,7 +2,7 @@
 
 > **Source of truth:** Scanned directly from OPNsense `config.xml` on 2026-08-27,
 > with live gateways verified 2026-09-24.
-> VLANs are **bound and live** — all 7 gateways (10.2.10.1–10.2.70.1) answer on
+> VLANs are **bound and live** — all 7 gateways (10.0.10.1–10.0.70.1) answer on
 > their sub-interfaces. They do **not yet provide isolation**: no hosts have
 > migrated (each subnet contains only its `.1` gateway), no DHCP scopes, and
 > no inter-VLAN firewall rules. VLANs currently route with **no isolation**.
@@ -16,23 +16,23 @@
 | Interface | OPNsense name | Physical NIC | IP | Notes |
 |-----------|---------------|--------------|-----|-------|
 | WAN | `wan` | `em0` | DHCP | Internet uplink |
-| LAN | `lan` | `igc0` | 10.2.7.1/24 | Main homelab subnet (currently flat) |
+| LAN | `lan` | `igc0` | 10.0.7.1/24 | Main homelab subnet (currently flat) |
 | Loopback | `lo0` | `lo0` | — | Management |
 
 ### VLANs — Bound and live (gateways up)
 All 7 VLAN sub-interfaces (`vlan01`–`vlan07`) are bound to parent NIC **`re0`** and
-assigned. Each gateway (10.2.10.1–10.2.70.1) answers as OPNsense. **No hosts have
+assigned. Each gateway (10.0.10.1–10.0.70.1) answers as OPNsense. **No hosts have
 migrated yet** — every subnet contains only its `.1` gateway.
 
 | VLAN ID | OPNsense iface | Name | Gateway/Subnet | Parent NIC | Status |
 |---------|----------------|------|----------------|------------|--------|
-| 10 | `vlan01` / `opt1` | MGMT | 10.2.10.1/24 | `re0` | Bound, gateway live |
-| 20 | `vlan02` / `opt2` | SERVICES | 10.2.20.1/24 | `re0` | Bound, gateway live |
-| 30 | `vlan03` / `opt3` | SECURITY | 10.2.30.1/24 | `re0` | Bound, gateway live |
-| 40 | `vlan04` / `opt4` | MEDIA | 10.2.40.1/24 | `re0` | Bound, gateway live |
-| 50 | `vlan05` / `opt5` | CLIENT | 10.2.50.1/24 | `re0` | Bound, gateway live |
-| 60 | `vlan06` / `opt6` | IOT | 10.2.60.1/24 | `re0` | Bound, gateway live |
-| 70 | `vlan07` / `opt7` | LAB | 10.2.70.1/24 | `re0` | Bound, gateway live |
+| 10 | `vlan01` / `opt1` | MGMT | 10.0.10.1/24 | `re0` | Bound, gateway live |
+| 20 | `vlan02` / `opt2` | SERVICES | 10.0.20.1/24 | `re0` | Bound, gateway live |
+| 30 | `vlan03` / `opt3` | SECURITY | 10.0.30.1/24 | `re0` | Bound, gateway live |
+| 40 | `vlan04` / `opt4` | MEDIA | 10.0.40.1/24 | `re0` | Bound, gateway live |
+| 50 | `vlan05` / `opt5` | CLIENT | 10.0.50.1/24 | `re0` | Bound, gateway live |
+| 60 | `vlan06` / `opt6` | IOT | 10.0.60.1/24 | `re0` | Bound, gateway live |
+| 70 | `vlan07` / `opt7` | LAB | 10.0.70.1/24 | `re0` | Bound, gateway live |
 
 ### What is NOT configured yet
 - ❌ **DHCP scopes** — `dhcpd` has no `<range>` per VLAN; nothing hands out IPs yet
@@ -103,7 +103,7 @@ behind OPNsense (single firewall), and let TVs reach the media server.
 
 If VLAN migration breaks connectivity:
 1. Disable 802.1Q VLAN on the switch → reverts to flat switch immediately.
-2. All devices reconnect on the original 10.2.7.0/24 subnet.
+2. All devices reconnect on the original 10.0.7.0/24 subnet.
 3. Remove VLAN interfaces from OPNsense.
 4. Revert PVE `/etc/network/interfaces`.
 5. Done — no lasting damage.
@@ -113,7 +113,7 @@ If VLAN migration breaks connectivity:
 ## 6. DR Backup
 
 ```bash
-ssh root@10.2.7.1 'cat /conf/config.xml' > opnsense-backup-$(date +%F).xml
+ssh root@10.0.7.1 'cat /conf/config.xml' > opnsense-backup-$(date +%F).xml
 # Restore: System → Configuration → Backups → Upload
 ```
 

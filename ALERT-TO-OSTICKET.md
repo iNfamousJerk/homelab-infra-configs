@@ -48,7 +48,7 @@ and files it via the osTicket API.
    ```sql
    INSERT INTO ost_api_key (isactive, ipaddr, apikey, can_create_tickets,
        can_exec_cron, notes, created, updated)
-   VALUES (1, '10.2.7.107', '<KEY>', 1, 1, 'Hermes alert pipeline', NOW(), NOW());
+   VALUES (1, '10.0.7.107', '<KEY>', 1, 1, 'Hermes alert pipeline', NOW(), NOW());
    ```
 3. Save `<KEY>` to `/root/osticket_api_key.txt` (chmod 600) on CT122, and copy
    to CT100 `~/.hermes/alert_osticket_key.txt` (chmod 600).
@@ -64,7 +64,7 @@ and files it via the osTicket API.
 
 - **401 "Valid API key required"** — `ipaddr` must be a **single exact IP**
   matching the caller. osTicket compares `ipaddr == REMOTE_ADDR` (string
-  equality); a comma-separated list never matches. Call from CT100 (10.2.7.107).
+  equality); a comma-separated list never matches. Call from CT100 (10.0.7.107).
 - **400 "Incomplete client information"** — osTicket can't create a *new*
   client from a bare email. Use an email that's already a registered osTicket
   client (e.g. `piperlabsit@gmail.com`), or send the full user name object.

@@ -10,7 +10,7 @@
 
 | Layer | State |
 |-------|-------|
-| OPNsense VLANs 10–70 | ✅ Bound on `re0`, gateways 10.2.10.1–10.2.70.1 **all live/UP** (verified 2026-09-24). Subnets contain only their `.1` gateway — **no hosts migrated yet, no isolation** |
+| OPNsense VLANs 10–70 | ✅ Bound on `re0`, gateways 10.0.10.1–10.0.70.1 **all live/UP** (verified 2026-09-24). Subnets contain only their `.1` gateway — **no hosts migrated yet, no isolation** |
 | OPNsense DHCP | ❌ No scopes configured |
 | OPNsense firewall | ❌ Zero rules (committed config) — VLANs route unfiltered; OPNsense mgmt (22/443) listens on every VLAN interface |
 | PVE1 bridge | 🟡 `vmbr0` has `bridge-vlan-aware yes` + `bridge-vids 2-4094`, but flat IP still on vmbr0 (no sub-interface) |
@@ -19,13 +19,13 @@
 
 **Gateway layout:**
 ```
-VLAN 10 MGMT    10.2.10.1/24
-VLAN 20 SERVICES 10.2.20.1/24
-VLAN 30 SECURITY 10.2.30.1/24
-VLAN 40 MEDIA    10.2.40.1/24
-VLAN 50 CLIENT   10.2.50.1/24
-VLAN 60 IOT      10.2.60.1/24
-VLAN 70 LAB      10.2.70.1/24
+VLAN 10 MGMT    10.0.10.1/24
+VLAN 20 SERVICES 10.0.20.1/24
+VLAN 30 SECURITY 10.0.30.1/24
+VLAN 40 MEDIA    10.0.40.1/24
+VLAN 50 CLIENT   10.0.50.1/24
+VLAN 60 IOT      10.0.60.1/24
+VLAN 70 LAB      10.0.70.1/24
 ```
 
 ---
@@ -40,13 +40,13 @@ make sure `opt1`–`opt7` map to `vlan01`–`vlan07`. Enable each interface.
 ### 1b. Add DHCP scopes (Services → DHCP Server → [each VLAN])
 | VLAN | Enable | Range | DNS |
 |------|--------|-------|-----|
-| 10 MGMT | on | 10.2.10.100 – 10.2.10.200 | 10.2.20.53, 10.2.20.54 (Pi-hole) |
-| 20 SERVICES | on | 10.2.20.100 – 10.2.20.200 | 10.2.20.53, 10.2.20.54 |
-| 30 SECURITY | on | 10.2.30.100 – 10.2.30.200 | 10.2.20.53, 10.2.20.54 |
-| 40 MEDIA | on | 10.2.40.100 – 10.2.40.200 | 10.2.20.53, 10.2.20.54 |
-| 50 CLIENT | on | 10.2.50.100 – 10.2.50.200 | 10.2.20.53, 10.2.20.54 |
-| 60 IOT | on | 10.2.60.100 – 10.2.60.200 | 10.2.20.53, 10.2.20.54 |
-| 70 LAB | on | 10.2.70.100 – 10.2.70.200 | 10.2.20.53, 10.2.20.54 |
+| 10 MGMT | on | 10.0.10.100 – 10.0.10.200 | 10.0.20.53, 10.0.20.54 (Pi-hole) |
+| 20 SERVICES | on | 10.0.20.100 – 10.0.20.200 | 10.0.20.53, 10.0.20.54 |
+| 30 SECURITY | on | 10.0.30.100 – 10.0.30.200 | 10.0.20.53, 10.0.20.54 |
+| 40 MEDIA | on | 10.0.40.100 – 10.0.40.200 | 10.0.20.53, 10.0.20.54 |
+| 50 CLIENT | on | 10.0.50.100 – 10.0.50.200 | 10.0.20.53, 10.0.20.54 |
+| 60 IOT | on | 10.0.60.100 – 10.0.60.200 | 10.0.20.53, 10.0.20.54 |
+| 70 LAB | on | 10.0.70.100 – 10.0.70.200 | 10.0.20.53, 10.0.20.54 |
 
 > **Note:** Pi-hole addresses above are placeholder until the two Pis get real
 > static IPs. Update after Pi deployment. DNS to Pi-hole lives on SERVICES (20).
@@ -61,17 +61,17 @@ make sure `opt1`–`opt7` map to `vlan01`–`vlan07`. Enable each interface.
 
 | # | Interface (source) | Source | Destination | Port | Action |
 |---|-----|--------|-------------|------|--------|
-| 1 | MGMT (10) | 10.2.10.0/24 | Any | Any | ✅ Allow |
-| 2 | SERVICES (20) | 10.2.20.0/24 | Any | Any | ✅ Allow |
-| 3 | Any → SERVICES | Any | 10.2.20.53/54 | UDP 53 | ✅ Allow (DNS) |
-| 4 | CLIENT (50) | 10.2.50.0/24 | WAN | Any | ✅ Allow (internet) |
-| 5 | CLIENT (50) | 10.2.50.0/24 | MEDIA host | TCP 8096 | ✅ Allow (Jellyfin) |
-| 6 | CLIENT (50) | 10.2.50.0/24 | MEDIA host | TCP 5055 | ✅ Allow (Seerr) |
-| 6b | MEDIA (40) | 10.2.40.0/24 | MEDIA host | TCP 8096 | ✅ Allow (Jellyfin, Home-TV) |
-| 6c | MEDIA (40) | 10.2.40.0/24 | MEDIA host | TCP 5055 | ✅ Allow (Seerr, Home-TV) |
-| 7 | MEDIA (40) | 10.2.40.0/24 | WAN | Any | ✅ Allow (downloads) |
-| 8 | IOT (60) | 10.2.60.0/24 | WAN | Any | ✅ Allow (internet only) |
-| 9 | LAB (70) | 10.2.70.0/24 | WAN | Any | ✅ Allow (updates) |
+| 1 | MGMT (10) | 10.0.10.0/24 | Any | Any | ✅ Allow |
+| 2 | SERVICES (20) | 10.0.20.0/24 | Any | Any | ✅ Allow |
+| 3 | Any → SERVICES | Any | 10.0.20.53/54 | UDP 53 | ✅ Allow (DNS) |
+| 4 | CLIENT (50) | 10.0.50.0/24 | WAN | Any | ✅ Allow (internet) |
+| 5 | CLIENT (50) | 10.0.50.0/24 | MEDIA host | TCP 8096 | ✅ Allow (Jellyfin) |
+| 6 | CLIENT (50) | 10.0.50.0/24 | MEDIA host | TCP 5055 | ✅ Allow (Seerr) |
+| 6b | MEDIA (40) | 10.0.40.0/24 | MEDIA host | TCP 8096 | ✅ Allow (Jellyfin, Home-TV) |
+| 6c | MEDIA (40) | 10.0.40.0/24 | MEDIA host | TCP 5055 | ✅ Allow (Seerr, Home-TV) |
+| 7 | MEDIA (40) | 10.0.40.0/24 | WAN | Any | ✅ Allow (downloads) |
+| 8 | IOT (60) | 10.0.60.0/24 | WAN | Any | ✅ Allow (internet only) |
+| 9 | LAB (70) | 10.0.70.0/24 | WAN | Any | ✅ Allow (updates) |
 | 10 | (any) | Any | Any | Any | ❌ Deny (default, last rule) |
 | 11 | (floating) | Any | Any | established | ✅ Allow (return traffic) |
 
@@ -88,7 +88,7 @@ reaches it. Use the firewall-rule approach if you keep the server isolated.
 ```
 auto vmbr0
 iface vmbr0 inet static
-        address 10.2.7.62/24
+        address 10.0.7.62/24
         bridge-ports eno1
         bridge-stp off
         bridge-fd 0
@@ -105,8 +105,8 @@ iface vmbr0 inet manual
 
 auto vmbr0.10
 iface vmbr0.10 inet static
-        address 10.2.10.62/24
-        gateway 10.2.10.1
+        address 10.0.10.62/24
+        gateway 10.0.10.1
 ```
 Then **reboot PVE2** (staggered — see quorum note below).
 
@@ -116,10 +116,10 @@ the flat IP:
 ```
 auto vmbr0.10
 iface vmbr0.10 inet static
-        address 10.2.10.64/24
-        gateway 10.2.10.1
+        address 10.0.10.64/24
+        gateway 10.0.10.1
 ```
-> ⚠️ **Cluster quorum:** 3-node cluster (10.2.7.64 / `.62` / `.15`). The older
+> ⚠️ **Cluster quorum:** 3-node cluster (10.0.7.64 / `.62` / `.15`). The older
 > "2-node cluster, reboot one at a time" warning is **stale** — a 3-node cluster
 > keeps quorum with one node down. Still reboot nodes ONE at a time and wait for
 > full recovery; a lone node cannot act (no quorum).
@@ -178,7 +178,7 @@ The AP tags client traffic per SSID on its trunk uplink (switch port 7).
 
 ## Phase 5 — Pi-hole redundancy (2× Raspberry Pi)
 
-1. Install Pi-hole on both Pis (static IPs, e.g. `10.2.20.53` + `10.2.20.54`).
+1. Install Pi-hole on both Pis (static IPs, e.g. `10.0.20.53` + `10.0.20.54`).
 2. In OPNsense DHCP, set **both** as DNS for every VLAN scope (primary + secondary).
 3. Sync blocklists between the two — Pi-hole **gravity sync** (Settings → Gravity
    sync, point each at the other) so both stay identical.
@@ -203,7 +203,7 @@ segmented from family devices — selected over Option B (moving CT117 onto MEDI
 ## Phase 7 — Verification
 
 - [ ] `ifconfig | grep vlan` on OPNsense → all vlan01–07 show `UP`, `parent: re0`, `status: active`
-- [ ] Each VLAN gateway pings (10.2.10.1 … 10.2.70.1)
+- [ ] Each VLAN gateway pings (10.0.10.1 … 10.0.70.1)
 - [ ] DHCP hands out correct subnets (a client on each VLAN gets 10.2.X.x)
 - [ ] Pi-hole resolves DNS from every VLAN (`pihole -a -i all`)
 - [ ] SSH from MGMT to all VLANs works
@@ -216,7 +216,7 @@ segmented from family devices — selected over Option B (moving CT117 onto MEDI
 
 ## Rollback
 
-1. Disable 802.1Q VLAN on switch → flat switch, all devices reconnect on 10.2.7.0/24
+1. Disable 802.1Q VLAN on switch → flat switch, all devices reconnect on 10.0.7.0/24
 2. Remove VLAN interfaces from OPNsense
 3. Revert PVE `/etc/network/interfaces` (restore flat vmbr0)
 4. Done — no lasting damage

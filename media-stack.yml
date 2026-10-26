@@ -98,19 +98,6 @@ services:
       - ./config/npm/letsencrypt:/etc/letsencrypt
     restart: *restart
 
-  # ─── Password Manager ──────────────────────────────────────
-  vaultwarden:
-    image: vaultwarden/server:latest
-    container_name: vaultwarden
-    environment:
-      - SIGNUPS_ALLOWED=true
-      - DOMAIN=https://vaultwarden.pirate.lan
-      - WEBSOCKET_ENABLED=true
-      - ADMIN_TOKEN=${VAULTWARDEN_ADMIN_TOKEN:?set VAULTWARDEN_ADMIN_TOKEN in .env}
-    volumes:
-      - ./config/vaultwarden:/data
-    restart: *restart
-
   # ─── Torrent Client (VPN-protected) ─────────────────────────
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:latest
@@ -256,7 +243,6 @@ services:
       - "5055:5055"
     <<: *apparmor
     restart: *restart
-
 
   # ─── Media Requests ────────────────────────────────────────
   requestrr:

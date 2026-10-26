@@ -9,37 +9,32 @@ stats_cache = {"data": None, "time": 0}
 CACHE_TTL = 60
 
 SERVICES = [
-    {"name": "Jellyfin", "url": "http://10.0.40.110:8096", "icon": "🎬", "cat": "media"},
-    {"name": "Radarr", "url": "http://10.0.40.110:7878", "icon": "🎥", "cat": "arr"},
-    {"name": "Sonarr", "url": "http://10.0.40.110:8989", "icon": "📺", "cat": "arr"},
-    {"name": "Lidarr", "url": "http://10.0.40.110:8686", "icon": "🎵", "cat": "arr"},
-    {"name": "Arr Dashboard", "url": "http://10.0.7.239:3000", "icon": "📊", "cat": "arr"},
-    {"name": "Librarr", "url": "http://10.0.40.116:5050", "icon": "📚", "cat": "arr"},
-    {"name": "Prowlarr", "url": "http://10.0.40.110:9696", "icon": "🔍", "cat": "arr"},
-    {"name": "Bazarr", "url": "http://10.0.40.110:6767", "icon": "💬", "cat": "arr"},
-    {"name": "Seerr", "url": "http://10.0.40.110:5055", "icon": "📺", "cat": "request"},
-    {"name": "Mylar3", "url": "http://10.0.40.110:8090", "icon": "📚", "cat": "arr"},
-    {"name": "Manga Request", "url": "http://10.0.40.110:5000", "icon": "🎴", "cat": "request"},
-    {"name": "qBittorrent", "url": "http://10.0.40.110:8080", "icon": "⚡", "cat": "download"},
-    {"name": "Navidrome", "url": "http://10.0.40.110:4533", "icon": "🎶", "cat": "media"},
-    {"name": "Audiobookshelf", "url": "http://10.0.40.110:13378", "icon": "🎧", "cat": "media"},
-    {"name": "Immich", "url": "http://10.0.7.44:2283", "icon": "📸", "cat": "media"},
-    {"name": "Nextcloud", "url": "http://10.0.7.99:80", "icon": "☁️", "cat": "infra"},
-    {"name": "NPM", "url": "http://10.0.40.110:81", "icon": "🔒", "cat": "infra"},
-    {"name": "Grafana", "url": "http://10.0.30.106:3000", "icon": "📊", "cat": "monitor"},
-    {"name": "Prometheus", "url": "http://10.0.30.106:9090", "icon": "📈", "cat": "monitor"},
-    {"name": "Uptime Kuma", "url": "http://10.0.30.106:3001", "icon": "❤️", "cat": "monitor"},
-    {"name": "Pi-hole", "url": "http://10.0.10.2/admin", "icon": "🚫", "cat": "network"},
-    {"name": "Gitea", "url": "http://10.0.20.125:3002", "icon": "🔧", "cat": "dev"},
-    {"name": "Keycloak", "url": "http://10.0.20.120:5252", "icon": "🔐", "cat": "auth"},
-    {"name": "Snipe-IT", "url": "http://10.0.20.121:8000", "icon": "🏷️", "cat": "helpdesk"},
-    {"name": "osTicket", "url": "http://10.0.20.122:8081", "icon": "🎫", "cat": "helpdesk"},
-    {"name": "Tdarr", "url": "http://10.0.40.118:8265", "icon": "🎞️", "cat": "media"},
-    {"name": "DVD Ripper", "url": "http://10.0.7.245:5050", "icon": "💿", "cat": "tools"},
-    {"name": "Media Dash", "url": "http://10.0.7.245:5051", "icon": "📋", "cat": "tools"},
-    {"name": "Homelab Panel", "url": "http://10.0.7.245:5052", "icon": "🏗️", "cat": "docs"},
-    {"name": "Suwayomi", "url": "http://10.0.40.130:4567", "icon": "📥", "cat": "download"},
-    {"name": "Komga", "url": "http://10.0.40.130:25600", "icon": "📖", "cat": "media"},
+    {"name": "Jellyfin", "url": "http://10.2.40.117:8096", "icon": "🎬", "cat": "media"},
+    {"name": "Navidrome", "url": "http://10.2.40.149:4533", "icon": "🎶", "cat": "media"},
+    {"name": "Audiobookshelf", "url": "http://10.2.40.149:13378", "icon": "🎧", "cat": "media"},
+    {"name": "Immich", "url": "http://10.2.7.44:2283", "icon": "📸", "cat": "media"},
+    {"name": "Tdarr", "url": "http://10.2.40.118:8265", "icon": "🎞️", "cat": "media"},
+    {"name": "Komga", "url": "http://10.2.40.130:25600", "icon": "📖", "cat": "media"},
+    {"name": "Radarr", "url": "http://10.2.40.116:7878", "icon": "🎥", "cat": "arr"},
+    {"name": "Sonarr", "url": "http://10.2.40.116:8989", "icon": "📺", "cat": "arr"},
+    {"name": "Lidarr", "url": "http://10.2.40.116:8686", "icon": "🎵", "cat": "arr"},
+    {"name": "Prowlarr", "url": "http://10.2.40.116:9696", "icon": "🔍", "cat": "arr"},
+    {"name": "Bazarr", "url": "http://10.2.40.116:6767", "icon": "💬", "cat": "arr"},
+    {"name": "Tunarr", "url": "http://10.2.40.116:8000", "icon": "📡", "cat": "media"},
+    {"name": "Seerr", "url": "http://10.2.40.117:5055", "icon": "📺", "cat": "request"},
+    {"name": "qBittorrent", "url": "http://10.2.40.110:8080", "icon": "⚡", "cat": "download"},
+    {"name": "Nextcloud", "url": "http://10.2.7.99:80", "icon": "☁️", "cat": "infra"},
+    {"name": "NPM", "url": "http://10.2.20.144:81", "icon": "🔒", "cat": "infra"},
+    {"name": "Homarr", "url": "http://10.2.20.101:7575", "icon": "🏠", "cat": "infra"},
+    {"name": "Grafana", "url": "http://10.2.30.106:3000", "icon": "📊", "cat": "monitor"},
+    {"name": "Prometheus", "url": "http://10.2.30.106:9090", "icon": "📈", "cat": "monitor"},
+    {"name": "Pi-hole", "url": "http://10.2.10.2/admin", "icon": "🚫", "cat": "network"},
+    {"name": "Gitea", "url": "http://10.2.20.125:3002", "icon": "🔧", "cat": "dev"},
+    {"name": "osTicket", "url": "http://10.2.20.122:8081", "icon": "🎫", "cat": "helpdesk"},
+    {"name": "DVD Ripper", "url": "http://10.2.40.103:5050", "icon": "💿", "cat": "tools"},
+    {"name": "Media Dash", "url": "http://10.2.40.103:5051", "icon": "📋", "cat": "tools"},
+    {"name": "Minecraft", "url": "http://10.2.50.160:25565", "icon": "⛏️", "cat": "games"},
+    {"name": "Crafty", "url": "https://10.2.50.160:8443", "icon": "🎮", "cat": "games"},
 ]
 
 # ─── Proxmox / PBS access ───────────────────────────────────────
@@ -279,7 +274,7 @@ text{font-family:'JetBrains Mono','Courier New',monospace;fill:#c0c0e0;font-size
 <text x="220" y="312" text-anchor="middle" class="label" font-size="9">CONTAINERS</text>
 <rect x="105" y="320" width="110" height="34" class="box3"/><text x="160" y="335" text-anchor="middle" font-size="10" class="infra">🤖 Hermes (100)</text><text x="160" y="348" text-anchor="middle" class="label">AI Agent · 10.0.7.107</text>
 <rect x="225" y="320" width="110" height="34" class="box3"/><text x="280" y="335" text-anchor="middle" font-size="10" class="dev">🤖 Ansible (117)</text><text x="280" y="348" text-anchor="middle" class="label">Config Mgmt · 10.0.40.117</text>
-<rect x="105" y="360" width="110" height="34" class="box3"/><text x="160" y="375" text-anchor="middle" font-size="10" class="arr">📚 Librarr (116)</text><text x="160" y="388" text-anchor="middle" class="label">Books · 10.0.40.116</text>
+<rect x="105" y="360" width="110" height="34" class="box3"/><text x="160" y="375" text-anchor="middle" font-size="10" class="arr">📡 Tunarr (116)</text><text x="160" y="388" text-anchor="middle" class="label">Live TV · 10.0.40.116</text>
 <rect x="225" y="360" width="110" height="34" class="box3"/><text x="280" y="375" text-anchor="middle" font-size="10" class="mon">📊 Grafana (106)</text><text x="280" y="388" text-anchor="middle" class="label">Monitoring · 10.0.30.106</text>
 <rect x="105" y="400" width="110" height="34" class="box3"/><text x="160" y="415" text-anchor="middle" font-size="10" class="net">🚫 Pi-hole (107)</text><text x="160" y="428" text-anchor="middle" class="label">DNS · 10.0.10.2</text>
 <rect x="225" y="400" width="110" height="34" class="box3"/><text x="280" y="415" text-anchor="middle" font-size="10" class="sec">🔐 Keycloak (120)</text><text x="280" y="428" text-anchor="middle" class="label">Auth · 10.0.20.120</text>

@@ -14,7 +14,6 @@
 # Nginx Proxy Manager on port 80/443 provides subdomain access:
 #   *.pirate.lan → LXC_IP
 # NPM Admin UI: http://LXC_IP:81
-# Vaultwarden accessed via NPM -> vaultwarden.pirate.lan
 #
 # Add a wildcard A record in Pi-hole: *.pirate.lan → LXC_IP
 # ============================================================
@@ -96,19 +95,6 @@ services:
     volumes:
       - ./config/npm/data:/data
       - ./config/npm/letsencrypt:/etc/letsencrypt
-    restart: *restart
-
-  # ─── Password Manager ──────────────────────────────────────
-  vaultwarden:
-    image: vaultwarden/server:latest
-    container_name: vaultwarden
-    environment:
-      - SIGNUPS_ALLOWED=true
-      - DOMAIN=https://vaultwarden.pirate.lan
-      - WEBSOCKET_ENABLED=true
-      - ADMIN_TOKEN=${VAULTWARDEN_ADMIN_TOKEN:?set VAULTWARDEN_ADMIN_TOKEN in .env}
-    volumes:
-      - ./config/vaultwarden:/data
     restart: *restart
 
   # ─── Torrent Client (VPN-protected) ─────────────────────────
@@ -256,7 +242,6 @@ services:
       - "5055:5055"
     <<: *apparmor
     restart: *restart
-
 
   # ─── Media Requests ────────────────────────────────────────
   requestrr:
